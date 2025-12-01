@@ -1,0 +1,69 @@
+// 引入清除默认样式
+@use "./reset.scss";
+// 进度条配置
+@use "./nprogress.scss";
+// element配置
+@use "./element.scss";
+// 动画配置
+@use "./transition.scss";
+
+/* 为webkit浏览器设置纵向和横向滚动条宽度和高度 */
+::-webkit-scrollbar {
+  // 纵向滚动条宽度
+  width: 6px;
+  // 横向滚动条高度
+  height: 6px;
+}
+
+/* 为滚动条轨道设置背景颜色 */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 悬浮在滑块上时为滑块设置背景颜色 */
+::-webkit-scrollbar-thumb {
+  background: var(--el-border-color-darker);
+  border-radius: 6px;
+
+  &:hover {
+    background: #B6B6B6;
+  }
+}
+
+/* 字体 */
+@font-face {
+  font-family: "KoiFont";
+  src: url("../assets/fonts/KoiFont.woff2") format('woff2');
+}
+
+/* 管理平台全局样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  // 全局字体
+  font-family: "KoiFont", Inter, 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  // 修改鼠标
+  // cursor: url("../assets/mouse/index.cur"), auto !important;
+  word-break: break-word;
+}
+
+/* 头像 */
+.user-avatar {
+  cursor: pointer;
+  transition: all 0.5s;
+  user-select: none;
+}
+
+.user-avatar:hover {
+  transform: rotate(360deg);
+}
+
+.chroma-text {
+  background: linear-gradient(270deg, #C68DFFE6 8.92%, #5685FF 46.17%, var(--el-color-primary) 92.17%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  white-space: nowrap;
+  color: transparent;
+}

@@ -1,0 +1,34 @@
+// 项目提供scss全局变量
+
+/** Aside左侧布局相关变量-开始 */
+// Logo和标题高度
+$aside-header-height: 56px;
+
+// 左侧菜单高度
+$aside-menu-height: 40px; // [已使用][页面：@/layouts/components/Menu/SubMenu.vue]
+// 左侧菜单字体 AND 图标左侧偏移
+$aside-menu-font-icon-translate: -10px; // [已使用][页面：@/layouts/components/Menu/SubMenu.vue]
+// 左侧菜单菜单字体加粗
+$aside-menu-font-weight: 500;
+
+// 左侧菜单间隔
+$aside-menu-margin-bottom: 4px;
+
+// 左侧菜单边框圆角配置
+$aside-menu-border-left: 4px;
+
+// 左侧菜单左内边框宽度
+$aside-menu-padding-left: 6px;
+
+// 左侧菜单右内边框宽度
+$aside-menu-padding-right: 6px;
+
+/** Aside左侧布局相关变量-结束 */
+
+/** Column双栏布局相关变量-开始 */
+// 左侧菜单左内边框宽度[双栏布局]
+$column-menu-padding-left: 6px;
+
+// 左侧菜单右内边框宽度[双栏布局]
+$column-menu-padding-right: 6px;
+/** Column双栏布局相关变量-结束 */
