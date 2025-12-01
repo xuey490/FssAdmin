@@ -20,7 +20,7 @@
               :src="bg"
             />
             <div class="text-2xl font-400 text-[--el-text-color-primary] m-b-8px text-center <lg:text-xl <md:hidden">
-              {{ $t("menu.login.welcome") }} {{ $t("menu.login.title") || "KOI-ADMIN 管理平台" }}
+              {{ $t("menu.login.welcome") }} {{ $t("menu.login.title") || "FssAdmin 管理平台" }}
             </div>
             <div class="text-16px text-[--el-text-color-primary] font-400 text-center <md:hidden">
               {{ $t("menu.login.description") }}
@@ -29,7 +29,7 @@
           <!-- 备案号-->
           <div class="bei-an-hao select-none <md:hidden">
             <a class="text-[--el-text-color-primary]" href="https://beian.miit.gov.cn/" target="_blank"
-              >{{ $t("menu.login.beiAnHao") }}：豫ICP备2022022094号-1</a
+              >{{ $t("menu.login.beiAnHao") }}：粤ICP备XXXXX号</a
             >
           </div>
         </div>
@@ -43,7 +43,7 @@
       >
         <div class="flex flex-items-center">
           <el-image class="rounded-full w-36px h-36px" :src="logo" />
-          <div class="m-l-6px font-500 text-xl">{{ $t("menu.login.title") || "KOI-ADMIN 管理平台" }}</div>
+          <div class="m-l-6px font-500 text-xl">{{ $t("menu.login.title") || "FssAdmin 管理平台" }}</div>
         </div>
         <div class="flex flex-items-center space-x-12px text-gray-400 m-y-18px">
           <span class="h-1px w-64px bg-gray-300 inline-block"></span>
@@ -104,13 +104,13 @@
         <!-- 备案号-->
         <div class="bei-an-hao select-none lg:hidden md:hidden">
           <a class="text-[--el-text-color-primary]" href="https://beian.miit.gov.cn/" target="_blank"
-            >{{ $t("menu.login.beiAnHao") }}：豫ICP备2022022094号-1</a
+            >{{ $t("menu.login.beiAnHao") }}：粤ICP备XXXXX号</a
           >
         </div>
       </el-col>
     </el-row>
 
-    <KoiLoading></KoiLoading>
+    <!--<KoiLoading></KoiLoading>-->
   </div>
 </template>
 
@@ -132,7 +132,7 @@ import useTabsStore from "@/stores/modules/tabs.ts";
 import logo from "@/assets/images/logo/logo.webp";
 import bg from "@/assets/images/login/bg.png";
 import KoiDark from "@/layouts/components/Header/components/Dark.vue";
-import KoiLoading from "./components/KoiLoading.vue";
+// import KoiLoading from "./components/KoiLoading.vue";
 import KoiLanguage from "@/layouts/components/Header/components/Language.vue";
 import KoiThemeColor from "./components/KoiThemeColor.vue";
 import { useI18n } from "vue-i18n";

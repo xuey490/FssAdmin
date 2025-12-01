@@ -1,11 +1,11 @@
 export default {
   project: {
-    title: "KOI-ADMIN"
+    title: "FssADMIN 管理平台"
   },
   menu: {
     login: {
       auth: "登录",
-      title: "KOI-ADMIN 管理平台",
+      title: "FssADMIN 管理平台",
       welcome: "欢迎登录",
       platform: "管理平台",
       description: "或许我们只是差点运气",
@@ -26,7 +26,7 @@ export default {
         },
         password: {
           required: "密码不能为空",
-          validator1: "长度在 6 到 20 个字符",
+          validator1: "长度在 5 到 20 个字符",
           validator2: "密码必须包含数字和字母",
         },
         securityCode: {
