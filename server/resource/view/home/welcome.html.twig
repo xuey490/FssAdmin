@@ -1,0 +1,16 @@
+{# resources/views/welcome.html.twig #}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome - {{ site_name }}</title>
+</head>
+<body>
+    <h1>Hello, {{ name }}!</h1>
+    <p>当前环境：{{ app_debug ? '开发模式' : '生产模式' }}</p>
+    <p>这是来自 <strong>{{ site_name }}模板引擎Twig视图测试 </strong> 的欢迎页。</p>
+    <footer>
+        <small>渲染时间: {{ "now"|date("Y-m-d H:i:s") }}</small>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{# user/list.html.twig #}
+{% if pagination.total_pages > 1 %}
+<nav aria-label="pagination">
+  <ul class="pagination">
+    {% if pagination.has_previous %}
+      <li><a href="{{ pagination.previous_url }}">&laquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&laquo;</span></li>
+    {% endif %}
+
+    {% for item in pagination.pages %}
+      {% if item.type == 'ellipsis' %}
+        <li class="disabled"><span>&hellip;</span></li>
+      {% elseif item.type == 'page' %}
+        {% if item.is_current %}
+          <li class="active"><span>{{ item.number }}</span></li>
+        {% else %}
+          <li><a href="{{ item.url }}">{{ item.number }}</a></li>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+
+    {% if pagination.has_next %}
+      <li><a href="{{ pagination.next_url }}">&raquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&raquo;</span></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+<style>
+.pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+.pagination li {
+    margin: 0 4px;
+}
+.pagination a,
+.pagination span {
+    display: block;
+    padding: 6px 12px;
+    text-decoration: none;
+    border: 1px solid #ddd;
+    color: #007bff;
+}
+.pagination .active span {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+.pagination .disabled span {
+    color: #ccc;
+    border-color: #eee;
+}
+</style>

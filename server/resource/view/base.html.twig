@@ -1,0 +1,51 @@
+{# resources/views/base.html.twig #}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}FSSPHP{% endblock %} </title>
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+
+    {# ✅ 现在 is_mobile 存在了 #}
+    {% if is_mobile %}
+        <link rel="stylesheet" href="{{ asset('css/mobile.css') }}">
+    {% else %}
+        <link rel="stylesheet" href="{{ asset('css/desktop.css') }}">
+    {% endif %}
+	
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="{{ url('/') }}">首页</a>
+            <a href="{{ url('/about') }}">关于</a>
+
+			{% if current_user %}
+				欢迎回来, {{ current_user }} | <a href="/logout">退出</a>
+			{% endif %}
+        </nav>
+    </header>
+
+
+
+
+
+
+
+    <main>
+        {% block content %}{% endblock %}
+
+		<br>
+	</main>
+
+	<side>
+		{% block sidebar %}{% endblock %}
+	</side>
+
+    <footer>
+        <p>&copy; {{ "now"|date("Y") }} NovaPHP Framework</p>
+    </footer>
+
+    <script src="{{ asset('js/app.js') }}"></script>
+</body>
+</html>

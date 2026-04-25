@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 - 页面未找到</title>
+  
+  <style>
+    /* --- 基础样式和字体设置 --- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+      background-color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      
+      /* 背景网格效果 - 纯CSS实现 */
+      background-image: 
+        radial-gradient(#e2e8f0 0.5px, transparent 0.5px),
+        radial-gradient(#e2e8f0 0.5px, transparent 0.5px);
+      background-size: 20px 20px;
+      background-position: 0 0, 10px 10px;
+    }
+    
+    /* --- 主内容卡片 --- */
+    .error-container {
+      width: 100%;
+      max-width: 400px;
+      background-color: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      
+      /* 卡片阴影效果 */
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 
+                  0 8px 10px -6px rgba(0, 0, 0, 0.02);
+                  
+      transition: box-shadow 0.3s ease;
+    }
+    
+    .error-container:hover {
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 
+                  0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    /* --- 错误代码 "404" --- */
+    .error-code {
+      font-size: 8rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+    
+    .error-code span {
+      transition: transform 0.3s ease;
+      display: inline-block;
+    }
+    
+    .error-code span:hover {
+      transform: translateY(-10px) scale(1.05);
+    }
+    
+    .num-4 {
+      color: #3B82F6; /* 蓝色 */
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    .num-0 {
+      color: #F43F5E; /* 红色 */
+      animation: float 3s ease-in-out 0.5s infinite;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    /* --- 错误信息文本 --- */
+    .error-message h1 {
+      font-size: 2rem;
+      color: #1e293b;
+      margin-bottom: 10px;
+    }
+    
+    .error-message p {
+      font-size: 1.1rem;
+      color: #64748B;
+      margin-bottom: 30px;
+    }
+    
+    /* --- 自定义CSS搜索图标 --- */
+    .icon-search {
+      width: 60px;
+      height: 60px;
+      border: 4px solid #d1d5db;
+      border-radius: 50%;
+      margin: 0 auto 30px;
+      position: relative;
+      animation: pulse 2s infinite;
+    }
+    
+    .icon-search::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      right: -10px;
+      width: 30px;
+      height: 4px;
+      background-color: #d1d5db;
+      border-radius: 2px;
+      transform: rotate(-45deg);
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.8; }
+    }
+    
+    /* --- 返回首页按钮 --- */
+    .home-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #3B82F6;
+      color: white;
+      font-weight: 500;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    .home-button:hover {
+      background-color: #2563EB;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* --- 自定义CSS主页图标 --- */
+    .home-icon {
+      width: 18px;
+      height: 18px;
+      margin-right: 8px;
+      position: relative;
+    }
+    
+    .home-icon::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      width: 18px;
+      height: 12px;
+      background-color: white;
+      border-radius: 2px 2px 0 0;
+    }
+    
+    .home-icon::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 6px;
+      height: 12px;
+      background-color: white;
+    }
+    
+    /* --- 页脚 --- */
+    footer {
+      margin-top: 40px;
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- 主内容卡片 -->
+  <div class="error-container">
+    <!-- 错误代码 -->
+    <div class="error-code">
+      <span class="num-4">4</span>
+      <span class="num-0">0</span>
+      <span class="num-4">4</span>
+    </div>
+    
+    <!-- 错误信息 -->
+    <div class="error-message">
+      <h1>Not Found</h1>
+      <p>页面不存在或没找到</p>
+    </div>
+    
+    <!-- 装饰性搜索图标 (纯CSS实现) -->
+    <div class="icon-search"></div>
+    
+    <!-- 返回按钮 (带纯CSS图标) -->
+    <a href="/" class="home-button">
+       返回首页
+    </a>
+  </div>
+  
+  <!-- 页脚 -->
+  <footer>
+    <p>© 2025 Powered By FSSPHP. All rights reserved.</p>
+  </footer>
+</body>
+</html>

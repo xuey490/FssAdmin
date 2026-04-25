@@ -1,0 +1,78 @@
+/**
+ * v-permission 权限指令
+ *
+ * 适用于后端权限控制模式，基于权限标识控制 DOM 元素的显示和隐藏。
+ * 如果用户没有对应权限，元素将从 DOM 中移除。
+ *
+ * ## 主要功能
+ *
+ * - 权限验证 - 判断用户buttons里面是否有对应权限标识
+ *
+ * ## 使用示例
+ *
+ * ```vue
+ * <!-- 只有拥有 'core:user:save' 权限的用户才能看到新增按钮 -->
+ * <el-button v-permission="'core:user:save'">新增</el-button>
+ *
+ * <!-- 只有拥有 'edit' 权限的用户才能看到编辑按钮 -->
+ * <el-button v-permission="'core:user:update'">编辑</el-button>
+ *
+ * <!-- 只有拥有 'delete' 权限的用户才能看到删除按钮 -->
+ * <el-button v-permission="'core:user:destroy'">删除</el-button>
+ *
+ * <!-- 只有拥有 'read' 权限的用户才能看到读取按钮 -->
+ * <el-button v-permission="'core:user:read'">读取</el-button>
+ * ```
+ *
+ * ## 注意事项
+ *
+ * - 该指令会直接移除 DOM 元素，而不是使用 v-if 隐藏
+ *
+ * @module directives/permission
+ * @author sai
+ */
+
+import { useUserStore } from '@/store/modules/user'
+import { App, Directive, DirectiveBinding } from 'vue'
+
+interface PermissionBinding extends DirectiveBinding {
+  value: string
+}
+
+function checkPermission(el: HTMLElement, binding: PermissionBinding): void {
+  const userStore = useUserStore()
+  const userButtons = userStore.getUserInfo.buttons
+
+  if (userButtons?.includes('*')) {
+    return
+  }
+
+  // 如果按钮为空或未定义，移除元素
+  if (!userButtons?.length) {
+    removeElement(el)
+    return
+  }
+
+  // 检查是否有对应的权限标识
+  const hasPermission = userButtons.some((item) => item === binding.value)
+
+  // 如果没有权限，移除元素
+  if (!hasPermission) {
+    removeElement(el)
+  }
+}
+
+function removeElement(el: HTMLElement): void {
+  if (el.parentNode) {
+    el.parentNode.removeChild(el)
+  }
+}
+
+const permissionDirective: Directive = {
+  mounted: checkPermission,
+  updated: checkPermission
+}
+
+export function setupPermissionDirective(app: App): void {
+  app.directive('permission', permissionDirective)
+}

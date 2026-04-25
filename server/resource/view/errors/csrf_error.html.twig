@@ -1,0 +1,70 @@
+{# templates/errors/csrf_error.html.twig #}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Expired - Please Refresh</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            text-align: center; 
+            padding: 50px; 
+            background-color: #f8fafc;
+            color: #334155;
+        }
+        .error-card { 
+            max-width: 500px; 
+            margin: 50px auto; 
+            background: white; 
+            padding: 2.5rem; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+        h1 { 
+            color: #ef4444; 
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .subtitle {
+            font-size: 1.25rem;
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+        p { 
+            font-size: 1.1rem; 
+            margin-bottom: 2.5rem; 
+            line-height: 1.6;
+        }
+        .refresh-button { 
+            display: inline-block; 
+            padding: 0.85rem 1.75rem; 
+            background-color: #3b82f6; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+        .refresh-button:hover { 
+            background-color: #2563eb; 
+        }
+    </style>
+</head>
+<body>
+    <div class="error-card">
+        <h1>Session Expired</h1>
+        <div class="subtitle">CSRF Token Validation Failed</div>
+        <p>
+            {{ message }} This usually happens if the page has been open for too long.
+        </p>
+        <p>
+            Please refresh the page to get a new token and try your action again.
+        </p>
+        <a href="{{ app.request.headers.get('referer') ?: '/' }}" class="refresh-button">
+            Refresh Page
+        </a>
+    </div>
+</body>
+</html>
