@@ -25,7 +25,7 @@
 
 **blue2004 (xuey863toy)**
 📧 Email: xuey863toy@gmail.com
-🌐 GitHub: https://github.com/xuey490/novaphp
+🌐 GitHub: https://github.com/xuey490
 
 <p align="center">
   ⭐ If this project helps you, please give it a Star! ⭐
