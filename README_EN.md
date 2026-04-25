@@ -1,9 +1,9 @@
-# FSSADMIN Full-Stack Admin Management System
+## FSSADMIN Full-Stack Admin Management System
 
 
-<p align="center">
-  <strong>FssAdmin is an open-source enterprise-level mid-to-back-end management platform template built on the latest frontend technology stack including Vue3, Vite, TypeScript, Pinia, Pinia persistence plugin, Unocss, and ElementPlus. Compared to other popular admin templates, it is more concise, faster, and easier to understand, making it very beginner-friendly. This project has a low learning curve with comprehensive code comments and extensive examples, making it ideal for enterprise projects, small to medium-sized projects, personal projects, and graduation designs. Users, roles, menus, dictionary management, and common platform pages will be developed sequentially for direct backend API integration, enabling rapid development.</strong>
-</p>
+
+<strong>FssAdmin is an open-source enterprise-level mid-to-back-end management platform template built on the latest frontend technology stack including Vue3, Vite, TypeScript, Pinia, Pinia persistence plugin, Unocss, and ElementPlus. Compared to other popular admin templates, it is more concise, faster, and easier to understand, making it very beginner-friendly. This project has a low learning curve with comprehensive code comments and extensive examples, making it ideal for enterprise projects, small to medium-sized projects, personal projects, and graduation designs. Users, roles, menus, dictionary management, and common platform pages will be developed sequentially for direct backend API integration, enabling rapid development.</strong>
+
 
 <p align="center">
   <a href="#features">Features</a> •
@@ -15,6 +15,11 @@
 </p>
 
 ---
+
+
+## DEMO：https://v3.phpframe.org/  User：admin  Password： 123456
+
+
 
 ## 📖 Project Overview
 
