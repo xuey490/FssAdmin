@@ -18,6 +18,22 @@
 
 ## 演示地址：https://v3.phpframe.org/  账号：admin  密码： 123456
 
+
+---
+
+## 👨‍💻 Author
+
+**blue2004 (xuey863toy)**  
+📧 Email: xuey863toy@gmail.com  
+🌐 GitHub: https://github.com/xuey490/novaphp
+
+<p align="center">
+  ⭐ 如果这个项目对您有帮助，请给一个 Star！⭐
+</p>
+
+---
+
+
 ## 📖 项目简介
 
 **FSSADMIN** 是一个基于FSSPHP 的现代化全栈框架，采用 **Workerman** 常驻内存引擎驱动，支持 **多租户 SaaS 架构**。项目包含：
@@ -751,16 +767,5 @@ NovaPHP0.0.9/
 
 ## 📄 License
 
-本项目基于 **MIT** 协议开源 - 详见 [LICENSE](../LICENSE) 文件
+本项目基于 **MIT** 协议开源 - 详见 [LICENSE](./LICENSE) 文件
 
----
-
-## 👨‍💻 Author
-
-**blue2004 (xuey863toy)**  
-📧 Email: xuey863toy@gmail.com  
-🌐 GitHub: https://github.com/xuey490/novaphp
-
-<p align="center">
-  ⭐ 如果这个项目对您有帮助，请给一个 Star！⭐
-</p>

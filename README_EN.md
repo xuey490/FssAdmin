@@ -19,7 +19,19 @@
 
 ## DEMO：https://v3.phpframe.org/  User：admin  Password： 123456
 
+---
 
+## 👨‍💻 Author
+
+**blue2004 (xuey863toy)**
+📧 Email: xuey863toy@gmail.com
+🌐 GitHub: https://github.com/xuey490/novaphp
+
+<p align="center">
+  ⭐ If this project helps you, please give it a Star! ⭐
+</p>
+
+---
 
 ## 📖 Project Overview
 
@@ -751,16 +763,6 @@ NovaPHP0.0.9/
 
 ## 📄 License
 
-This project is open-sourced under the **MIT** License - See [LICENSE](../LICENSE) file for details
+This project is open-sourced under the **MIT** License - See [LICENSE](./LICENSE) file for details
 
----
 
-## 👨‍💻 Author
-
-**blue2004 (xuey863toy)**
-📧 Email: xuey863toy@gmail.com
-🌐 GitHub: https://github.com/xuey490/novaphp
-
-<p align="center">
-  ⭐ If this project helps you, please give it a Star! ⭐
-</p>
