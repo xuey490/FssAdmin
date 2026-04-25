@@ -171,8 +171,8 @@
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/xuey490/novaphp.git
-cd novaphp
+git clone https://github.com/xuey490/FssAdmin.git
+cd server
 
 # 2. 安装 PHP 依赖
 composer install

@@ -170,8 +170,8 @@
 
 ```bash
 # 1. Clone the project
-git clone https://github.com/xuey490/novaphp.git
-cd novaphp
+git clone https://github.com/xuey490/FssAdmin.git
+cd server
 
 # 2. Install PHP dependencies
 composer install
