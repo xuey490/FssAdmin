@@ -293,6 +293,22 @@ server {
 }
 ```
 
+## System thumb preview
+![](https://admin.phpframe.org/preview/login.png)
+
+![](https://admin.phpframe.org/preview/user.png)
+
+![](https://admin.phpframe.org/preview/dept.png)
+
+![](https://admin.phpframe.org/preview/homepage.png)
+
+![](https://admin.phpframe.org/preview/ecommerce.png)
+
+![](https://admin.phpframe.org/preview/redis.png)
+
+![](https://admin.phpframe.org/preview/server.png)
+
+
 ## 📦 Module Introduction
 
 ### Core Backend Modules (`app/`)
