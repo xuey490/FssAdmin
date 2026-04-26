@@ -296,6 +296,22 @@ server {
 }
 ```
 
+## 演示图片
+![](https://admin.phpframe.org/preview/login.png)
+
+![](https://admin.phpframe.org/preview/user.png)
+
+![](https://admin.phpframe.org/preview/dept.png)
+
+![](https://admin.phpframe.org/preview/homepage.png)
+
+![](https://admin.phpframe.org/preview/ecommerce.png)
+
+![](https://admin.phpframe.org/preview/redis.png)
+
+![](https://admin.phpframe.org/preview/server.png)
+
+
 ## 📦 模块介绍
 
 ### 后端核心模块 (`app/`)
