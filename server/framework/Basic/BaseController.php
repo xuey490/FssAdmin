@@ -33,7 +33,7 @@ abstract class BaseController
     use CrudFilterTrait;
     use CrudFormatterTrait;
     use CrudQueryTrait;
-    use CrudActionTrait;
+
     // 引入注入能力
     use Injectable;
 
