@@ -34,6 +34,7 @@ class AuthMiddleware
         // 白名单之外的所有请求都必须验证 token
 
         $accessToken = $this->extractAccessToken($request);
+		$db = app('db');
         if (! $accessToken) {
             $this->debugLog('[AuthMiddleware] 401 - 无access_token', [
                 'path' => $request->getPathInfo(),
@@ -277,10 +278,12 @@ class AuthMiddleware
     protected function extractAccessToken(Request $request): ?string
     {
         $header = $request->headers->get('Authorization');
-        if (is_string($header) && str_starts_with($header, 'Bearer ')) {
-            return substr($header, 7);
-        }
-
+		if($header !== '' || !empty($header)){
+			if (is_string($header) && str_starts_with($header, 'Bearer ')) {
+				return substr($header, 7);
+			}
+		}
+		
         return $request->cookies->get('access_token');
     }
 
@@ -296,6 +299,9 @@ class AuthMiddleware
             '/api/core/captcha',
             '/api/core/refresh',
             '/api/core/tenants-by-username',
+            #'/api/core/system/statistics',
+            #'/api/core/system/loginChart',
+            #'/api/core/system/loginBarChart',
         ];
 
         if (in_array($path, $exactWhitelist, true)) {
