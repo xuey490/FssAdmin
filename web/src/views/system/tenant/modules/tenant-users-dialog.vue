@@ -197,11 +197,8 @@
         limit: boundPagination.limit,
         ...boundSearch
       })
-      boundRows.value = res.data || []
+      boundRows.value = res.list || []
       boundPagination.total = Number(res.total || 0)
-      
-      // 调试信息：查看数据
-      console.log('租户用户数据:', boundRows.value)
     } finally {
       boundLoading.value = false
     }
@@ -216,7 +213,7 @@
         limit: availablePagination.limit,
         ...availableSearch
       })
-      availableRows.value = res.data || []
+      availableRows.value = res.list || []
       availablePagination.total = Number(res.total || 0)
     } finally {
       availableLoading.value = false
