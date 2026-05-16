@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+
+
+
+{% block content %}
+
+
+{# blog/list.html.twig #}
+{% embed 'components/card.html.twig' with {
+    'title': '公告',
+    'createdAt': 'now'
+} %}
+    {% block header %}
+        <h3 style="color:red;">紧急通知</h3>
+    {% endblock %}
+    {% block body %}
+        <p>系统将于今晚 2:00 维护。</p>
+    {% endblock %}
+{% endembed %}
+
+    <h1>{{ page_title }}</h1>
+
+    {% if current_user %}
+        <p>欢迎回来，{{ current_user.name }}！</p>
+    {% else %}
+        <p><a href="{{ url('/login') }}">登录</a> 发表评论</p>
+    {% endif %}
+
+    <ul>
+        {% for post in posts %}
+            <li>
+                <h3><a href="{{ url('/post/' ~ post.id) }}">{{ post.title }}</a></h3>
+                <p>{{ post.excerpt|striptags }}</p>
+                <small>发布于 {{ post.createdAt|date('Y-m-d') }}</small>
+            </li>
+        {% else %}
+            <li>暂无文章</li>
+        {% endfor %}
+    </ul>
+
+
+    {# 动态加载侧边栏，传递数据 #}
+    {{ include('blog/_sidebar.html.twig', {
+        'popularPosts': popularPosts|default([])
+    }) }}
+
+{{ mdContent | markdown_to_html }}
+
+
+{% endblock %}
+

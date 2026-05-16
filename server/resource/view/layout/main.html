@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{$page_title}</title>
+    <meta name="keywords" content="{$page_keywords}">
+    <meta name="description" content="{$page_description}">
+    {$__SECTION_header__|raw}   <!-- ✅ 小写 header -->
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            {$__SECTION_sidebar__|raw}
+        </aside>
+
+        <main class="content">
+			{$__SECTION_show__|raw}
+		
+            {$__CONTENT__|raw} <!-- ✅ 渲染的是主内容 render -->
+			
+        </main>
+
+        <footer>
+            {$__SECTION_footer__|raw}  <!-- ✅ 小写 footer -->
+            &copy; 2024
+        </footer>
+    </div>
+
+    {$__SECTION_scripts__|raw}  <!-- ✅ 小写 scripts -->
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!-- templates/user/show.html -->
+<div class="profile-card">
+    <h2>用户资料</h2>
+    
+    <dl>
+        <dt>用户名：</dt>
+        <dd><strong>{$user.name}</strong></dd>
+
+        <dt>年龄：</dt>
+        <dd>{$user.age} 岁</dd>
+
+        <dt>注册时间：</dt>
+        <dd>{:date('Y年m月d日 H:i', strtotime('2023-01-15'))}</dd>
+
+        <dt>状态：</dt>
+        <dd><span class="badge success">在线</span></dd>
+    </dl>
+
+    <div class="profile-actions">
+        <a href="/user/edit" class="btn primary">编辑资料</a>
+        <a href="/messages" class="btn secondary">发送消息</a>
+    </div>
+</div>
+

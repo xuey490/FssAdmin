@@ -1,0 +1,9 @@
+{# 可复用的侧边栏 #}
+<aside class="sidebar">
+    <h3>热门文章</h3>
+    <ul>
+        {% for post in popularPosts %}
+            <li><a href="{{ url('/post/' ~ post.id) }}">{{ post.title }}</a></li>
+        {% endfor %}
+    </ul>
+</aside>

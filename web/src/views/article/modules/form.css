@@ -1,0 +1,85 @@
+/* 文章表单对话框样式 */
+.article-form-dialog.el-dialog,
+.article-form-dialog .el-dialog {
+  width: min(840px, calc(100vw - 32px)) !important;
+  max-width: calc(100vw - 32px);
+  margin: 4vh auto !important;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.article-form-dialog__header {
+  padding: 18px 24px 12px;
+  margin-right: 0;
+  border-bottom: 1px solid #eef0f3;
+}
+
+.article-form-dialog__body {
+  max-height: calc(80vh - 190px);
+  overflow-y: auto;
+  padding: 18px 24px 8px;
+  box-sizing: border-box;
+}
+
+.article-form-dialog__footer {
+  padding: 14px 24px 18px;
+  border-top: 1px solid #eef0f3;
+  background: #fafbfc;
+}
+
+.article-form-dialog__content {
+  min-height: 0;
+}
+
+.article-form-dialog__body .el-form-item {
+  margin-bottom: 18px;
+}
+
+.article-form-dialog__body .el-form-item__label {
+  font-weight: 500;
+  color: #303133;
+}
+
+.article-form-dialog__body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.article-form-dialog__body::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.article-form-dialog__body::-webkit-scrollbar-thumb {
+  background: #c9ced6;
+  border-radius: 4px;
+}
+
+.article-form-dialog__body::-webkit-scrollbar-thumb:hover {
+  background: #aeb6c2;
+}
+
+@media screen and (max-width: 768px) {
+  .article-form-dialog.el-dialog,
+  .article-form-dialog .el-dialog {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px);
+    margin: 2vh auto !important;
+  }
+
+  .article-form-dialog__header,
+  .article-form-dialog__body,
+  .article-form-dialog__footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .article-form-dialog__body {
+    max-height: calc(100vh - 150px);
+  }
+}
+
+@media screen and (max-height: 820px) {
+  .article-form-dialog__body {
+    max-height: calc(100vh - 145px);
+  }
+}

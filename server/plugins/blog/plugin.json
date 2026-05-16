@@ -1,0 +1,26 @@
+{
+    "name": "blog",
+    "title": "博客管理",
+    "version": "1.0.0",
+    "description": "博客文章管理插件，支持文章发布、分类、标签等功能",
+    "author": "Fssphp Team",
+    "namespace": "Plugins\\Blog",
+    "requires": {
+        "php": "^8.3",
+        "Fssphp": "^0.8.0"
+    },
+    "dependencies": {},
+    "autoload": {
+        "psr-4": {
+            "Plugins\\Blog\\": ""
+        }
+    },
+    "hooks": {
+        "install": "Plugins\\Blog\\Hooks\\InstallHook",
+        "uninstall": "Plugins\\Blog\\Hooks\\UninstallHook"
+    },
+    "routes": {
+        "prefix": "/api/blog",
+        "middleware": ["App\\Middlewares\\AuthMiddleware"]
+    }
+}

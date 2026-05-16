@@ -1,0 +1,107 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Fssphp CLI 入口文件
+ *
+ * @package Fssphp
+ * @author  Fssphp Team
+ */
+
+// ✅ 修复：定义项目根目录常量（必须添加这行）
+define('BASE_PATH', __DIR__);
+define('FSSPHP_VERSION', '0.8.0');
+
+require __DIR__ . '/vendor/autoload.php';
+
+use Symfony\Component\Console\Application;
+use Framework\Container\Container;
+use Framework\Core\App;
+// 原有命令
+use Framework\Console\Commands\MakeControllerCommand;
+use Framework\Console\Commands\MakeModelCommand;
+use Framework\Console\Commands\MakeMiddlewareCommand;
+use Framework\Console\Commands\MakeEventCommand;
+use Framework\Console\Commands\MakeListenerCommand;
+// 插件命令
+use Framework\Console\Commands\PluginListCommand;
+use Framework\Console\Commands\PluginInstallCommand;
+use Framework\Console\Commands\PluginUninstallCommand;
+use Framework\Console\Commands\PluginEnableCommand;
+use Framework\Console\Commands\PluginDisableCommand;
+use Framework\Console\Commands\MakePluginCommand;
+use Framework\Console\Commands\PluginCacheCommand;
+use Framework\Console\Commands\PluginMarketCommand;
+
+// 路由命令
+use Framework\Console\Commands\RouteListCommand;
+
+// 初始化容器，确保 CLI 命令中可使用 app() / App::make()
+Container::init();
+App::setContainer(Container::getInstance());
+
+
+$application = new Application('Novaphp Framework', '0.8.1');
+
+// ============ 原有命令 ============
+$application->add(new MakeControllerCommand());
+$application->add(new MakeModelCommand());
+$application->add(new MakeMiddlewareCommand());
+$application->add(new MakeEventCommand());
+$application->add(new MakeListenerCommand());
+
+// ============ 插件命令 ============
+$application->add(new PluginListCommand());
+$application->add(new PluginInstallCommand());
+$application->add(new PluginUninstallCommand());
+$application->add(new PluginEnableCommand());
+$application->add(new PluginDisableCommand());
+$application->add(new MakePluginCommand());
+$application->add(new PluginCacheCommand());
+$application->add(new PluginMarketCommand());
+
+// ============ 路由命令 ============
+$application->add(new RouteListCommand());
+
+$application->run();
+
+# ============ 可用命令列表 ============
+#
+# 生成控制器：
+#   php novaphp make:controller User
+#
+# 生成模型：
+#   php novaphp make:model User
+#
+# 生成中间件：
+#   php novaphp make:middleware Auth
+#
+# 生成事件：
+#   php novaphp make:event UserRegistered
+#
+# 生成监听器：
+#   php novaphp make:listener UserNotification
+#
+# 创建插件骨架：
+#   php novaphp make:plugin blog
+#
+# 插件管理：
+#   php novaphp plugin:list
+#   php novaphp plugin:install blog
+#   php novaphp plugin:uninstall blog
+#   php novaphp plugin:enable blog
+#   php novaphp plugin:disable blog
+#   php novaphp plugin:cache:clear
+#
+# 插件市场：
+#   php novaphp plugin:market search blog
+#   php novaphp plugin:market detail blog
+#   php novaphp plugin:market install blog
+#   php novaphp plugin:market markets
+#
+# 路由查看：
+#   php novaphp route:list
+#   php novaphp route:list --method=GET
+#   php novaphp route:list --path=/api

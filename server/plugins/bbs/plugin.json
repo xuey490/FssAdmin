@@ -1,0 +1,21 @@
+{
+    "name": "bbs",
+    "title": "Bbs Plugin",
+    "version": "1.0.0",
+    "description": "Bbs plugin for Fssphp",
+    "author": "Your Name",
+    "namespace": "Plugins\\Bbs",
+    "requires": {
+        "php": "^8.3",
+        "Fssphp": "^0.8.0"
+    },
+    "dependencies": [],
+    "autoload": {
+        "psr-4": {
+            "Plugins\\Bbs\\": ""
+        }
+    },
+    "routes": {
+        "prefix": "/bbs"
+    }
+}

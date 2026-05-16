@@ -1,0 +1,46 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>Welcome</title>
+</head>
+<body>
+    <h1>{$name}</h1>
+    <p>当前使用的版本是: {$version}</p>
+    
+    <h2>主要特性:</h2>
+    <ul>
+        {volist name="features" id="feature"}
+            <li>{$feature}</li>
+        {/volist}
+    </ul>
+	
+	<hr />
+	
+<h1>ThinkPHP 模板 + 自定义函数示例</h1>
+
+<!-- 1. 调用 hello 函数（传递 username 变量作为参数） -->
+<p>{$hello($username)}</p>
+
+<!-- 2. 调用 formatDate 函数（传递 currentTime 变量 + 自定义格式） -->
+<p>当前时间：{$formatDate($currentTime)}</p>
+<p>当前日期（仅日期）：{$formatDate($currentTime, 'Y-m-d')}</p>
+
+<!-- 3. 直接传递字面量参数 -->
+<p>固定欢迎语：{$hello('所有用户')}</p>
+<p>指定时间格式化：{$formatDate(1718000000, 'Y年m月d日')}</p>	
+
+
+	<hr />
+<p>
+在表单模板插入 $csrf_field() 自动生成token 隐藏表单</p>	
+
+
+
+{$web_csrf_field()}
+
+<p>直接生成js用的token</p>
+
+const token ='{$api_csrf_field()}';
+</body>
+</html>

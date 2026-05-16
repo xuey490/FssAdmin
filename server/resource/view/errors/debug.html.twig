@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>框架错误调试 | {{ exception_message }}</title>
+    <style>
+        /* 保持原有样式不变 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "Consolas", "Monaco", monospace; background: #f5f5f5; color: #333; line-height: 1.6; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .error-header { background: #dc3545; color: white; padding: 20px; border-radius: 4px 4px 0 0; }
+        .error-title { font-size: 24px; margin-bottom: 10px; }
+        .error-message { font-size: 15px; opacity: 0.9; }
+        .error-details { background: white; border: 1px solid #ddd; border-radius: 0 0 4px 4px; padding: 20px; margin-bottom: 20px; }
+        .section { margin-bottom: 30px; }
+        .section-title { font-size: 18px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid #6c757d; color: #343a40; }
+        .code-block { background: #2d2d2d; color: #ccc; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 14px; }
+        .file-path { color: #61afef; }
+        .line-number { color: #999; padding-right: 10px; }
+        .stack-trace { list-style: none; }
+        .stack-item { padding: 10px; border-bottom: 1px dashed #eee; }
+        .stack-item:last-child { border-bottom: none; }
+        .stack-item:hover { background: #f9f9f9; }
+        .request-info { display: grid; grid-template-columns: 1fr 3fr; gap: 10px; }
+        .request-info dt { font-weight: bold; color: #495057; }
+        .request-info dd { word-break: break-all; }
+        .environment { background: #f8f9fa; padding: 15px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 错误头部 -->
+        <div class="error-header">
+            <div class="error-title">
+                {{ exception_class }} (代码: {{ exception_code }})
+            </div>
+            <div class="error-message">
+                {{ exception_message }}
+            </div>
+        </div>
+
+        <!-- 错误详情 -->
+        <div class="error-details">
+            <!-- 错误位置 -->
+            <div class="section">
+                <h3 class="section-title">错误位置</h3>
+                <div class="code-block">
+                    <span class="file-path">{{ exception_file }}</span> 第 <strong>{{ exception_line }}</strong> 行
+                </div>
+            </div>
+
+            <!-- 堆栈跟踪 -->
+            <div class="section">
+                <h3 class="section-title">堆栈跟踪 ({{ stack_frames }} 帧)</h3>
+                <div class="code-block">
+                    <pre>{{ trace }}</pre>
+                </div>
+            </div>
+
+            <!-- 请求信息 -->
+            <div class="section">
+                <h3 class="section-title">请求信息</h3>
+                <dl class="request-info">
+                    <dt>请求方法:</dt>
+                    <dd>{{ request_method }}</dd>
+
+                    <dt>请求URL:</dt>
+                    <dd>{{ request_uri }}</dd>
+
+                    <dt>客户端IP:</dt>
+                    <dd>{{ client_ip }}</dd>
+
+                    <dt>请求时间:</dt>
+                    <dd>{{ request_time }}</dd>
+
+                    <dt>浏览器信息:</dt>
+                    <dd>{{ user_agent }}</dd>
+                </dl>
+            </div>
+
+            <!-- 环境信息 -->
+            <div class="section">
+                <h3 class="section-title">环境信息</h3>
+                <div class="environment">
+                    <dl class="request-info">
+                        <dt>框架版本:</dt>
+                        <dd>FSSPHP 1.0.0</dd>
+
+                        <dt>PHP版本:</dt>
+                        <dd>{{ php_version }}</dd>
+
+                        <dt>环境:</dt>
+                        <dd>{{ app_env }}</dd>
+
+                        <dt>调试模式:</dt>
+                        <dd>{{ app_debug ? '开启' : '关闭' }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

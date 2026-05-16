@@ -1,0 +1,16 @@
+{# components/card.html.twig #}
+<div class="card">
+    <header>
+        {% block header %}
+            <h3>{{ title }}</h3>
+        {% endblock %}
+    </header>
+    <div class="body">
+        {% block body %}{% endblock %}
+    </div>
+    <footer>
+        {% block footer %}
+            <small>发布时间: {{ createdAt|date('m-d') }}</small>
+        {% endblock %}
+    </footer>
+</div>

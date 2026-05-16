@@ -1,0 +1,17 @@
+{# ✅ 正确：所有内容都在 block 内 #}
+{% extends 'base.html.twig' %}
+
+{% block title %}首页 - {{ parent() }}{% endblock %}
+
+
+
+{% block content %}
+    <h1>Welcome, {{name}}!</h1>
+    <p>这是主页内容，现在完全在 block 内部。</p>
+    <img src="{{ asset('images/logo.png') }}" alt="Logo">
+{% endblock %}
+
+{# 可选：覆盖其他 block #}
+{% block sidebar %}
+    <aside>这里是侧边栏</aside>
+{% endblock %}
