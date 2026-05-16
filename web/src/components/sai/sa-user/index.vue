@@ -34,8 +34,8 @@
     <el-option
       v-for="user in selectedUsers"
       :key="user.id"
-      :value="user.id"
-      :label="user.username"
+      :value="props.valueType === 'id' ? user.id : user"
+      :label="user.realname"
       style="display: none"
     />
 
@@ -47,7 +47,6 @@
           :data="userList"
           @row-click="handleRowClick"
           @selection-change="handleSelectionChange"
-          :row-class-name="getRowClassName"
           size="small"
           v-loading="loading"
         >
@@ -91,9 +90,9 @@
   </el-select>
 </template>
 
-<script lang="ts" setup>
-  import { ref, computed, watch, onMounted } from 'vue'
-  import { getUserList } from '@/api/auth'
+<script setup lang="ts">
+  import { ref, computed, watch, onMounted, nextTick } from 'vue'
+  import { getUserSelectorList } from '@/api/auth'
   import { Search } from '@element-plus/icons-vue'
   import { ElMessage } from 'element-plus'
   import type { TableInstance } from 'element-plus'
@@ -132,7 +131,7 @@
   const props = withDefaults(defineProps<Props>(), {
     placeholder: '请选择用户',
     disabled: false,
-    clearable: true,
+    clearable: false,
     filterable: true,
     multiple: false,
     collapseTags: true,
@@ -149,38 +148,60 @@
   const loading = ref(false)
   const userList = ref<UserItem[]>([])
   const tableRef = ref<TableInstance>()
+  const dropdownVisible = ref(false)
+  const isSyncingTableSelection = ref(false)
 
   // 缓存所有已选中的用户信息
   const allSelectedUsers = ref<UserItem[]>([])
 
+  const normalizeSelectedIds = (val: any): number[] => {
+    if (val === null || val === undefined || val === '') return []
+
+    const rawList = props.multiple ? (Array.isArray(val) ? val : []) : [val]
+
+    return rawList
+      .map((item: any) => {
+        if (typeof item === 'number') return item
+        if (typeof item === 'string' && item !== '') {
+          const n = Number(item)
+          return Number.isNaN(n) ? null : n
+        }
+        if (item && typeof item === 'object' && 'id' in item) {
+          const n = Number(item.id)
+          return Number.isNaN(n) ? null : n
+        }
+        return null
+      })
+      .filter((id: number | null): id is number => id !== null)
+  }
+
+  const upsertUserCache = (user: UserItem) => {
+    const idx = allSelectedUsers.value.findIndex((u) => u.id === user.id)
+    if (idx === -1) {
+      allSelectedUsers.value.push(user)
+    } else {
+      allSelectedUsers.value[idx] = { ...allSelectedUsers.value[idx], ...user }
+    }
+  }
+
+  const findUserById = (id: number): UserItem => {
+    return (
+      allSelectedUsers.value.find((u) => u.id === id) ||
+      userList.value.find((u) => u.id === id) ||
+      ({ id, username: `用户${id}`, email: '', phone: '', status: '1' } as UserItem)
+    )
+  }
+
   // 计算已选中的用户列表（用于显示）
   const selectedUsers = computed(() => {
-    if (!selectedValue.value) return []
+    const selectedIds = normalizeSelectedIds(selectedValue.value)
+    if (!selectedIds.length) return []
 
-    const selectedIds = props.multiple
-      ? Array.isArray(selectedValue.value)
-        ? selectedValue.value
-        : []
-      : [selectedValue.value]
-
-    // 从缓存中查找用户信息
-    return selectedIds
-      .map((id) => {
-        const cached = allSelectedUsers.value.find((u) => u.id === id)
-        if (cached) return cached
-
-        // 从当前列表中查找
-        const fromList = userList.value.find((u) => u.id === id)
-        if (fromList) {
-          // 添加到缓存
-          allSelectedUsers.value.push(fromList)
-          return fromList
-        }
-
-        // 如果都找不到，返回一个临时对象
-        return { id, username: `用户${id}`, email: '', phone: '', status: '1' }
-      })
-      .filter(Boolean)
+    return selectedIds.map((id) => {
+      const user = findUserById(id)
+      upsertUserCache(user)
+      return user
+    })
   })
 
   // 分页参数
@@ -189,6 +210,29 @@
     limit: 5,
     total: 0
   })
+
+  const syncTableSelectedState = async () => {
+    if (!tableRef.value) return
+
+    const selectedIds = new Set(normalizeSelectedIds(selectedValue.value))
+
+    if (props.multiple) {
+      isSyncingTableSelection.value = true
+      await nextTick()
+      tableRef.value.clearSelection()
+      userList.value.forEach((row) => {
+        if (selectedIds.has(row.id)) {
+          tableRef.value?.toggleRowSelection(row, true)
+        }
+      })
+      isSyncingTableSelection.value = false
+      return
+    }
+
+    await nextTick()
+    const current = userList.value.find((row) => selectedIds.has(row.id)) || null
+    tableRef.value.setCurrentRow(current)
+  }
 
   // 获取用户列表
   const fetchUserList = async () => {
@@ -204,13 +248,12 @@
         params.keyword = searchKeyword.value
       }
 
-      const response = await getUserList(params)
-
-      if (response) {
-        console.log(response)
-        userList.value = (response as any).list || (response as any).data || []
-        pagination.value.total = (response as any).total || 0
-      }
+      const response = await getUserSelectorList(params)
+      const list = (response as any)?.list || []
+      userList.value = Array.isArray(list) ? list : []
+      userList.value.forEach((user) => upsertUserCache(user))
+      pagination.value.total = Number((response as any)?.total || 0)
+      await syncTableSelectedState()
     } catch (error) {
       console.error('获取用户列表失败:', error)
       ElMessage.error('获取用户列表失败')
@@ -231,8 +274,9 @@
 
   // 下拉框显示/隐藏
   const handleVisibleChange = (visible: boolean) => {
+    dropdownVisible.value = visible
     if (visible) {
-      // 打开时加载数据
+      // 打开时加载数据并回填选中状态
       fetchUserList()
     }
   }
@@ -240,6 +284,7 @@
   // 清空选择
   const handleClear = () => {
     selectedValue.value = props.multiple ? [] : null
+    allSelectedUsers.value = []
     if (tableRef.value) {
       if (props.multiple) {
         tableRef.value.clearSelection()
@@ -259,48 +304,35 @@
   // 单选 - 当前行改变
   const handleCurrentChange = (row: UserItem | undefined) => {
     if (!props.multiple && row) {
-      // 添加到缓存
-      const existingIndex = allSelectedUsers.value.findIndex((u) => u.id === row.id)
-      if (existingIndex === -1) {
-        allSelectedUsers.value.push(row)
-      } else {
-        allSelectedUsers.value[existingIndex] = row
-      }
-
+      upsertUserCache(row)
       selectedValue.value = props.valueType === 'id' ? row.id : row
+      nextTick(() => {
+        tableRef.value?.setCurrentRow(row)
+      })
     }
   }
 
   // 多选 - 选择改变
   const handleSelectionChange = (selection: UserItem[]) => {
-    if (props.multiple) {
-      // 更新缓存
-      selection.forEach((row) => {
-        const existingIndex = allSelectedUsers.value.findIndex((u) => u.id === row.id)
-        if (existingIndex === -1) {
-          allSelectedUsers.value.push(row)
-        } else {
-          allSelectedUsers.value[existingIndex] = row
-        }
-      })
+    if (!props.multiple || isSyncingTableSelection.value) return
 
-      selectedValue.value = selection.map((item) => (props.valueType === 'id' ? item.id : item))
-    }
+    // 仅替换当前页选择，不覆盖其它页已选
+    const nextIds = new Set(normalizeSelectedIds(selectedValue.value))
+    userList.value.forEach((row) => nextIds.delete(row.id))
+
+    selection.forEach((row) => {
+      nextIds.add(row.id)
+      upsertUserCache(row)
+    })
+
+    const ids = Array.from(nextIds)
+    selectedValue.value = props.valueType === 'id' ? ids : ids.map((id) => findUserById(id))
   }
 
   // 检查行是否可选
   const checkSelectable = () => {
+    // 可以根据需要添加更多条件
     return !props.disabled
-  }
-
-  // 选中行高亮
-  const getRowClassName = ({ row }: { row: UserItem }) => {
-    const ids = props.multiple
-      ? Array.isArray(selectedValue.value) ? selectedValue.value : []
-      : selectedValue.value ? [selectedValue.value] : []
-    return ids.some((v: any) => (props.valueType === 'id' ? v === row.id : v?.id === row.id))
-      ? 'is-selected-row'
-      : ''
   }
 
   // 分页改变
@@ -327,6 +359,13 @@
     () => modelValue.value,
     (newVal) => {
       selectedValue.value = newVal
+
+      const ids = normalizeSelectedIds(newVal)
+      ids.forEach((id) => upsertUserCache(findUserById(id)))
+
+      if (dropdownVisible.value) {
+        syncTableSelectedState()
+      }
     },
     { immediate: true, deep: true }
   )
@@ -408,10 +447,6 @@
     // 确保滚动容器正确显示
     .el-scrollbar__view {
       padding: 0 !important;
-    }
-
-    .el-table .is-selected-row td {
-      background-color: var(--el-color-primary-light-9) !important;
     }
   }
 </style>

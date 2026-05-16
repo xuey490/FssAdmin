@@ -15,7 +15,7 @@
             v-model="searchForm.category_id"
             :data="categoryList"
             node-key="id"
-            :props="{ label: 'category_name', value: 'id' }"
+            :props="{ label: 'category_name' }"
             :render-after-expand="false"
             check-strictly
             clearable
