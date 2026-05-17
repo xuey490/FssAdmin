@@ -1,6 +1,6 @@
 <template>
   <el-alert
-    title="实验性模块，暂未开源，亦无法保证使用"
+    title="实验性模块，不建议使用"
     type="error"
     :closable="false"
     show-icon

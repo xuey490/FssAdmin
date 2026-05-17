@@ -51,7 +51,7 @@
             :preview-teleported="true"
             :z-index="9999"
             fit="cover"
-            style="width: 50px; height: 50px; border-radius: 4px;"
+            style="width: 50px; height: 50px; border-radius: 4px"
           />
         </template>
 
@@ -162,7 +162,14 @@
         { prop: 'is_link', label: '是否外链', width: 100, align: 'center', useSlot: true },
         { prop: 'is_hot', label: '是否热门', width: 100, align: 'center', useSlot: true },
         { prop: 'sort', label: '排序', width: 80, align: 'center' },
-        { prop: 'status', label: '状态', saiType: 'dict', saiDict: 'data_status', width: 100, useSlot: true },
+        {
+          prop: 'status',
+          label: '状态',
+          saiType: 'dict',
+          saiDict: 'data_status',
+          width: 100,
+          useSlot: true
+        },
         { prop: 'create_time', label: '创建时间', width: 180, sortable: true },
         { prop: 'operation', label: '操作', width: 150, fixed: 'right', useSlot: true }
       ]
@@ -176,6 +183,7 @@
       ElMessage.success('状态更新成功')
     } catch (error) {
       ElMessage.error('状态更新失败')
+      console.log(error)
       row.status = row.status === 1 ? 0 : 1
     }
   }
@@ -194,10 +202,10 @@
 </script>
 
 <style scoped>
-.text-ellipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 200px;
-}
+  .text-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+  }
 </style>

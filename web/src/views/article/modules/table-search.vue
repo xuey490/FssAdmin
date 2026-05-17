@@ -1,6 +1,6 @@
 <template>
   <el-alert
-    title="多租户业务模块，暂未开源，亦无法保证使用，可以通过切换不同的租户进行体验"
+    title="多租户业务模块，可以通过切换不同的租户，用户，角色进行体验"
     type="error"
     :closable="false"
     show-icon
@@ -49,7 +49,7 @@
   }
   const props = defineProps<Props>()
   const emit = defineEmits<Emits>()
-  
+
   const isExpanded = ref<boolean>(false)
 
   const searchBarRef = ref()

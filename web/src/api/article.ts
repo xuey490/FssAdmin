@@ -1,13 +1,13 @@
 import request from '@/utils/http'
 
 /**
- * 文章管理 API
+ * 文章管理API
  */
 export default {
   /**
    * 获取文章列表
    * @param params 搜索参数
-   * @returns 文章列表
+   * @returns 数据列表
    */
   list(params: Record<string, any>) {
     return request.get<Api.Common.ApiPage>({
@@ -19,7 +19,7 @@ export default {
   /**
    * 获取文章详情
    * @param id 文章ID
-   * @returns 文章详情
+   * @returns 数据详情
    */
   detail(id: number | string) {
     return request.get<Api.Common.ApiData>({
@@ -29,7 +29,7 @@ export default {
 
   /**
    * 创建文章
-   * @param params 文章数据
+   * @param params 文章参数（title, category_id 必填）
    * @returns 执行结果
    */
   create(params: Record<string, any>) {
@@ -41,7 +41,7 @@ export default {
 
   /**
    * 更新文章
-   * @param params 文章数据
+   * @param params 文章参数（包含 id 字段）
    * @returns 执行结果
    */
   update(params: Record<string, any>) {
@@ -53,12 +53,14 @@ export default {
 
   /**
    * 删除文章
-   * @param id 文章ID
+   * @param params 数据ID（数字）或包含 ids 的对象
    * @returns 执行结果
    */
-  delete(id: number | string) {
+  delete(params: number | Record<string, any>) {
+    const data = typeof params === 'number' ? { ids: [params] } : params
     return request.del<any>({
-      url: '/api/article/delete/' + id
+      url: '/api/article/delete',
+      data
     })
   },
 

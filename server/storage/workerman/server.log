@@ -13860,3 +13860,12 @@
 [2026-04-25 10:58:52] [Monitor] Started new worker process
 [2026-04-25 10:58:52] [Worker] PID 25052 started
 [2026-04-25 12:03:03] [Worker] PID 4176 started
+[2026-05-17 01:27:06] [Worker] PID 320 started
+[2026-05-17 01:33:11] [Worker] PID 20356 started
+[2026-05-17 01:36:08] [Monitor] File changes detected, restarting worker...
+[2026-05-17 01:36:08] [Monitor] Killed worker process: 20356
+
+[2026-05-17 01:36:08] [Monitor] Worker Restart
+
+[2026-05-17 01:36:08] [Monitor] Started new worker process
+[2026-05-17 01:36:08] [Worker] PID 21244 started

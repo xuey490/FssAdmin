@@ -17,13 +17,16 @@
 .article-form-dialog__body {
   max-height: calc(80vh - 190px);
   overflow-y: auto;
+  /* stylelint-disable-next-line order/properties-order */
   padding: 18px 24px 8px;
+  /* stylelint-disable-next-line order/properties-order */
   box-sizing: border-box;
 }
 
 .article-form-dialog__footer {
   padding: 14px 24px 18px;
   border-top: 1px solid #eef0f3;
+  /* stylelint-disable-next-line order/properties-order */
   background: #fafbfc;
 }
 
@@ -58,7 +61,7 @@
   background: #aeb6c2;
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (width <= 768px) {
   .article-form-dialog.el-dialog,
   .article-form-dialog .el-dialog {
     width: calc(100vw - 20px) !important;
@@ -69,8 +72,9 @@
   .article-form-dialog__header,
   .article-form-dialog__body,
   .article-form-dialog__footer {
-    padding-left: 16px;
-    padding-right: 16px;
+  padding-left: 16px;
+  /* stylelint-disable-next-line order/properties-order */
+  padding-right: 16px;
   }
 
   .article-form-dialog__body {
@@ -78,7 +82,7 @@
   }
 }
 
-@media screen and (max-height: 820px) {
+@media screen and (height <= 820px) {
   .article-form-dialog__body {
     max-height: calc(100vh - 145px);
   }
