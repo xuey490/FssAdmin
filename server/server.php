@@ -1,21 +1,22 @@
-#!/usr/bin/env php
 <?php
 declare(strict_types=1);
 
 /**
- * server.php
- * Workerman wrapper for NovaFrame
- *
- * Usage:
- *  - CLI/Workerman mode: php server.php start|stop|restart|reload -d
- *  - Traditional FPM: don't run this script; your existing index.php / front controller remains unchanged.
- *
- * Notes:
- *  - This script initializes Framework per worker process on demand and uses Reflection
- *    to invoke framework internal flow for each request, avoiding modifying Framework.php / Kernel.php.
+ * ============================================================
+ * Workerman + Eloquent + SchemaWarmup 启动入口
+ * ============================================================
+ * 设计目标：
+ * 1. 正确初始化 Eloquent ConnectionResolver
+ * 2. 支持 BaseModel 动态别名
+ * 3. 启动期自动扫描并预热 Schema
+ * 4. 冻结 SchemaRegistry，避免运行期 DB 反射
+ * 5. Worker 进程安全复用
+ * 6. 新增：内存阈值检测&自动重启、文件变化检测&自动重启、定时内存输出
+ * ============================================================
  */
 
 use Workerman\Worker;
+use Illuminate\Database\Capsule\Manager as Capsule;
 use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http\Request as WorkermanRequest;
 use Workerman\Protocols\Http\Response as WorkermanResponse;
@@ -24,89 +25,41 @@ use Workerman\Protocols\Http;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Dotenv\Dotenv;
 use Framework\Core\Framework;
-#use Symfony\Component\HttpFoundation\Session\Session;
-#use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 use Framework\Schema\SchemaWarmup;
 use Framework\Schema\SchemaRegistry;
-
+use Illuminate\Support\Facades\DB;
 
 if (php_sapi_name() !== 'cli') {
-    // 如果不是 CLI（即通过 FPM 被包含），什么也不做 -- 以保证 FPM 传统模式兼容
     return;
 }
 
 define('WORKERMAN_ENV' , true);
-
-
-require_once __DIR__ . '/vendor/autoload.php';
-
-$envFile = __DIR__ . '/.env';
-if (file_exists($envFile)) {
-    (new Dotenv())->load($envFile);
-}
-
 define('BASE_PATH', __DIR__);
 define('APP_ROOT', __DIR__);
-define('LOG_DIR', APP_ROOT . '/storage/workerman');
-define('HEALTH_FILE', LOG_DIR . '/health.json');
 
-$appDebug = filter_var($_ENV['APP_DEBUG'] ?? $_SERVER['APP_DEBUG'] ?? getenv('APP_DEBUG') ?: false, FILTER_VALIDATE_BOOLEAN);
-if (!defined('APP_DEBUG')) {
-    define('APP_DEBUG', $appDebug);
-}
+require __DIR__ . '/vendor/autoload.php';
 
-error_reporting(E_ALL);
-ini_set('display_errors', APP_DEBUG ? '1' : '0');
-ini_set('log_errors', '1');
-ini_set('error_log', LOG_DIR . '/php-error.log');
-
-$watchDirs = [
+// -------------------------- 新增配置项 --------------------------
+// 内存阈值配置（单位：MB）
+define('MEMORY_LIMIT_MB', 512); // 超过此值自动重启
+// 监控的文件目录（可根据需要调整）
+define('MONITOR_DIRS', implode(PATH_SEPARATOR, [
     __DIR__ . '/app',
-    __DIR__ . '/framework',
     __DIR__ . '/config',
-    __DIR__ . '/routes'
-];
+    __DIR__ . '/Framework',
+]));
+// 内存输出间隔（单位：秒）
+define('MEMORY_LOG_INTERVAL', 20);
+// 文件检测间隔（单位：秒）
+define('FILE_MONITOR_INTERVAL', 2);
 
-if (!is_dir(LOG_DIR)) {
-    mkdir(LOG_DIR, 0777, true);
-}
-
-const MEMORY_LIMIT_MB = 256;   // 允许的最大内存（单位 MB）
-const MEMORY_CHECK_INTERVAL = 10; // 检查周期（秒）
-
-Worker::$logFile = LOG_DIR .'/workerman.log';
-
-
-
-#ini_set('session.save_handler', 'redis');
-#ini_set('session.save_path', 'tcp://127.0.0.1:6379');
-#session_name('PHPSESSID_');
-#session_start();
-
+// 存储文件最后修改时间的数组
+$fileLastModify = [];
+// 标记是否需要重启
+$needRestart = false;
 
 // ----------------------------------------------------------------------
-// 日志工具
-// ----------------------------------------------------------------------
-function log_info(string $msg): void {
-    $line = '[' . date('Y-m-d H:i:s') . '] ' . $msg . PHP_EOL;
-    file_put_contents(LOG_DIR . '/server.log', $line, FILE_APPEND);
-	//Worker::log($line);
-}
-
-function drain_unexpected_output(string $scene): void
-{
-    if (ob_get_level() <= 0) {
-        return;
-    }
-    $output = ob_get_clean();
-    if ($output !== false && trim($output) !== '') {
-        log_info("[UnexpectedOutput][$scene] " . trim($output));
-    }
-}
-
-
 // Symfony Request / Response 转换
 function convert_to_workerman_response(SymfonyResponse $res): WorkermanResponse {
     $headers = [];
@@ -269,108 +222,96 @@ function convert_to_symfony_request(WorkermanRequest $request): SymfonyRequest
     return $symfonyRequest;
 }
 
-
-// ----------------------------------------------------------------------
-// 健康信息与日志轮转
-// ----------------------------------------------------------------------
-function update_health(): void {
-    $health = [
-        'pid'     => getmypid(),
-        'memory'  => round(memory_get_usage(true) / 1024 / 1024, 2) . ' MB',
-        'time'    => date('Y-m-d H:i:s'),
-        'uptime'  => round(microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'], 2) . ' s',
-        'php'     => PHP_VERSION,
-        'os'      => PHP_OS,
-    ];
-    file_put_contents(HEALTH_FILE, json_encode($health, JSON_PRETTY_PRINT));
-}
-
-function rotate_logs(): void {
-    $file = LOG_DIR . '/server.log';
-    if (file_exists($file) && filesize($file) > 2 * 1024 * 1024) {
-        $new = LOG_DIR . '/server-' . date('Ymd_His') . '.log';
-        rename($file, $new);
-        log_info("[LogRotate] Rotated to $new");
-    }
-}
-
-// ----------------------------------------------------------------------
-// 检查文件是否变更（带过滤）
-// ----------------------------------------------------------------------
-function checkFilesChange(array $watchDirs, array &$lastMtimes): bool
+// -------------------------- 新增工具函数 --------------------------
+/**
+ * 获取当前进程内存占用（MB）
+ */
+function getMemoryUsage(): float
 {
-    $excludeSuffixes = ['.tmp', '.swp', '.bak', '.~', '.part', '.log', '.lock'];
-    $excludeDirs = ['\\.git\\', '\\.idea\\', '\\vendor\\', '\\runtime\\', '\\storage\\', '\\node_modules\\'];
-
-    foreach ($watchDirs as $dir) {
-        $dir = str_replace('/', '\\', $dir);
-        if (!is_dir($dir)) continue;
-
-        try {
-            $it = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator(
-                    $dir,
-                    FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS
-                )
-            );
-        } catch (Exception $e) {
-            continue; // 跳过无法读取的目录
-        }
-
-        foreach ($it as $file) {
-            if (!$file->isFile()) continue;
-
-            $path = str_replace('/', '\\', $file->getRealPath());
-            if (!$path) continue;
-
-            $filename = $file->getFilename();
-            $filepath = str_replace('/', '\\', $file->getPath());
-
-            // 跳过临时文件
-            foreach ($excludeSuffixes as $suffix) {
-                if (str_ends_with($filename, $suffix)) {
-                    continue 2;
-                }
-            }
-
-            // 跳过排除目录
-            foreach ($excludeDirs as $exDir) {
-                if (stripos($filepath, $exDir) !== false) {
-                    continue 2;
-                }
-            }
-
-            $mtime = $file->getMTime();
-            if (!isset($lastMtimes[$path])) {
-                $lastMtimes[$path] = $mtime;
-                continue;
-            }
-
-            if ($mtime !== $lastMtimes[$path]) {
-                $lastMtimes[$path] = $mtime;
-                echo "[HotReload] File changed: {$path}\r\n";
-                return true;
-            }
-        }
-    }
-
-    return false;
+    // memory_get_usage(true) 获取实际分配的内存（包含碎片），更贴近系统实际占用
+    return round(memory_get_usage(true) / 1024 / 1024, 2);
 }
 
-// ----------------------------------------------------------------------
-// 启动工作进程
-// ----------------------------------------------------------------------
-function startWorkerProcess() {
-    $script = $_SERVER['argv'][0] ?? __FILE__;
-    $cmd = '"' . PHP_BINARY . '" "' . $script . '" --worker';
-    $descriptorspec = [STDIN, STDOUT, STDOUT];
-    $resource = proc_open($cmd, $descriptorspec, $pipes, null, null, ['bypass_shell' => true]);
-    
-    if (!$resource) {
-        exit("Can not execute $cmd\r\n");
+/**
+ * 扫描指定目录的文件最后修改时间
+ */
+function scanFilesLastModify(array $dirs): array
+{
+    $fileTimes = [];
+    foreach ($dirs as $dir) {
+        if (!is_dir($dir)) {
+            continue;
+        }
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+        foreach ($iterator as $file) {
+            /** @var \SplFileInfo $file */
+            if ($file->isFile() && in_array($file->getExtension(), ['php', 'ini', 'yml', 'yaml'])) {
+                $fileTimes[$file->getRealPath()] = $file->getMTime();
+            }
+        }
     }
+    return $fileTimes;
+}
+
+/**
+ * 跨平台安全重启
+ */
+function restartWorkerman(Worker $worker): void
+{
+    global $needRestart;
+    if ($needRestart) {
+        return;
+    }
+    $needRestart = true;
+
+    // === 1. Windows 环境处理 ===
+    if (DIRECTORY_SEPARATOR === '\\') {
+        Worker::log( "[System] Windows下检测到变更/内存溢出，正在停止服务(等待bat重启)...\n");
+        // Windows下直接停止，依靠外部 .bat 文件的无限循环来重启
+        Worker::stopAll();
+        return;
+    }
+
+    // === 2. Linux 环境处理 ===
+    // Linux 下 Workerman 有 Master 进程守护，不需要外部脚本
     
-    return $resource;
+    // 如果是因为"内存溢出"，只需要杀掉当前这一个进程，让 Master 重新拉起一个新的即可
+    // 这样其他正常的进程不会受影响，服务更平滑
+    if (getMemoryUsage() > MEMORY_LIMIT_MB) {
+        Worker::log( "[System] 内存溢出，重置当前 Worker 进程...\n");
+        Worker::stopAll(); // 停止当前进程，Master会自动重启它
+        return;
+    }
+
+    // 如果是因为"文件变更"，通常需要重载所有进程以确保代码一致性
+    echo "[System] 文件变更，平滑重载所有 Worker 进程...\n";
+    if (function_exists('posix_kill')) {
+        // 发送 SIGUSR1 信号给主进程，Workerman 会平滑重启所有 Worker
+        posix_kill(posix_getppid(), SIGUSR1);
+    } else {
+        Worker::stopAll();
+    }
+}
+
+/**
+ * 检查数据库连接是否正常
+ * @param string|null $connection 连接名（null 表示默认连接）
+ * @return bool
+ */
+function isDatabaseConnected(?string $connection = null): bool
+{
+    try {
+        $db = $connection ? DB::connection($connection) : DB::connection();
+        $db->getPdo();
+        return true;
+    } catch (\Exception $e) {
+        // 可选：记录错误日志
+        #\Illuminate\Support\Facades\Log::error('数据库连接失败：' . $e->getMessage());
+        return false;
+    }
 }
 
 /**
@@ -438,250 +379,194 @@ function get_mime_type(string $filePath): string
     return $mimeTypes[$extension] ?? 'application/octet-stream';
 }
 
-// ----------------------------------------------------------------------
-// 主监控循环
-// ----------------------------------------------------------------------
-function startMonitorLoop($watchDirs): void {
-    echo "[Monitor] Starting server with hot reload...\n";
-    echo "Watching directories:\n";
-    foreach ($watchDirs as $dir) {
-        echo "  - {$dir}\n";
-    }
-    echo "Access: http://localhost:8000\n";
-    echo "Health: http://localhost:8000/_health\n";
-    echo "Press Ctrl+C to stop\n\n";
+/* ------------------------------------------------------------
+ | 启动 Workerman Worker
+ |------------------------------------------------------------
+ */
+$httpWorker = new Worker('http://0.0.0.0:8000');
+$httpWorker->count = 4;
+$framework = null;
+
+/**
+ * Worker 启动回调
+ */
+$httpWorker->onWorkerStart = function (Worker $worker) use (&$framework) {
+    global $fileLastModify;
     
-    $lastMtimes = [];
-    $resource = startWorkerProcess();
+    $framework = Framework::getInstance();
 
-    // 初始化文件时间戳
-    checkFilesChange($watchDirs, $lastMtimes);
-    
-    while (true) {
-        sleep(1);
-        
-        // 检查文件变化
-        if (checkFilesChange($watchDirs, $lastMtimes)) {
-            echo "[Monitor] File changes detected, restarting worker...\n";
-            log_info("[Monitor] File changes detected, restarting worker...");
-            
-            // 杀死旧进程
-            $status = proc_get_status($resource);
-            $pid = $status['pid'];
-            
-            if ($pid && $status['running']) {
-                if (stripos(PHP_OS, 'WIN') !== false) {
-                    shell_exec("taskkill /F /T /PID $pid >nul 2>&1");
-                } else {
-                    posix_kill($pid, SIGKILL);
-                }
-				log_info("[Monitor] Killed worker process: $pid\n");
-                echo "[Monitor] Killed worker process: $pid\n";
-            }
-            log_info("[Monitor] Worker Restart\n");
-            proc_close($resource);
-            
-            // 启动新进程
-            $resource = startWorkerProcess();
-            echo "[Monitor] Started new worker process\n";
-            log_info("[Monitor] Started new worker process");
-        }
-        
-        // 检查工作进程是否意外退出
-        $status = proc_get_status($resource);
-        if (!$status['running']) {
-            echo "[Monitor] Worker process died, restarting...\n";
-            log_info("[Monitor] Worker process died, restarting...");
-            proc_close($resource);
-            $resource = startWorkerProcess();
-            echo "[Monitor] Restarted worker process\n";
-        }
-        
-        update_health();
-    }
-}
-
-// ----------------------------------------------------------------------
-// 判断是否工作进程
-// ----------------------------------------------------------------------
-function isWorkerProcess(): bool {
-    global $argv;
-    return isset($argv[1]) && $argv[1] === '--worker';
-}
-
-// ----------------------------------------------------------------------
-// 主程序入口
-// ----------------------------------------------------------------------
-
-// 如果是工作进程模式，启动 Worker
-if (isWorkerProcess()) {
-    $worker = new Worker('http://0.0.0.0:8000');
-    $worker->name = 'NovaFrame-Worker';
-    $worker->count = 1;
-    $framework = null;
-
-    $worker->onWorkerStart = function(Worker $worker) use (&$framework) {
-		
-
-		
-        log_info("[Worker] PID " . getmypid() . " started");
-		Worker::log("[Worker] PID " . getmypid() . " started");
-        update_health();
-
-        $framework = Framework::getInstance();
-
-		if (defined('WORKERMAN_ENV')) {
-			// 设置扫描目录和命名空间
-			SchemaWarmup::setScanPath(base_path('app/Models'), 'App\Models');
-
-			// 可选：忽略某些模型
-			SchemaWarmup::ignore([
-				\App\Models\TempView::class,
-			]);
-
-			// 启动时自动扫描 warmup
-			SchemaWarmup::warmupAll();
-
-			// 冻结 schema，防止 runtime 注册新表
-			SchemaRegistry::freeze();
-
-			// 调试：打印已注册表
-			//dump(array_keys(SchemaRegistry::all()));
-		}
-			
-        // 定时任务：监控内存 + 日志轮转 + 健康记录
-	
-		Timer::add(MEMORY_CHECK_INTERVAL, function() use ($worker) {
-			#print_r($worker);
-			update_health();
-            rotate_logs();
-			
-			$pid = getmypid();
-			$memory = memory_get_usage(true) / 1024 / 1024; // MB
-			$time = date('Y-m-d H:i:s');
-			#Worker::log(base_path());
-			Worker::log("[{$time}] [Memory] Worker #{$worker->id} PID {$pid} uses {$memory} MB\n" );
-
-			// 如果超出阈值，则安全重启当前 worker
-			if ($memory > MEMORY_LIMIT_MB) {
-				Worker::log( "[{$time}] [Warning] Worker #{$worker->id} PID {$pid} memory exceeded limit ({$memory} MB > " . MEMORY_LIMIT_MB . " MB), reloading...\n" );
-
-				// 使用 stopAll 仅关闭当前进程
-				$worker->stop();
-
-				// 给操作系统一点时间释放资源
-				usleep(500000); // 0.5 秒
-				
-				exit(1); // 退出让监控进程重启
-
-				// 自动拉起新 worker（Workerman 会自动 fork 新进程）
-				posix_kill(posix_getppid(), SIGUSR1);
-			}
-		});
-
-    };
-
-    $worker->onMessage = function(TcpConnection $connection, WorkermanRequest $req) use (&$framework) {
-        if (ob_get_level() === 0) {
-            ob_start();
-        }
+    if(config('database.engine') == 'laravelORM' ){
         try {
-            // ==================== 静态文件处理 ====================
-            $uri = $req->uri();
-            $pathInfo = parse_url($uri, PHP_URL_PATH);
-            
-            // 检查是否是静态文件请求
-            $staticDirs = ['/uploads', '/assets', '/css', '/js', '/images', '/favicon.ico'];
-            $isStaticFile = false;
-            
-            foreach ($staticDirs as $dir) {
-                if (strpos($pathInfo, $dir) === 0) {
-                    $isStaticFile = true;
+            // 测试连接（执行一个无副作用的简单查询）
+            #DB::connection()->getPdo();
+            SchemaWarmup::setScanPath(
+                __DIR__ . '/app/Models',
+                'App\Models'
+            );
+
+            SchemaWarmup::warmupAll();
+            SchemaRegistry::freeze();
+        } catch (\Exception $e) {
+            /*return response()->json([
+                'status' => 'error',
+                'message' => '数据库连接失败：' . $e->getMessage()
+            ], 500);
+            */
+            Worker::log('数据库连接失败：' . $e->getMessage());
+        }
+    }
+
+    // -------------------------- 初始化监控任务 --------------------------
+    // 1. 初始化文件修改时间（仅在进程启动时执行一次）
+    $fileLastModify = scanFilesLastModify(explode(PATH_SEPARATOR, MONITOR_DIRS));
+    
+    // 2. 定时输出内存占用（每30秒）
+    Timer::add(MEMORY_LOG_INTERVAL, function () use ($worker) {
+        $memory = getMemoryUsage();
+        Worker::log( "[".date('Y-m-d H:i:s')."] 内存占用 -> 进程ID: {$worker->id}, 占用: {$memory}MB, 阈值: " . MEMORY_LIMIT_MB . "MB\n");
+    });
+    
+    // 3. 内存阈值检测（每1秒检测一次，高频检测但低开销）
+    Timer::add(1, function () use ($worker) {
+        $memory = getMemoryUsage();
+        if ($memory > MEMORY_LIMIT_MB) {
+            Worker::log( "[".date('Y-m-d H:i:s')."] 内存超限 -> 进程ID: {$worker->id}, 当前: {$memory}MB, 阈值: " . MEMORY_LIMIT_MB . "MB\n");
+            restartWorkerman($worker);
+        }
+    });
+    
+    // 4. 文件变化检测（每2秒检测一次）
+    Timer::add(FILE_MONITOR_INTERVAL, function () use ($worker) {
+        global $fileLastModify;
+        $newFileTimes = scanFilesLastModify(explode(PATH_SEPARATOR, MONITOR_DIRS));
+        
+        // 检测文件新增/删除/修改
+        $diff = false;
+        // 检查原有文件是否修改
+        foreach ($fileLastModify as $file => $time) {
+            if (!isset($newFileTimes[$file]) || $newFileTimes[$file] > $time) {
+                $diff = true;
+                Worker::log( "[".date('Y-m-d H:i:s')."] 文件变化 -> {$file}\n");
+                break;
+            }
+        }
+        // 检查新增文件
+        if (!$diff) {
+            foreach ($newFileTimes as $file => $time) {
+                if (!isset($fileLastModify[$file])) {
+                    $diff = true;
+                    Worker::log( "[".date('Y-m-d H:i:s')."] 文件新增 -> {$file}\n");
                     break;
                 }
             }
+        }
+        
+        if ($diff) {
+            $fileLastModify = $newFileTimes; // 更新文件时间
+            restartWorkerman($worker);
+        }
+    });
+};
+
+/**
+ * HTTP 请求处理
+ */
+$httpWorker->onMessage = function(TcpConnection $connection, WorkermanRequest $req) use (&$framework) {
+    global $needRestart;
+    if ($needRestart) {
+        // 重启过程中拒绝新请求
+        $connection->send(new WorkermanResponse(503, [], "Server is restarting..."));
+        return;
+    }
+
+    try {
+        // ==================== 静态文件处理 ====================
+        $uri = $req->uri();
+        $pathInfo = parse_url($uri, PHP_URL_PATH);
+        
+        // 检查是否是静态文件请求
+        // 支持 /uploads/xxx, /assets/xxx, /css/xxx, /js/xxx, /images/xxx 等路径
+        $staticDirs = ['/uploads', '/assets', '/css', '/js', '/images', '/favicon.ico'];
+        $isStaticFile = false;
+        
+        foreach ($staticDirs as $dir) {
+            if (strpos($pathInfo, $dir) === 0) {
+                $isStaticFile = true;
+                break;
+            }
+        }
+        
+        if ($isStaticFile) {
+            $filePath = __DIR__ . '/public' . $pathInfo;
             
-            if ($isStaticFile) {
-                $filePath = __DIR__ . '/public' . $pathInfo;
+            // 安全检查：防止路径遍历攻击
+            $realPath = realpath($filePath);
+            $publicDir = realpath(__DIR__ . '/public');
+            
+            if ($realPath && strpos($realPath, $publicDir) === 0 && is_file($realPath)) {
+                // 返回静态文件
+                $contentType = get_mime_type($realPath);
+                $fileContent = file_get_contents($realPath);
                 
-                // 安全检查：防止路径遍历攻击
-                $realPath = realpath($filePath);
-                $publicDir = realpath(__DIR__ . '/public');
+                // 添加缓存控制头
+                $headers = [
+                    'Content-Type' => $contentType,
+                    'Cache-Control' => 'public, max-age=86400', // 缓存1天
+                ];
                 
-                if ($realPath && strpos($realPath, $publicDir) === 0 && is_file($realPath)) {
-                    // 返回静态文件
-                    $contentType = get_mime_type($realPath);
-                    $fileContent = file_get_contents($realPath);
-                    
-                    // 添加缓存控制头
-                    $headers = [
-                        'Content-Type' => $contentType,
-                        'Cache-Control' => 'public, max-age=86400', // 缓存1天
-                    ];
-                    
-                    // 图片等静态文件添加更长的缓存时间
-                    if (preg_match('/\.(jpg|jpeg|png|gif|webp|svg|ico)$/i', $realPath)) {
-                        $headers['Cache-Control'] = 'public, max-age=2592000'; // 缓存30天
-                    }
-                    
-                    $connection->send(new WorkermanResponse(200, $headers, $fileContent));
-                    drain_unexpected_output('static_file_success');
-                    return;
+                // 图片等静态文件添加更长的缓存时间
+                if (preg_match('/\.(jpg|jpeg|png|gif|webp|svg|ico)$/i', $realPath)) {
+                    $headers['Cache-Control'] = 'public, max-age=2592000'; // 缓存30天
                 }
                 
-                // 文件不存在，返回 404
-                $connection->send(new WorkermanResponse(404, ['Content-Type' => 'text/plain'], 'File Not Found'));
-                drain_unexpected_output('static_file_404');
+                $connection->send(new WorkermanResponse(200, $headers, $fileContent));
                 return;
             }
-            // ==================== 静态文件处理结束 ====================
+            
+            // 文件不存在，返回 404
+            $connection->send(new WorkermanResponse(404, ['Content-Type' => 'text/plain'], 'File Not Found'));
+            return;
+        }
+        // ==================== 静态文件处理结束 ====================
 
-            if ($req->path() === '/_health') {
-                update_health();
-                $data = file_get_contents(HEALTH_FILE);
-                $response = new SymfonyResponse($data, 200, ['Content-Type' => 'application/json']);
-                $connection->send(convert_to_workerman_response($response));
-                drain_unexpected_output('health_check');
-                return;
-            }
+        // ========== 关键：使用修复后的转换函数 ==========
+        $symReq = convert_to_symfony_request($req);
+        $symRes = $framework->handleRequest($symReq);
+        
+        if ($symReq->hasSession()) {
+            $symReq->getSession()->save();
+        }
+        
+        app('cookie')->sendQueuedCookies($symRes);
+       
+        $connection->send(convert_to_workerman_response($symRes));
 
-            $symReq = convert_to_symfony_request($req);
-            $symRes = $framework->handleRequest($symReq);
-			
-			// ✅ 关键：在 send 之前关闭 session，触发写入 Redis
-			if ($symReq->hasSession()) {
-				$symReq->getSession()->save(); // 或 ->save() / ->close()
-			}
-			
-			// ✅ 如果在业务逻辑里 queueCookie() 了 Cookie，统一发送
-			app('cookie')->sendQueuedCookies($symRes);
-           
-			$connection->send(convert_to_workerman_response($symRes));
-            drain_unexpected_output('request_success');
+    } catch (Throwable $e) {
+        $error = "[Error] {$e->getMessage()} in {$e->getFile()}:{$e->getLine()}";
+        Worker::log($error); // 记录到错误日志
+        $connection->send(new WorkermanResponse(500, [], "Internal Error: {$e->getMessage()}"));
+    } finally {
+        if (isset($symReq) && $symReq->hasSession()) {
+        //    unset($symReq->getSession());
+        }
+        unset($symReq , $symRes);
+        gc_collect_cycles();
+    }
+};
 
-        } catch (Throwable $e) {
-            $error = "[Error] {$e->getMessage()} in {$e->getFile()}:{$e->getLine()}";
-            log_info($error);
-            drain_unexpected_output('request_exception');
-            $connection->send(new WorkermanResponse(500, [], "Internal Error: {$e->getMessage()}"));
-		} finally {
-			// 可选：清理
-			if (isset($symReq) && $symReq->hasSession()) {
-				//$symReq->getSession()->clear(); // 避免内存泄漏
-			}
-            if (ob_get_level() > 0) {
-                @ob_end_clean();
-            }
-			unset($symReq , $symRes);
-			gc_collect_cycles();
-		}
-    };
-
-
-    Worker::runAll();
-    exit(0);
+// -------------------------- 主进程重启处理 --------------------------
+// 监听主进程的 USR1 信号，触发重启
+if (function_exists('pcntl_signal')) {
+    pcntl_signal(SIGUSR1, function () {
+        echo "[".date('Y-m-d H:i:s')."] 主进程接收到重启信号，开始重启所有 Worker 进程\n";
+        Worker::stopAll();
+        // 重启所有 Worker（Workerman 内置的重启机制）
+        exec('php ' . __FILE__ . ' start -d > /dev/null 2>&1 &');
+    });
 }
 
-// 主进程：启动监控循环
-startMonitorLoop($watchDirs);
-
+/* ------------------------------------------------------------
+ | 运行 Workerman
+ |------------------------------------------------------------
+ */
+Worker::runAll();
