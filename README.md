@@ -5,14 +5,6 @@
   <strong>FssAdmin 是一款开源企业级别的中后台管理系统，基于 Vue3、Vite、TypeScript、Pinia、Pinia持久化插件、Unocss 和 ElementPlus等前端最新技术栈。相较于其他比较流行的后台管理模板，更加简洁、快捷和容易理解，对萌新小白十分友好。此项目学习成本非常低含有相关代码注释以及大量的案例，非常适合企业级项目、中小型项目、个人项目以及毕业设计。后续将用户、角色、菜单、字典管理和通用管理平台页面依次编写，做到直接对接后端接口即可，使之快速开发，适合企业级的OA,ERM,ERP,政务系统等开发。</strong>
 
 
-<p align="center">
-  <a href="#功能特性">功能特性</a> •
-  <a href="#技术栈">技术栈</a> •
-  <a href="#安装说明">安装说明</a> •
-  <a href="#模块介绍">模块介绍</a> •
-  <a href="#api接口文档">API接口</a> •
-  <a href="#项目结构">项目结构</a>
-</p>
 
 ---
 
@@ -198,13 +190,15 @@ cd server
 # 2. 安装 PHP 依赖
 composer install
 
-# 3. 编辑 .env 文件，配置数据库和 Redis 连接
+# 3. 编辑 .env 文件，配置数据库和 Redis 连接,最好.env 和config目录的配置文件内容一致
 vim .env
+
 ```
 
 
 ```
 # 4. 编辑 config 文件，配置数据库和 Redis 连接 关键配置:
+vim /config/database.php
 
 DB_CONNECTION=mysql
 
