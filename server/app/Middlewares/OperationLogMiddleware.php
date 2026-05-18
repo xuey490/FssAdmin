@@ -12,11 +12,18 @@ declare(strict_types=1);
 namespace App\Middlewares;
 
 use App\Models\SysOperationLog;
+use App\Services\IpLocationService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class OperationLogMiddleware
 {
+    /**
+     * IP地理位置服务
+     * @var IpLocationService
+     */
+    protected IpLocationService $ipLocationService;
+	
     /**
      * 白名单路径前缀（不记录操作日志）
      */
@@ -31,6 +38,14 @@ class OperationLogMiddleware
         '/api/system/database',
     ];
 
+    /**
+     * 构造函数
+     */
+    public function __construct()
+    {
+        $this->ipLocationService = new IpLocationService();
+    }
+	
     public function handle(Request $request, callable $next): Response
     {
         $startTime = microtime(true);
@@ -61,6 +76,7 @@ class OperationLogMiddleware
             $user      = $request->attributes->get('user', []);
             $userAgent = $request->headers->get('User-Agent', '');
             $ip        = $request->headers->get('CF-Connecting-IP') ?? $request->getClientIp();
+			$location  = $this->ipLocationService->getLocation($ip);
 
             // 获取请求数据（合并 POST body 和 JSON body）
             $params = $request->request->all();
@@ -94,7 +110,7 @@ class OperationLogMiddleware
                 'router'       => $request->getPathInfo(),
                 'service_name' => $routeName,
                 'ip'           => $ip,
-                'ip_location'  => '',
+                'ip_location'  => $location,
                 'request_data' => $requestData,
                 'created_by'   => $user['id'] ?? 0,
 				'duration'	   => $duration,

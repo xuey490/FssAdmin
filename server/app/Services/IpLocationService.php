@@ -29,7 +29,7 @@ class IpLocationService extends BaseService
      * 缓存时间(秒)
      * @var int
      */
-    protected int $cacheTtl = 86400; // 24小时
+    protected int $cacheTtl = 86400;
 
     /**
      * 根据IP获取地理位置
@@ -44,16 +44,12 @@ class IpLocationService extends BaseService
             return '本地';
         }
 
-        // 尝试从缓存获取
         $cached = $this->getFromCache($ip);
         if ($cached !== null) {
             return $cached;
         }
 
-        // 调用IP定位API
         $location = $this->fetchLocation($ip);
-
-        // 缓存结果
         $this->saveToCache($ip, $location);
 
         return $location;
@@ -82,53 +78,6 @@ class IpLocationService extends BaseService
     }
 
     /**
-     * 从缓存获取
-     *
-     * @param string $ip IP地址
-     * @return string|null
-     */
-    protected function getFromCache(string $ip): ?string
-    {
-        try {
-            $cached = app('cache')->get($this->cachePrefix . $ip);
-            if (!is_string($cached) || trim($cached) === '') {
-                return null;
-            }
-
-            // "未知" 视为失败结果，不命中缓存，允许后续重试外部API
-            if ($cached === '未知') {
-                return null;
-            }
-
-            return $cached;
-        } catch (\Throwable $e) {
-            // 缓存异常时降级为直连查询，不能影响主流程
-            return null;
-        }
-    }
-
-    /**
-     * 保存到缓存
-     *
-     * @param string $ip       IP地址
-     * @param string $location 地理位置
-     * @return void
-     */
-    protected function saveToCache(string $ip, string $location): void
-    {
-        // 失败结果不缓存，避免短暂网络异常导致长时间固定为"未知"
-        if ($location === '未知' || trim($location) === '') {
-            return;
-        }
-
-        try {
-            app('cache')->set($this->cachePrefix . $ip, $location, $this->cacheTtl);
-        } catch (\Throwable $e) {
-            // 缓存写入失败不影响主流程
-        }
-    }
-
-    /**
      * 调用IP定位API
      *
      * @param string $ip IP地址
@@ -137,37 +86,145 @@ class IpLocationService extends BaseService
     protected function fetchLocation(string $ip): string
     {
         try {
-            // 使用免费的IP定位API (示例：ip-api.com)
-            $url = "http://ip-api.com/json/{$ip}?lang=zh-CN";
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-            curl_setopt($ch, CURLOPT_USERAGENT, 'NovaPHP-IpLocationService/1.0');
-
-            $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-
-            if ($httpCode === 200 && $response) {
-                $data = json_decode($response, true);
-
-                if (isset($data['status']) && $data['status'] === 'success') {
-                    $country = $data['country'] ?? '';
-                    $region = $data['regionName'] ?? '';
-                    $city = $data['city'] ?? '';
-
-                    $location = trim($country . ' ' . $region . ' ' . $city);
-                    return $location ?: '未知';
-                }
+            $location = $this->requestIpApi($ip);
+            if ($location !== null) {
+                return $location;
             }
-        } catch (\Exception $e) {
-            // 忽略异常
+
+            // 备用接口，避免单一服务偶发失败导致长期显示“未知”
+            $location = $this->requestIpWhois($ip);
+            if ($location !== null) {
+                return $location;
+            }
+        } catch (\Throwable $e) {
+            app('log')->warning('IpLocationService fetchLocation exception', [
+                'ip' => $ip,
+                'error' => $e->getMessage(),
+            ]);
         }
 
         return '未知';
+    }
+
+    protected function getFromCache(string $ip): ?string
+    {
+        try {
+            $cached = app('cache')->get($this->cachePrefix . $ip);
+            if (!is_string($cached) || trim($cached) === '') {
+                return null;
+            }
+
+            // 失败结果不命中缓存，允许后续重试远程接口
+            if ($cached === '未知') {
+                return null;
+            }
+
+            return $cached;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    protected function saveToCache(string $ip, string $location): void
+    {
+        // 失败结果不缓存，避免短期异常导致长时间显示未知
+        if ($location === '未知' || trim($location) === '') {
+            return;
+        }
+
+        try {
+            app('cache')->set($this->cachePrefix . $ip, $location, $this->cacheTtl);
+        } catch (\Throwable $e) {
+            // 缓存异常不影响主流程
+        }
+    }
+
+    protected function requestIpApi(string $ip): ?string
+    {
+        $url = "http://ip-api.com/json/{$ip}?lang=zh-CN";
+        [$response, $httpCode, $curlErrNo, $curlErrMsg] = $this->httpGet($url);
+
+        if ($curlErrNo !== 0 || $httpCode !== 200 || $response === '') {
+            app('log')->warning('IpLocationService ip-api request failed', [
+                'ip' => $ip,
+                'http_code' => $httpCode,
+                'curl_errno' => $curlErrNo,
+                'curl_error' => $curlErrMsg,
+            ]);
+            return null;
+        }
+
+        $data = json_decode($response, true);
+        if (!is_array($data) || ($data['status'] ?? '') !== 'success') {
+            app('log')->warning('IpLocationService ip-api response invalid', [
+                'ip' => $ip,
+                'response' => $response,
+            ]);
+            return null;
+        }
+
+        return $this->formatLocation(
+            (string)($data['country'] ?? ''),
+            (string)($data['regionName'] ?? ''),
+            (string)($data['city'] ?? '')
+        );
+    }
+
+    protected function requestIpWhois(string $ip): ?string
+    {
+        $url = "https://ipwho.is/{$ip}?lang=zh";
+        [$response, $httpCode, $curlErrNo, $curlErrMsg] = $this->httpGet($url);
+
+        if ($curlErrNo !== 0 || $httpCode !== 200 || $response === '') {
+            app('log')->warning('IpLocationService ipwho.is request failed', [
+                'ip' => $ip,
+                'http_code' => $httpCode,
+                'curl_errno' => $curlErrNo,
+                'curl_error' => $curlErrMsg,
+            ]);
+            return null;
+        }
+
+        $data = json_decode($response, true);
+        if (!is_array($data) || ($data['success'] ?? false) !== true) {
+            app('log')->warning('IpLocationService ipwho.is response invalid', [
+                'ip' => $ip,
+                'response' => $response,
+            ]);
+            return null;
+        }
+
+        return $this->formatLocation(
+            (string)($data['country'] ?? ''),
+            (string)($data['region'] ?? ''),
+            (string)($data['city'] ?? '')
+        );
+    }
+
+    /**
+     * @return array{0:string,1:int,2:int,3:string}
+     */
+    protected function httpGet(string $url): array
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'NovaPHP-IpLocationService/1.0');
+
+        $response = curl_exec($ch);
+        $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $errno = curl_errno($ch);
+        $error = curl_error($ch);
+
+        return [is_string($response) ? $response : '', $httpCode, $errno, $error];
+    }
+
+    protected function formatLocation(string $country, string $region, string $city): string
+    {
+        $location = trim(implode(' ', array_filter([$country, $region, $city], fn($v) => trim($v) !== '')));
+        return $location !== '' ? $location : '未知';
     }
 
     /**
