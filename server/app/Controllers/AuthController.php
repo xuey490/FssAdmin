@@ -12,6 +12,7 @@ use App\Models\SysLoginLog;
 use App\Services\SysUserService;
 use App\Services\Casbin\CasbinService;
 use App\Services\LoginLogService;
+use App\Services\IpLocationService;
 use Framework\Basic\BaseController;
 use Framework\Basic\BaseJsonResponse;
 use Framework\Tenant\TenantContext;
@@ -30,6 +31,12 @@ class AuthController extends BaseController
     protected array $jwtConfig;
     protected CasbinService $casbinService;
     protected LoginLogService $loginLogService;
+    
+    /**
+     * IP地理位置服务
+     * @var IpLocationService
+     */
+    protected IpLocationService $ipLocationService;
 
     protected function initialize(): void
     {
@@ -37,11 +44,13 @@ class AuthController extends BaseController
         $this->jwtConfig       = config('jwt', []);
         $this->casbinService   = new CasbinService();
         $this->loginLogService = new LoginLogService();
+        $this->ipLocationService = new IpLocationService();
     }
 
     #[Route(path: '/api/core/login', methods: ['POST'], name: 'auth.login')]
     public function login(Request $request): BaseJsonResponse|JsonResponse
     {
+        $username = '';
         try{
             $jsonBody = [];
             $content  = $request->getContent();
@@ -61,14 +70,17 @@ class AuthController extends BaseController
             $tenantId = $all['tenant_id'] ?? null;
 
             if (empty($username) || empty($password)) {
+                $this->recordLoginLog($request, (string) $username, false, '用户名和密码不能为空');
                 return $this->fail('用户名和密码不能为空');
             }
 
             if (empty($tenantId)) {
+                $this->recordLoginLog($request, (string) $username, false, '租户ID不能为空');
                 return $this->fail('租户ID不能为空');
             }
 
             if (empty($code) || empty($uuid)) {
+                $this->recordLoginLog($request, (string) $username, false, '验证码不能为空');
                 return $this->fail('验证码不能为空');
             }
 
@@ -127,9 +139,12 @@ class AuthController extends BaseController
             SessionTenantContext::setTenantSession((int)$tenantId, $user->id, $tenants);
 
             $this->casbinService->syncUserRolesFromDatabase($user->id);
-            $user->updateLoginInfo($request->getClientIp() ?? '');
 
-            $this->recordLoginLog($request, $username, true, '登录成功');
+            // 更新登录信息
+            $user->updateLoginInfo($this->resolveClientIp($request));
+
+            // 写入日志
+            $this->recordLoginLog($request, $user->username, true, '登录成功');
 
             TenantContext::setTenantIdToRequest($request, (int)$tenantId > 0 ? (int)$tenantId : null);
             TenantContext::setTenantId((int)$tenantId > 0 ? (int)$tenantId : null);
@@ -159,6 +174,7 @@ class AuthController extends BaseController
 
             return $response;
         } catch (\Exception $e) {
+            $this->recordLoginLog($request, (string) $username, false, '登录异常：' . $e->getMessage());
             return $this->fail('error:' . $e->getMessage());
         }             
     }
@@ -352,7 +368,7 @@ class AuthController extends BaseController
         $tenantId = TenantContext::getTenantId();
 
         if (!$userId) {
-            return $this->fail('未登录', 401);
+            return $this->fail('登录信息已过期，请重新登录!', 401);
         }
 
         $user = SysUser::find($userId);
@@ -589,27 +605,35 @@ class AuthController extends BaseController
     {
         try {
             $userAgent = $request->headers->get('User-Agent', '');
-            $ip        = $request->getClientIp() ?? '';
+            $ip        = $this->resolveClientIp($request);
+            
+            $location = $this->ipLocationService->getLocation($ip);
 
             $browser = 'Other';
-            foreach (['Edge', 'Chrome', 'Firefox', 'Safari', 'MSIE', 'Trident'] as $b) {
+            foreach (['Edg', 'Edge', 'Chrome', 'Firefox', 'Safari', 'MSIE', 'Trident'] as $b) {
                 if (stripos($userAgent, $b) !== false) {
-                    $browser = $b === 'Trident' ? 'IE' : $b;
+                    if ($b === 'Trident' || $b === 'MSIE') {
+                        $browser = 'IE';
+                    } elseif ($b === 'Edg') {
+                        $browser = 'Edge';
+                    } else {
+                        $browser = $b;
+                    }
                     break;
                 }
             }
             $os = 'Other';
-            foreach (['Windows', 'Mac', 'Linux', 'Android', 'iOS'] as $o) {
+            foreach (['Windows', 'Mac', 'Linux', 'Android', 'iPhone', 'iPad', 'iOS'] as $o) {
                 if (stripos($userAgent, $o) !== false) {
-                    $os = $o;
+                    $os = in_array($o, ['iPhone', 'iPad', 'iOS'], true) ? 'iOS' : $o;
                     break;
                 }
             }
 
             $this->loginLogService->record([
-                'username'    => $username,
+                'username'    => $username !== '' ? $username : '未知用户',
                 'ip'          => $ip,
-                'ip_location' => '',
+                'ip_location' => $location,
                 'os'          => $os,
                 'browser'     => $browser,
                 'status'      => $success ? SysLoginLog::STATUS_SUCCESS : SysLoginLog::STATUS_FAIL,
@@ -617,6 +641,48 @@ class AuthController extends BaseController
             ]);
         } catch (\Throwable $e) {
             // log write failure must not affect main flow
+            app('log')->error('AuthController recordLoginLog failed', [
+                'username' => $username,
+                'success' => $success,
+                'message' => $message,
+                'error' => $e->getMessage(),
+            ]);
         }
+    }
+
+    /**
+     * 统一解析客户端IP，优先代理头并兜底框架识别结果
+     */
+    protected function resolveClientIp(Request $request): string
+    {
+        $candidateIps = [];
+
+        $cfIp = trim((string) $request->headers->get('CF-Connecting-IP', ''));
+        if ($cfIp !== '') {
+            $candidateIps[] = $cfIp;
+        }
+
+        $xForwardedFor = trim((string) $request->headers->get('X-Forwarded-For', ''));
+        if ($xForwardedFor !== '') {
+            $candidateIps[] = trim(explode(',', $xForwardedFor)[0]);
+        }
+
+        $xRealIp = trim((string) $request->headers->get('X-Real-IP', ''));
+        if ($xRealIp !== '') {
+            $candidateIps[] = $xRealIp;
+        }
+
+        $clientIp = trim((string) $request->getClientIp());
+        if ($clientIp !== '') {
+            $candidateIps[] = $clientIp;
+        }
+
+        foreach ($candidateIps as $ip) {
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+
+        return '0.0.0.0';
     }
 }

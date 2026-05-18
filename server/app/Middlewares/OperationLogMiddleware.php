@@ -60,7 +60,7 @@ class OperationLogMiddleware
         try {
             $user      = $request->attributes->get('user', []);
             $userAgent = $request->headers->get('User-Agent', '');
-            $ip        = $request->getClientIp() ?? '';
+            $ip        = $request->headers->get('CF-Connecting-IP') ?? $request->getClientIp();
 
             // 获取请求数据（合并 POST body 和 JSON body）
             $params = $request->request->all();

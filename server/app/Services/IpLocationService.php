@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use Framework\Basic\BaseService;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * IpLocationService IP地理位置服务
@@ -74,8 +73,8 @@ class IpLocationService extends BaseService
             return true;
         }
 
-        // 检查内网IP
-        if (preg_match('/^(10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]\.\d{1,3}\.\d{1,3}|192\.168)/', $ip)) {
+        // 检查内网IP（10.x.x.x、172.16-31.x.x、192.168.x.x）
+        if (preg_match('/^(10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})$/', $ip)) {
             return true;
         }
 
@@ -90,7 +89,22 @@ class IpLocationService extends BaseService
      */
     protected function getFromCache(string $ip): ?string
     {
-        return Cache::get($this->cachePrefix . $ip);
+        try {
+            $cached = app('cache')->get($this->cachePrefix . $ip);
+            if (!is_string($cached) || trim($cached) === '') {
+                return null;
+            }
+
+            // "未知" 视为失败结果，不命中缓存，允许后续重试外部API
+            if ($cached === '未知') {
+                return null;
+            }
+
+            return $cached;
+        } catch (\Throwable $e) {
+            // 缓存异常时降级为直连查询，不能影响主流程
+            return null;
+        }
     }
 
     /**
@@ -102,7 +116,16 @@ class IpLocationService extends BaseService
      */
     protected function saveToCache(string $ip, string $location): void
     {
-        Cache::put($this->cachePrefix . $ip, $location, $this->cacheTtl);
+        // 失败结果不缓存，避免短暂网络异常导致长时间固定为"未知"
+        if ($location === '未知' || trim($location) === '') {
+            return;
+        }
+
+        try {
+            app('cache')->set($this->cachePrefix . $ip, $location, $this->cacheTtl);
+        } catch (\Throwable $e) {
+            // 缓存写入失败不影响主流程
+        }
     }
 
     /**
@@ -120,7 +143,9 @@ class IpLocationService extends BaseService
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
             curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'NovaPHP-IpLocationService/1.0');
 
             $response = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);

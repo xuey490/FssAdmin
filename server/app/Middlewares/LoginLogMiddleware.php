@@ -29,13 +29,11 @@ class LoginLogMiddleware
     protected IpLocationService $ipLocationService;
 
     /**
-     * 不记录日志的路径
+     * 需要记录登录日志的路径
      * @var array
      */
-    protected array $exceptPaths = [
-        '/api/auth/login',
-        '/api/auth/logout',
-        '/api/auth/refresh',
+    protected array $trackedPaths = [
+        '/api/core/login',
     ];
 
     /**
@@ -55,22 +53,15 @@ class LoginLogMiddleware
      */
     public function handle(Request $request, callable $next): Response
     {
-        // 获取请求路径
-        $path = $request->getPathInfo();
-
-        // 检查是否在排除列表中
-        foreach ($this->exceptPaths as $exceptPath) {
-            if (str_starts_with($path, $exceptPath)) {
-                return $next($request);
-            }
-        }
-
-        // 执行请求并获取响应
+        // 先执行主流程，避免日志异常影响请求
         $response = $next($request);
 
-        // 记录登录日志 (登录接口)
-        if (in_array($path, ['/api/auth/login', '/api/auth/logout'])) {
-            $this->recordLoginLog($request, $response);
+        $path = $request->getPathInfo();
+        foreach ($this->trackedPaths as $trackedPath) {
+            if (str_starts_with($path, $trackedPath)) {
+                $this->recordLoginLog($request, $response);
+                break;
+            }
         }
 
         return $response;
@@ -85,36 +76,38 @@ class LoginLogMiddleware
      */
     protected function recordLoginLog(Request $request, Response $response): void
     {
-        // 获取用户信息
-        $user = $request->attributes->get('user');
-        $username = $this->input('username', '');
-        $userId = $user['id'] ?? 0;
+        try {
+            $content = json_decode((string) $response->getContent(), true);
+            if (!is_array($content)) {
+                $content = [];
+            }
 
-        // 解析响应内容
-        $content = json_decode($response->getContent(), true);
-        $loginStatus = ($content['code'] ?? 0) === 0 ? 0 : 1;
-        $loginMessage = $content['message'] ?? '';
+            $code = (int)($content['code'] ?? $response->getStatusCode());
+            $success = in_array($code, [0, 200], true);
 
-        // 获取客户端信息
-        $userAgent = $request->headers->get('User-Agent', '');
-        $clientInfo = $this->parseUserAgent($userAgent);
+            $username = $this->resolveUsername($request, $content);
+            $message = (string)($content['message'] ?? ($success ? '登录成功' : '登录失败'));
 
-        // 获取IP地理位置
-        $ip = $request->getClientIp() ?? '';
-        $location = $this->ipLocationService->getLocation($ip);
+            $userAgent = $request->headers->get('User-Agent', '');
+            $clientInfo = $this->parseUserAgent($userAgent);
 
-        // 记录日志
-        SysLoginLog::record([
-            'user_id' => $userId,
-            'username' => $username,
-            'login_status' => $loginStatus,
-            'login_message' => $loginMessage,
-            'login_ip' => $ip,
-            'login_location' => $location,
-            'browser' => $clientInfo['browser'],
-            'os' => $clientInfo['os'],
-            'user_agent' => $userAgent,
-        ]);
+            $ip = $this->resolveClientIp($request);
+            $location = $this->ipLocationService->getLocation($ip);
+
+            SysLoginLog::record([
+                'username' => $username !== '' ? $username : '未知用户',
+                'ip' => $ip,
+                'ip_location' => $location,
+                'os' => $clientInfo['os'],
+                'browser' => $clientInfo['browser'],
+                'status' => $success ? SysLoginLog::STATUS_SUCCESS : SysLoginLog::STATUS_FAIL,
+                'message' => $message,
+            ]);
+        } catch (\Throwable $e) {
+            app('log')->error('LoginLogMiddleware recordLoginLog failed', [
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -125,22 +118,91 @@ class LoginLogMiddleware
      */
     protected function parseUserAgent(string $userAgent): array
     {
-        $browser = 'Unknown';
-        $os = 'Unknown';
+        $browser = 'Other';
+        $os = 'Other';
 
-        // 解析浏览器
-        if (preg_match('/(Chrome|Firefox|Safari|Edge|MSIE|Trident)/i', $userAgent, $matches)) {
-            $browser = $matches[1];
+        foreach (['Edg', 'Edge', 'Chrome', 'Firefox', 'Safari', 'MSIE', 'Trident'] as $item) {
+            if (stripos($userAgent, $item) !== false) {
+                if ($item === 'Trident' || $item === 'MSIE') {
+                    $browser = 'IE';
+                } elseif ($item === 'Edg') {
+                    $browser = 'Edge';
+                } else {
+                    $browser = $item;
+                }
+                break;
+            }
         }
 
-        // 解析操作系统
-        if (preg_match('/(Windows|Mac|Linux|Android|iOS)/i', $userAgent, $matches)) {
-            $os = $matches[1];
+        foreach (['Windows', 'Mac', 'Linux', 'Android', 'iPhone', 'iPad', 'iOS'] as $item) {
+            if (stripos($userAgent, $item) !== false) {
+                $os = in_array($item, ['iPhone', 'iPad', 'iOS'], true) ? 'iOS' : $item;
+                break;
+            }
         }
 
         return [
             'browser' => $browser,
             'os' => $os,
         ];
+    }
+
+    protected function resolveUsername(Request $request, array $responseBody): string
+    {
+        $requestBody = $this->extractRequestBody($request);
+        $username = (string)($requestBody['username'] ?? '');
+        if ($username !== '') {
+            return $username;
+        }
+
+        $user = $responseBody['data']['user']['username'] ?? null;
+        return is_string($user) ? $user : '';
+    }
+
+    protected function extractRequestBody(Request $request): array
+    {
+        $body = [];
+        $content = $request->getContent();
+        if ($content !== '') {
+            $decoded = json_decode($content, true);
+            if (is_array($decoded)) {
+                $body = $decoded;
+            }
+        }
+
+        return array_merge($request->query->all(), $request->request->all(), $body);
+    }
+
+    protected function resolveClientIp(Request $request): string
+    {
+        $candidateIps = [];
+
+        $cfIp = trim((string) $request->headers->get('CF-Connecting-IP', ''));
+        if ($cfIp !== '') {
+            $candidateIps[] = $cfIp;
+        }
+
+        $xForwardedFor = trim((string) $request->headers->get('X-Forwarded-For', ''));
+        if ($xForwardedFor !== '') {
+            $candidateIps[] = trim(explode(',', $xForwardedFor)[0]);
+        }
+
+        $xRealIp = trim((string) $request->headers->get('X-Real-IP', ''));
+        if ($xRealIp !== '') {
+            $candidateIps[] = $xRealIp;
+        }
+
+        $clientIp = trim((string) $request->getClientIp());
+        if ($clientIp !== '') {
+            $candidateIps[] = $clientIp;
+        }
+
+        foreach ($candidateIps as $ip) {
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+
+        return '0.0.0.0';
     }
 }

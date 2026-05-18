@@ -40,7 +40,7 @@ class SysLoginLog extends BaseLaORMModel
     /** 登录成功 */
     public const STATUS_SUCCESS = 1;
     /** 登录失败 */
-    public const STATUS_FAIL = 0;
+    public const STATUS_FAIL = 2;
 
     protected $fillable = [
         'username',
@@ -74,6 +74,7 @@ class SysLoginLog extends BaseLaORMModel
     public static function record(array $data): static
     {
         $now = date('Y-m-d H:i:s');
+
         return self::create(array_merge([
             'login_time'  => $now,
             'create_time' => $now,
