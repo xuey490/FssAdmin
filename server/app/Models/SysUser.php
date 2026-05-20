@@ -454,23 +454,36 @@ class SysUser extends BaseLaORMModel
     /**
      * 获取用户的菜单列表 (树形结构)
      *
+     * 注意：仅返回 type=1(目录) 和 type=2(菜单)，按钮(type=3) 不进入左侧导航；
+     * 外链(type=4) 走单独入口（如需展示在左侧再放开）。
+     * 普通用户若只授权到子菜单（例如 manage_user），会自动补全其祖先目录(manage)，
+     * 保证树结构完整。
+     *
      * @return array
      */
     public function getMenuTree(): array
     {
         $menuIds = $this->getMergedMenuIds();
 
-
         if (empty($menuIds)) {
             return [];
         }
 
-        $menus = SysMenu::whereIn('id', $menuIds)
+        // 自动补全所有祖先菜单 ID，防止子节点找不到父节点导致整棵树被丢弃
+        // 超管已拿到全部菜单，跳过递归查父级以节省查询
+        $expandedIds = $this->isSuperAdmin() ? $menuIds : SysMenu::expandWithParentIds($menuIds);
+
+        $menus = SysMenu::whereIn('id', $expandedIds)
             ->where('status', SysMenu::STATUS_ENABLED)
+            ->whereIn('type', [SysMenu::TYPE_DIRECTORY, SysMenu::TYPE_MENU, SysMenu::TYPE_LINK])
             ->orderBy('sort')
             ->get()
             ->toArray();
-        
+
+        if (empty($menus)) {
+            return [];
+        }
+
         return $this->buildMenuTree($menus, 0);
     }
 

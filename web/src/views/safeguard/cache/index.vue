@@ -2,7 +2,7 @@
   <div class="page-content">
     <el-row :gutter="20" class="browser-panels">
       <!-- 第一列：第一级键（前缀） -->
-      <el-col :span="8">
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" class="panel-col">
         <el-card class="art-table-card panel-card" shadow="never">
           <template #header>
             <div class="panel-header">
@@ -28,7 +28,7 @@
               </template>
             </el-input>
 
-            <el-scrollbar height="calc(100vh - 300px)">
+            <el-scrollbar class="panel-scrollbar panel-scrollbar--level1">
               <div
                 v-for="item in level1Keys"
                 :key="item.key"
@@ -50,7 +50,7 @@
       </el-col>
 
       <!-- 第二列：第二级键 -->
-      <el-col :span="8">
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" class="panel-col">
         <el-card class="art-table-card panel-card" shadow="never">
           <template #header>
             <div class="panel-header">
@@ -73,7 +73,7 @@
           </template>
 
           <div class="panel-content">
-            <el-scrollbar height="calc(100vh - 260px)">
+            <el-scrollbar class="panel-scrollbar panel-scrollbar--level2">
               <div
                 v-for="item in level2Keys"
                 :key="item.key"
@@ -108,7 +108,7 @@
       </el-col>
 
       <!-- 第三列：第三级键或键详情 -->
-      <el-col :span="8">
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" class="panel-col">
         <el-card class="art-table-card panel-card" shadow="never">
           <template #header>
             <div class="panel-header">
@@ -132,7 +132,7 @@
 
           <div class="panel-content">
             <!-- 第三级键列表 -->
-            <el-scrollbar v-if="level3Keys.length > 0" height="calc(100vh - 260px)">
+            <el-scrollbar v-if="level3Keys.length > 0" class="panel-scrollbar panel-scrollbar--level3">
               <div
                 v-for="item in level3Keys"
                 :key="item.key"
@@ -410,9 +410,42 @@ onMounted(() => {
     min-height: calc(100vh - 180px);
   }
 
+  .panel-scrollbar {
+    height: 320px;
+
+    @media (min-width: 992px) {
+      &--level1 {
+        height: calc(100vh - 300px);
+      }
+
+      &--level2,
+      &--level3 {
+        height: calc(100vh - 260px);
+      }
+    }
+  }
+
+  @media (max-width: 991px) {
+    .browser-panels {
+      min-height: auto;
+    }
+
+    .panel-col {
+      margin-bottom: 20px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .panel-card {
+      height: auto;
+    }
+  }
+
   .panel-card {
     height: 100%;
-    
+
     :deep(.el-card__body) {
       padding: 0;
     }
