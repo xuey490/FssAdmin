@@ -93,7 +93,7 @@ class SysArticleDao extends BaseDao
      */
     public function updateStatus(int $articleId, int $status): bool
     {
-        return $this->update($articleId, ['status' => $status]);
+        return $this->update($articleId, ['status' => $status]) > 0;
     }
 
     /**

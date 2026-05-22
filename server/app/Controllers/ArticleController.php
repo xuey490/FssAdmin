@@ -170,7 +170,8 @@ class ArticleController extends BaseController
     public function updateStatus(Request $request): BaseJsonResponse
     {
         $id = (int) $request->attributes->get('id');
-        $status = (int) $this->input('status', 1);
+        $data = $this->getRequestData($request);
+        $status = array_key_exists('status', $data) ? (int) $data['status'] : 1;
 
         $result = $this->articleService->updateStatus($id, $status);
 
