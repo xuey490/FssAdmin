@@ -68,24 +68,31 @@ export class MenuProcessor {
     }
 
     return menuList.map((menu) => {
+      const menuType = Number(menu.type ?? 0)
+      const externalUrl = this.resolveExternalUrl(menu)
+      const isLinkMenu = menuType === 4 || !!externalUrl
+      const openInIframe = Number(menu.is_iframe) === 1 && !!externalUrl
+
       // 强制把所有一级菜单且组件为空（或者只是目录类型）的组件指向布局容器
-      if (!menu.parent_id && !menu.component) {
+      if (!menu.parent_id && !menu.component && !isLinkMenu) {
         menu.component = RoutesAlias.Layout
       }
 
+      const routePath = this.resolveMenuPath(menu, externalUrl, openInIframe)
+
       const route: AppRouteRecord = {
         id: menu.id,
-        path: menu.path || '',
-        name: menu.path ? this.generateRouteName(menu.path) : '',
-        component: menu.component || '',
+        path: routePath,
+        name: routePath ? this.generateRouteName(routePath) : '',
+        component: isLinkMenu ? '' : menu.component || '',
         meta: {
           title: menu.name || '',
           icon: menu.icon || '',
           isHide: menu.is_hidden === 1,
           isCache: menu.is_keep_alive === 1,
           fixedTab: menu.is_fixed_tab === 1,
-          isIframe: menu.is_iframe === 1,
-          link: menu.is_iframe === 1 ? menu.path : undefined,
+          isIframe: openInIframe,
+          link: externalUrl || undefined,
           roles: [],
           permissions: menu.slug ? [menu.slug] : []
         }
@@ -98,6 +105,56 @@ export class MenuProcessor {
 
       return route
     })
+  }
+
+  /**
+   * 解析外链地址：优先 link_url，其次 path 中的 http(s) 地址
+   */
+  private resolveExternalUrl(menu: any): string {
+    const linkUrl = String(menu.link_url || menu.linkUrl || '').trim()
+    if (linkUrl) {
+      return linkUrl
+    }
+
+    const path = String(menu.path || '').trim()
+    if (/^https?:\/\//i.test(path)) {
+      return path
+    }
+
+    return ''
+  }
+
+  /**
+   * 解析菜单路由 path
+   * - 内嵌 iframe：生成 /outside/iframe/xxx
+   * - 新开窗口外链：保留 meta.link，path 使用占位路径避免空值
+   * - 普通菜单：沿用后端 path
+   */
+  private resolveMenuPath(menu: any, externalUrl: string, openInIframe: boolean): string {
+    const menuType = Number(menu.type ?? 0)
+    const rawPath = String(menu.path || '').trim()
+
+    if (menuType !== 4 && !externalUrl) {
+      return rawPath
+    }
+
+    if (openInIframe && externalUrl) {
+      const slug = String(menu.code || menu.id || 'link')
+        .replace(/[^\w-]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .toLowerCase()
+      return `/outside/iframe/${slug || menu.id}`
+    }
+
+    if (externalUrl) {
+      return externalUrl
+    }
+
+    if (rawPath && !/^https?:\/\//i.test(rawPath)) {
+      return rawPath
+    }
+
+    return rawPath
   }
 
   /**

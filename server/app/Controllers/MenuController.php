@@ -190,6 +190,74 @@ class MenuController extends BaseController
     }
 
     /**
+     * 从请求体构建菜单字段（仅包含客户端显式提交的键，避免把未传字段写成 null）
+     */
+    protected function buildMenuPayload(array $body, bool $isCreate = false): array
+    {
+        $intFields = [
+            'parent_id',
+            'type',
+            'sort',
+            'is_hidden',
+            'status',
+            'is_iframe',
+            'is_keep_alive',
+            'is_fixed_tab',
+            'is_full_page',
+        ];
+        $stringFields = [
+            'name',
+            'code',
+            'path',
+            'component',
+            'slug',
+            'icon',
+            'link_url',
+            'remark',
+        ];
+
+        $data = [];
+
+        foreach ($intFields as $field) {
+            if (array_key_exists($field, $body) && $body[$field] !== null && $body[$field] !== '') {
+                $data[$field] = (int)$body[$field];
+            }
+        }
+
+        foreach ($stringFields as $field) {
+            if (array_key_exists($field, $body)) {
+                $data[$field] = (string)($body[$field] ?? '');
+            }
+        }
+
+        // 兼容前端字段别名
+        if (!array_key_exists('type', $data)) {
+            foreach (['menuType', 'menu_type'] as $alias) {
+                if (array_key_exists($alias, $body) && $body[$alias] !== null && $body[$alias] !== '') {
+                    $data['type'] = (int)$body[$alias];
+                    break;
+                }
+            }
+        }
+
+        if ($isCreate) {
+            $data['parent_id'] = $data['parent_id'] ?? (int)($body['parent_id'] ?? 0);
+            $data['type'] = $data['type'] ?? (int)($body['type'] ?? 1);
+            $data['sort'] = $data['sort'] ?? (int)($body['sort'] ?? 0);
+            $data['is_hidden'] = $data['is_hidden'] ?? (int)($body['is_hidden'] ?? 2);
+            $data['status'] = $data['status'] ?? (int)($body['status'] ?? 1);
+            $data['is_iframe'] = $data['is_iframe'] ?? (int)($body['is_iframe'] ?? 2);
+            $data['is_keep_alive'] = $data['is_keep_alive'] ?? (int)($body['is_keep_alive'] ?? 2);
+            $data['is_fixed_tab'] = $data['is_fixed_tab'] ?? (int)($body['is_fixed_tab'] ?? 2);
+            $data['is_full_page'] = $data['is_full_page'] ?? (int)($body['is_full_page'] ?? 2);
+            $data['link_url'] = $data['link_url'] ?? (string)($body['link_url'] ?? '');
+            $data['remark'] = $data['remark'] ?? (string)($body['remark'] ?? '');
+        }
+
+        return $data;
+    }
+
+    /**
      * 创建菜单
      *
      * @param Request $request 请求对象
@@ -202,26 +270,13 @@ class MenuController extends BaseController
     {
         $body = $this->getJsonBody($request);
 
-        $data = [
-            'parent_id' => (int)($body['parent_id'] ?? 0),
-            'name' => $body['name'] ?? '',
-            'code' => $body['code'] ?? '',
-            'type' => (int)($body['type'] ?? 1),
-            'path' => $body['path'] ?? '',
-            'component' => $body['component'] ?? '',
-            'slug' => $body['slug'] ?? '',
-            'icon' => $body['icon'] ?? '',
-            'sort' => (int)($body['sort'] ?? 0),
-            'is_hidden' => (int)($body['is_hidden'] ?? 2),
-            'status' => (int)($body['status'] ?? 1),
-            'is_iframe' => (int)($body['is_iframe'] ?? 2),
-            'is_keep_alive' => (int)($body['is_keep_alive'] ?? 2),
-            'is_fixed_tab' => (int)($body['is_fixed_tab'] ?? 2),
-            'is_full_page' => (int)($body['is_full_page'] ?? 2),
-            'link_url' => $body['link_url'] ?? '',
-            'remark' => $body['remark'] ?? '',
-        ];
-        
+        $data = $this->buildMenuPayload($body, true);
+        $data['name'] = $data['name'] ?? (string)($body['name'] ?? '');
+        $data['code'] = $data['code'] ?? (string)($body['code'] ?? '');
+        $data['path'] = $data['path'] ?? (string)($body['path'] ?? '');
+        $data['component'] = $data['component'] ?? (string)($body['component'] ?? '');
+        $data['slug'] = $data['slug'] ?? (string)($body['slug'] ?? '');
+        $data['icon'] = $data['icon'] ?? (string)($body['icon'] ?? '');
 
         // 参数验证
         if (empty($data['name'])) {
@@ -253,28 +308,10 @@ class MenuController extends BaseController
         $id = $request->attributes->get('id');
         $body = $this->getJsonBody($request);
 
-        $data = [
-            'parent_id' => isset($body['parent_id']) ? (int)$body['parent_id'] : null,
-            'name' => $body['name'] ?? null,
-            'code' => $body['code'] ?? null,
-            'type' => isset($body['type']) ? (int)$body['type'] : null,
-            'path' => $body['path'] ?? null,
-            'component' => $body['component'] ?? null,
-            'slug' => $body['slug'] ?? null,
-            'icon' => $body['icon'] ?? null,
-            'sort' => isset($body['sort']) ? (int)$body['sort'] : null,
-            'is_hidden' => isset($body['is_hidden']) ? (int)$body['is_hidden'] : null,
-            'status' => isset($body['status']) ? (int)$body['status'] : null,
-            'is_iframe' => isset($body['is_iframe']) ? (int)$body['is_iframe'] : null,
-            'is_keep_alive' => isset($body['is_keep_alive']) ? (int)$body['is_keep_alive'] : null,
-            'is_fixed_tab' => isset($body['is_fixed_tab']) ? (int)$body['is_fixed_tab'] : null,
-            'is_full_page' => isset($body['is_full_page']) ? (int)$body['is_full_page'] : null,
-            'link_url' => $body['link_url'] ?? null,
-            'remark' => $body['remark'] ?? null,
-        ];
-
-        // 过滤空值
-        //$data = array_filter($data, fn($v) => $v !== null);
+        $data = $this->buildMenuPayload($body, false);
+        if ($data === []) {
+            return $this->fail('没有可更新的字段');
+        }
 
         // 获取操作人ID
         $operator = $this->getOperatorId($request);

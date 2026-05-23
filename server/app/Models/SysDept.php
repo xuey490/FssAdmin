@@ -212,8 +212,6 @@ class SysDept extends BaseLaORMModel
         foreach ($depts as &$dept) {
             $leader = $dept['leader'] ?? null;
             $dept['leader_name'] = $leader['realname'] ?? $leader['username'] ?? null;
-            // 数据库值映射到字典值：DB 1=启用 0=禁用 → 字典 1=正常 2=停用
-            $dept['status'] = ($dept['status'] ?? 0) === 0 ? 2 : 1;
             $dept['children'] = self::getDeptTree($dept['id'], $tenantId, $enabledOnly);
         }
 

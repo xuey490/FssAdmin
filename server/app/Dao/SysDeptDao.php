@@ -101,7 +101,7 @@ class SysDeptDao extends BaseDao
      */
     public function updateStatus(int $deptId, int $status): bool
     {
-        return $this->update($deptId, ['status' => $status]);
+        return $this->update($deptId, ['status' => $status]) > 0;
     }
 
     /**

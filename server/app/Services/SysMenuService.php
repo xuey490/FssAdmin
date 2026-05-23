@@ -154,11 +154,6 @@ class SysMenuService extends BaseService
         $data['created_by'] = $operator;
         $data['updated_by'] = $operator;
 
-        // 如果是外链，设置 is_frame = 1
-        if (($data['type'] ?? 0) === SysMenu::TYPE_LINK) {
-            $data['is_iframe'] = 1;
-        }
-
         return SysMenu::create($data);
     }
 
@@ -192,9 +187,14 @@ class SysMenuService extends BaseService
         // 设置审计字段
         $data['updated_by'] = $operator;
 
-        // 如果是外链，设置 is_frame = 1
-        if (($data['type'] ?? $menu->type) === SysMenu::TYPE_LINK) {
-            $data['is_iframe'] = 1;
+        // 仅更新请求中携带的字段，忽略 null，避免覆盖 NOT NULL 列
+        $data = array_filter(
+            $data,
+            static fn($value) => $value !== null
+        );
+
+        if ($data === []) {
+            return true;
         }
 
         $menu->fill($data);

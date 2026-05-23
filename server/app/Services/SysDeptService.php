@@ -155,13 +155,16 @@ class SysDeptService extends BaseService
      */
     protected function filterTree(array $tree, string $deptName, string $deptCode, mixed $status): array
     {
+        $statusFilter = $this->normalizeStatusFilter($status);
         $result = [];
         foreach ($tree as $item) {
-            $nameMatch = ($deptName !== '' && stripos($item['name'], $deptName) !== false);
-            $codeMatch = ($deptCode !== '' && stripos($item['code'], $deptCode) !== false);
+            $nameMatch = ($deptName === '' || stripos((string)($item['name'] ?? ''), $deptName) !== false);
+            $codeMatch = ($deptCode === '' || stripos((string)($item['code'] ?? ''), $deptCode) !== false);
+            $statusMatch = ($statusFilter === null || (int)($item['status'] ?? 0) === $statusFilter);
+            $selfMatched = $nameMatch && $codeMatch && $statusMatch;
 
             // 当前节点匹配，保留它及其所有子节点
-            if ($nameMatch || $codeMatch) {
+            if ($selfMatched) {
                 $result[] = $item;
                 continue;
             }
@@ -177,6 +180,29 @@ class SysDeptService extends BaseService
             }
         }
         return $result;
+    }
+
+    /**
+     * 统一前后端状态过滤语义：1=启用，0=禁用（兼容历史字典值 2）
+     */
+    protected function normalizeStatusFilter(mixed $status): ?int
+    {
+        if ($status === '' || $status === null) {
+            return null;
+        }
+
+        $value = (int)$status;
+        if ($value === 2) {
+            return 0;
+        }
+        if ($value === 1) {
+            return 1;
+        }
+        if ($value === 0) {
+            return 0;
+        }
+
+        return null;
     }
 
     /**
@@ -196,8 +222,6 @@ class SysDeptService extends BaseService
                     $item['children'] = $children;
                 }
                 $item['status_text'] = ($item['status'] ?? 0) === SysDept::STATUS_ENABLED ? '启用' : '禁用';
-                // 数据库值映射到字典值：DB 1=启用 0=禁用 → 字典 1=正常 2=停用
-               // $item['status'] = ($item['status'] ?? 0) === 0 ? 2 : 1;
                 $tree[] = $item;
             }
         }
@@ -506,11 +530,6 @@ class SysDeptService extends BaseService
             $data['updated_at'] = is_string($data['updated_at'])
                 ? $data['updated_at']
                 : $data['updated_at']?->format('Y-m-d H:i:s');
-        }
-
-        // 数据库值映射到字典值：DB 1=启用 0=禁用 → 字典 1=正常 2=停用
-        if (isset($data['status'])) {
-          //  $data['status'] = $data['status'] === 0 ? 2 : 1;
         }
 
         // 状态文本

@@ -28,6 +28,7 @@ use Framework\Attributes\Permission;
  */
 class RoleController extends BaseController
 {
+    protected const SYSTEM_PROTECTED_ROLE_ID = 1;
     /**
      * 角色服务
      * @var SysRoleService
@@ -156,7 +157,7 @@ class RoleController extends BaseController
             'code' => $body['code'] ?? '',
             'level' => (int)($body['level'] ?? 0),
             'sort' => (int)($body['sort'] ?? 0),
-            'status' => (int)($body['status'] ?? 1),
+            'status' => $this->normalizeStatus($body['status'] ?? 1, 1),
             'remark' => $body['remark'] ?? '',
             'data_scope' => (int)($body['data_scope'] ?? 1),
             'menu_ids' => $body['menu_ids'] ?? [],
@@ -195,6 +196,9 @@ class RoleController extends BaseController
     public function update(Request $request): BaseJsonResponse
     {
         $id = (int)$request->attributes->get('id');
+        if ($id === self::SYSTEM_PROTECTED_ROLE_ID) {
+            return $this->fail('系统内置角色不允许编辑');
+        }
         $body = $this->getJsonBody($request);
 
         $data = [
@@ -202,7 +206,7 @@ class RoleController extends BaseController
             'code' => $body['code'] ?? null,
             'level' => isset($body['level']) ? (int)$body['level'] : null,
             'sort' => isset($body['sort']) ? (int)$body['sort'] : null,
-            'status' => isset($body['status']) ? (int)$body['status'] : null,
+            'status' => isset($body['status']) ? $this->normalizeStatus($body['status'], 1) : null,
             'remark' => $body['remark'] ?? null,
             'data_scope' => isset($body['data_scope']) ? (int)$body['data_scope'] : null,
             'menu_ids' => $body['menu_ids'] ?? null,
@@ -237,6 +241,9 @@ class RoleController extends BaseController
     public function delete(Request $request): BaseJsonResponse
     {
         $id = (int) $request->attributes->get('id');
+        if ($id === self::SYSTEM_PROTECTED_ROLE_ID) {
+            return $this->fail('系统内置角色不允许删除');
+        }
         try {
             $this->roleService->delete($id);
             return $this->success([], '删除成功');
@@ -257,8 +264,11 @@ class RoleController extends BaseController
     public function updateStatus(Request $request): BaseJsonResponse
     {
         $id = (int)$request->attributes->get('id');
+        if ($id === self::SYSTEM_PROTECTED_ROLE_ID) {
+            return $this->fail('系统内置角色状态不允许修改');
+        }
         $body = $this->getJsonBody($request);
-        $status = (int)($body['status'] ?? 1);
+        $status = $this->normalizeStatus($body['status'] ?? 1, 1);
 
         $result = $this->roleService->updateStatus($id, $status);
 
@@ -279,6 +289,9 @@ class RoleController extends BaseController
     public function assignMenus(Request $request): BaseJsonResponse
     {
         $id = (int)$request->attributes->get('id');
+        if ($id === self::SYSTEM_PROTECTED_ROLE_ID) {
+            return $this->fail('系统内置角色菜单权限不允许修改');
+        }
         $body = $this->getJsonBody($request);
         $menuIds = $body['menu_ids'] ?? [];
         $operator = $this->getOperatorId($request);
@@ -323,6 +336,9 @@ class RoleController extends BaseController
     public function menuPermission(Request $request): BaseJsonResponse
     {
         $id = (int)$request->attributes->get('id');
+        if ($id === self::SYSTEM_PROTECTED_ROLE_ID) {
+            return $this->fail('系统内置角色菜单权限不允许修改');
+        }
         $body = $this->getJsonBody($request);
         $menuIds = $body['menu_ids'] ?? [];
         $operator = $this->getOperatorId($request);
@@ -345,5 +361,27 @@ class RoleController extends BaseController
     {
         $user = $request->attributes->get('user');
         return $user['id'] ?? 0;
+    }
+
+    /**
+     * 统一角色状态值到数据库语义：1=启用，0=禁用。
+     * 兼容历史字典值 2（停用）→ 0。
+     */
+    protected function normalizeStatus(mixed $status, int $default = 1): int
+    {
+        if ($status === null || $status === '') {
+            return $default;
+        }
+
+        $value = (int)$status;
+        if ($value === 2) {
+            return 0;
+        }
+
+        if ($value === 1 || $value === 0) {
+            return $value;
+        }
+
+        return $default;
     }
 }

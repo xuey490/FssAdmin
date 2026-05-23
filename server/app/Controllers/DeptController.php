@@ -166,7 +166,7 @@ class DeptController extends BaseController
             'phone' => $all['phone'] ?? '',
             'email' => $all['email'] ?? '',
             'sort' => (int)($all['sort'] ?? 100),
-            'status' => (int)($all['status'] ?? 1),
+            'status' => $this->normalizeStatus($all['status'] ?? 1, 1),
             'remark' => $all['remark'] ?? '',
         ];
 
@@ -224,7 +224,7 @@ class DeptController extends BaseController
             'phone' => $all['phone'] ?? '',
             'email' => $all['email'] ?? '',
             'sort' => isset($all['sort']) && $all['sort'] !== '' ? (int)$all['sort'] : null,
-            'status' => isset($all['status']) && $all['status'] !== '' ? (int)$all['status'] : null,
+            'status' => isset($all['status']) && $all['status'] !== '' ? $this->normalizeStatus($all['status'], 1) : null,
             'remark' => $all['remark'] ?? '',
         ];
 
@@ -273,13 +273,22 @@ class DeptController extends BaseController
      * @return BaseJsonResponse
      */
     #[Route(path: '/api/system/dept/status/{id}', methods: ['PUT'], name: 'dept.status')]
-    #[Auth(required: true, roles: ['admin', 'super_admin'])]
+    #[Auth(required: true)]
     #[Permission('core:dept:update')]
     public function updateStatus(Request $request): BaseJsonResponse
     {
-        $id = (int)$request->attributes->get('id');
-        $status = (int)$this->input('status', 1);
-
+        $id = (int) $request->attributes->get('id');
+        $jsonBody = [];
+        $content = $request->getContent();
+        if (!empty($content)) {
+            $decoded = json_decode($content, true);
+            if (is_array($decoded)) {
+                $jsonBody = $decoded;
+            }
+        }
+        $all = array_merge($request->query->all(), $request->request->all(), $jsonBody);
+        $rawStatus = array_key_exists('status', $all) ? $all['status'] : 1;
+        $status = $this->normalizeStatus($rawStatus, 1);
 
         $result = $this->deptService->updateStatus($id, $status);
 
@@ -315,5 +324,27 @@ class DeptController extends BaseController
     {
         $user = $request->attributes->get('user');
         return $user['id'] ?? 0;
+    }
+
+    /**
+     * 统一状态值到数据库语义：1=启用，0=禁用。
+     * 兼容历史字典值 2（停用）→ 0。
+     */
+    protected function normalizeStatus(mixed $status, int $default = 1): int
+    {
+        if ($status === null || $status === '') {
+            return $default;
+        }
+
+        $value = (int)$status;
+        if ($value === 2) {
+            return 0;
+        }
+
+        if ($value === 1 || $value === 0) {
+            return $value;
+        }
+
+        return $default;
     }
 }

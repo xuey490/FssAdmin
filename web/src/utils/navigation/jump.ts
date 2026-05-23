@@ -29,9 +29,13 @@ export const openExternalLink = (link: string) => {
  * @returns
  */
 export const handleMenuJump = (item: AppRouteRecord, jumpToFirst: boolean = false) => {
-  // 处理外部链接
   const { link, isIframe } = item.meta
-  if (link && !isIframe) {
+
+  // 外部链接：内嵌 iframe 走路由，其它情况新开窗口
+  if (link) {
+    if (isIframe) {
+      return router.push(item.path)
+    }
     return openExternalLink(link)
   }
 
@@ -52,8 +56,10 @@ export const handleMenuJump = (item: AppRouteRecord, jumpToFirst: boolean = fals
 
   const firstChild = findFirstLeafMenu(item.children)
 
-  // 如果第一个子菜单是外部链接则打开新窗口
   if (firstChild.meta?.link) {
+    if (firstChild.meta.isIframe) {
+      return router.push(firstChild.path)
+    }
     return openExternalLink(firstChild.meta.link)
   }
 

@@ -28,6 +28,7 @@ use Framework\Basic\BaseService;
  */
 class SysRoleService extends BaseService
 {
+    protected const SYSTEM_PROTECTED_ROLE_ID = 1;
     /**
      * DAO 实例
      * @var SysRoleDao
@@ -75,9 +76,7 @@ class SysRoleService extends BaseService
         }
 
         if ($status !== '') {
-            // 字典值映射到数据库值：dict 2=停用 → DB 0=禁用
-            $dbStatus =(int)$status; // (int)$status === 2 ? 0 : (int)$status;
-            $query->where('status', $dbStatus);
+            $query->where('status', $this->normalizeStatusFilter($status));
         }
 
         $total = $query->count();
@@ -211,6 +210,9 @@ class SysRoleService extends BaseService
      */
     public function update(int $roleId, array $data, int $operator = 0): bool
     {
+        if ($roleId === self::SYSTEM_PROTECTED_ROLE_ID) {
+            throw new \Exception('系统内置角色不允许编辑');
+        }
         return $this->transaction(function () use ($roleId, $data, $operator) {
             $role = SysRole::find($roleId);
             if (!$role) {
@@ -260,6 +262,9 @@ class SysRoleService extends BaseService
      */
     public function delete(int|string $roleId): bool
     {
+        if ((int)$roleId === self::SYSTEM_PROTECTED_ROLE_ID) {
+            throw new \Exception('系统内置角色不允许删除');
+        }
         $role = SysRole::find($roleId);
         if (!$role) {
             return false;
@@ -297,6 +302,9 @@ class SysRoleService extends BaseService
      */
     public function updateStatus(int $roleId, int $status): bool
     {
+        if ($roleId === self::SYSTEM_PROTECTED_ROLE_ID) {
+            throw new \Exception('系统内置角色状态不允许修改');
+        }
         return $this->roleDao->updateStatus($roleId, $status);
     }
 
@@ -321,6 +329,9 @@ class SysRoleService extends BaseService
      */
     public function assignMenus(int $roleId, array $menuIds, int $operator = 0): bool
     {
+        if ($roleId === self::SYSTEM_PROTECTED_ROLE_ID) {
+            throw new \Exception('系统内置角色菜单权限不允许修改');
+        }
         // 补全所有父级菜单ID，确保父子联动完整性
         $menuIds = SysMenu::expandWithParentIds($menuIds);
 
@@ -362,14 +373,22 @@ class SysRoleService extends BaseService
                 : $data['updated_at']?->format('Y-m-d H:i:s');
         }
 
-        // 数据库值映射到字典值：DB 1=启用 0=禁用 → 字典 1=正常 2=停用
-        if (isset($data['status'])) {
-            //$data['status'] = $data['status'] === 0 ? 2 : 1;
-        }
-
         // 状态文本
-        $data['status_text'] = $data['status'] === 1 ? '启用' : '禁用';
+        $data['status_text'] = (int)($data['status'] ?? 0) === 1 ? '启用' : '禁用';
 
         return $data;
+    }
+
+    /**
+     * 统一状态过滤语义：1=启用，0=禁用（兼容历史字典值 2）
+     */
+    protected function normalizeStatusFilter(mixed $status): int
+    {
+        $value = (int)$status;
+        if ($value === 2) {
+            return 0;
+        }
+
+        return $value === 0 ? 0 : 1;
     }
 }

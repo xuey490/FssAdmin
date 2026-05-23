@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null    $task_style  执行类型
  * @property string|null $rule        定时表达式
  * @property int         $singleton   是否单次执行 (1是 2否)
- * @property int         $status      状态 (1正常 2停用)
+ * @property int         $status      状态 (1正常 0停用)
  * @property string|null $remark      备注
  * @property int|null    $created_by  创建者
  * @property int|null    $updated_by  更新者
@@ -69,7 +69,7 @@ class ToolCrontab extends BaseLaORMModel
     /** 状态：正常 */
     public const STATUS_NORMAL = 1;
     /** 状态：停用 */
-    public const STATUS_DISABLED = 2;
+    public const STATUS_DISABLED = 0;
 
     /** 任务类型：URL GET */
     public const TYPE_URL_GET = 1;
