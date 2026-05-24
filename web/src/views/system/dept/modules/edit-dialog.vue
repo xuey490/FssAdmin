@@ -24,7 +24,7 @@
         <el-input v-model="formData.code" placeholder="请输入部门编码" />
       </el-form-item>
       <el-form-item label="部门领导">
-        <sa-user v-model="formData.leader_id" />
+        <sa-user v-model="formData.leader_id" value-type="object" clearable />
       </el-form-item>
       <el-form-item label="描述" prop="remark">
         <el-input
@@ -150,16 +150,57 @@
     }
   }
 
+  type LeaderOption = {
+    id: number
+    username: string
+    realname: string
+    email: string
+    phone: string
+    avatar?: string
+    status: string
+  }
+
+  /**
+   * 构建部门领导选择器初始值，确保编辑时显示姓名而非 ID
+   */
+  const buildLeaderValue = (data: Record<string, any>): LeaderOption | null => {
+    const leaderId = Number(data.leader_id || 0)
+    if (!leaderId) return null
+
+    const leader = data.leader || {}
+    return {
+      id: leaderId,
+      username: String(leader.username || ''),
+      realname: String(data.leader_name || leader.realname || leader.username || ''),
+      email: String(leader.email || ''),
+      phone: String(leader.phone || ''),
+      avatar: leader.avatar,
+      status: String(leader.status ?? '1')
+    }
+  }
+
+  /**
+   * 提交时提取部门领导 ID
+   */
+  const resolveLeaderId = (leader: LeaderOption | number | null): number | null => {
+    if (!leader) return null
+    if (typeof leader === 'number') return leader
+    const leaderId = Number(leader.id || 0)
+    return leaderId > 0 ? leaderId : null
+  }
+
   /**
    * 初始化表单数据
    */
   const initForm = () => {
     if (props.data) {
       for (const key in formData) {
+        if (key === 'leader_id') continue
         if (props.data[key] != null && props.data[key] != undefined) {
           ;(formData as any)[key] = props.data[key]
         }
       }
+      formData.leader_id = buildLeaderValue(props.data) as any
     }
   }
 
@@ -178,11 +219,15 @@
     if (!formRef.value) return
     try {
       await formRef.value.validate()
+      const payload = {
+        ...formData,
+        leader_id: resolveLeaderId(formData.leader_id as LeaderOption | number | null)
+      }
       if (props.dialogType === 'add') {
-        await api.save(formData)
+        await api.save(payload)
         ElMessage.success('新增成功')
       } else {
-        await api.update(formData)
+        await api.update(payload)
         ElMessage.success('修改成功')
       }
       emit('success')

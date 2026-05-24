@@ -35,7 +35,7 @@
       v-for="user in selectedUsers"
       :key="user.id"
       :value="props.valueType === 'id' ? user.id : user"
-      :label="user.realname"
+      :label="user.realname || user.username"
       style="display: none"
     />
 
@@ -188,8 +188,32 @@
     return (
       allSelectedUsers.value.find((u) => u.id === id) ||
       userList.value.find((u) => u.id === id) ||
-      ({ id, username: `用户${id}`, email: '', phone: '', status: '1' } as UserItem)
+      ({
+        id,
+        username: `用户${id}`,
+        realname: `用户${id}`,
+        email: '',
+        phone: '',
+        status: '1'
+      } as UserItem)
     )
+  }
+
+  const cacheSelectedUsers = (val: any) => {
+    const rawList = props.multiple ? (Array.isArray(val) ? val : []) : val != null ? [val] : []
+
+    rawList.forEach((item: any) => {
+      if (item && typeof item === 'object' && 'id' in item) {
+        upsertUserCache(item as UserItem)
+      }
+    })
+
+    normalizeSelectedIds(val).forEach((id) => {
+      const cached = allSelectedUsers.value.find((u) => u.id === id)
+      if (!cached?.realname && !cached?.username) {
+        upsertUserCache(findUserById(id))
+      }
+    })
   }
 
   // 计算已选中的用户列表（用于显示）
@@ -359,9 +383,7 @@
     () => modelValue.value,
     (newVal) => {
       selectedValue.value = newVal
-
-      const ids = normalizeSelectedIds(newVal)
-      ids.forEach((id) => upsertUserCache(findUserById(id)))
+      cacheSelectedUsers(newVal)
 
       if (dropdownVisible.value) {
         syncTableSelectedState()

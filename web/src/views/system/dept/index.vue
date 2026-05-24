@@ -108,7 +108,7 @@
       columnsFactory: () => [
         { prop: 'name', label: '部门名称', minWidth: 200 },
         { prop: 'code', label: '部门编码', minWidth: 120 },
-        { prop: 'leader.username', label: '部门领导', minWidth: 120 },
+        { prop: 'leader.realname', label: '部门领导', minWidth: 120 },
         { prop: 'remark', label: '描述', minWidth: 150, showOverflowTooltip: true },
         { prop: 'sort', label: '排序', width: 100 },
         { prop: 'status', label: '状态', saiType: 'dict', saiDict: 'data_status', width: 100 },
