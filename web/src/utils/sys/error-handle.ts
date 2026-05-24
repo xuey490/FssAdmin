@@ -35,7 +35,7 @@ import type { App } from 'vue'
  * Vue 运行时错误处理
  */
 export function vueErrorHandler(err: unknown, instance: any, info: string) {
-  console.error('[VueError]', err, info, instance)
+  //console.error('[VueError]', err, info, instance)
   // 这里可以上报到服务端，比如：
   // reportError({ type: 'vue', err, info })
 }

@@ -49,7 +49,11 @@ const axiosInstance = axios.create({
   transformResponse: [
     (data, headers) => {
       const contentType = headers['content-type']
-      if (contentType?.includes('application/json')) {
+      const isJson =
+        (typeof contentType === 'string' && contentType.includes('application/json')) ||
+        (Array.isArray(contentType) &&
+          contentType.some((item) => typeof item === 'string' && item.includes('application/json')))
+      if (isJson) {
         try {
           return JSON.parse(data)
         } catch {
@@ -178,7 +182,7 @@ async function request<T = any>(config: ExtendedAxiosRequestConfig): Promise<T> 
 
   try {
     const res = await axiosInstance.request<BaseResponse<T>>(config)
-
+    //console.log('响应数据:', res)
     // 显示成功消息
     if (config.showSuccessMessage && res.data.message) {
       showSuccess(res.data.message)
@@ -188,6 +192,7 @@ async function request<T = any>(config: ExtendedAxiosRequestConfig): Promise<T> 
 
     return res.data.data as T
   } catch (error) {
+    //console.error('请求错误:', error)
     if (error instanceof HttpError && error.code !== ApiStatus.unauthorized) {
       const showMsg = config.showErrorMessage !== false
       showError(error, showMsg)

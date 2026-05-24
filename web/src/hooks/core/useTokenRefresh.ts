@@ -36,6 +36,7 @@ export function useTokenRefresh() {
       )
       return JSON.parse(jsonPayload)
     } catch (e) {
+      console.log(e)
       return null
     }
   }
@@ -56,7 +57,7 @@ export function useTokenRefresh() {
 
     const currentTime = Math.floor(Date.now() / 1000)
     // 如果距离过期不足 5 分钟 (300秒)
-    //console.log('距离 Token 过期还有', payload.exp - currentTime, '秒')
+    console.log('距离 Token 过期还有', payload.exp - currentTime, '秒')
     if (payload.exp - currentTime <= 300 && !isRefreshing) {
       isRefreshing = true
       try {
@@ -81,7 +82,7 @@ export function useTokenRefresh() {
 
     // 2. 立即执行一次
     checkTokenRefresh()
-    
+
     // 3. 之后每分钟检查一次
     refreshTimer = setInterval(checkTokenRefresh, 60000)
   })

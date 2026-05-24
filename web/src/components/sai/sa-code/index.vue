@@ -1,5 +1,5 @@
 <template>
-  <pre class="code-pre"><code class="hljs" v-html="highlightedCode"></code></pre>
+  <pre class="code-pre" :style="{ maxHeight: maxHeight }"><code class="hljs" v-html="highlightedCode"></code></pre>
 </template>
 
 <script type="ts" setup>
@@ -30,6 +30,10 @@
     language: {
       type: String,
       default: 'javascript' // 默认语言，可传入 'vue' 或 'php'
+    },
+    maxHeight: {
+      type: String,
+      default: '720px'
     }
   })
 
@@ -65,7 +69,7 @@
 <style scoped>
   .code-pre {
     border-radius: 8px;
-    overflow-x: auto;
+    overflow: auto;
     font-size: 14px;
     line-height: 1.5;
   }

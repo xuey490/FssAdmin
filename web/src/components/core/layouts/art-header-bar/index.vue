@@ -147,14 +147,18 @@
         </ElDropdown>
 
         <!-- 通知按钮 -->
-        <!-- <ArtIconButton
+        <ArtIconButton
           v-if="shouldShowNotification"
           icon="ri:notification-2-line"
           class="notice-button relative"
           @click="visibleNotice"
         >
-          <div class="absolute top-2 right-2 size-1.5 !bg-danger rounded-full"></div>
-        </ArtIconButton> -->
+          <ElBadge
+            v-if="noticeUnreadCount > 0"
+            class="absolute top-0 right-0 pointer-events-none"
+            :value="noticeUnreadCount > 99 ? '99+' : noticeUnreadCount"
+          />
+        </ArtIconButton>
 
         <!-- 聊天按钮 -->
         <!-- <ArtIconButton
@@ -201,7 +205,7 @@
     <ArtWorkTab />
 
     <!-- 通知 -->
-    <ArtNotification v-model:value="showNotice" ref="notice" />
+    <ArtNotification v-model:value="showNotice" ref="notice" @unread-change="handleNoticeUnreadUpdate" />
   </div>
 </template>
 
@@ -260,6 +264,7 @@
 
   const showNotice = ref(false)
   const notice = ref(null)
+  const noticeUnreadCount = ref(0)
   const tenantList = ref<Api.Auth.TenantItem[]>([])
   const currentTenantId = ref<number | null>(null)
   const switchingTenant = ref(false)
@@ -448,6 +453,10 @@
    */
   const visibleNotice = (): void => {
     showNotice.value = !showNotice.value
+  }
+
+  const handleNoticeUnreadUpdate = (count: number): void => {
+    noticeUnreadCount.value = Number(count || 0)
   }
 
   /**
