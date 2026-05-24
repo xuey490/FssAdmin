@@ -222,13 +222,25 @@ export function getResourceList(params: any) {
 }
 
 /**
- * 用户列表
+ * 用户列表（用户管理模块）
  * @param params
  * @returns
  */
 export function getUserList(params: any) {
   return request.get<Api.Common.ApiPage>({
     url: '/api/core/system/getUserList',
+    params
+  })
+}
+
+/**
+ * 用户下拉选择列表（sa-user 组件专用）
+ * @param params
+ * @returns
+ */
+export function getUserSelectorList(params: any) {
+  return request.get<Api.Common.ApiPage>({
+    url: '/api/core/system/getUserSelectorList',
     params
   })
 }
