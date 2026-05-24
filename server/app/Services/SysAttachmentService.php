@@ -154,8 +154,8 @@ class SysAttachmentService extends BaseService
      */
     public function getList(array $params): array
     {
-        $page   = (int)($params['page'] ?? 1);
-        $limit  = (int)($params['limit'] ?? 20);
+        $page   = max(1, (int)($params['page'] ?? 1));
+        $limit  = max(1, (int)($params['limit'] ?? 20));
 
         $query = SysAttachment::query();
 
