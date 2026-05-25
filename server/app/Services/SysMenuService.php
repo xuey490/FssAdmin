@@ -135,7 +135,7 @@ class SysMenuService extends BaseService
         }
 
         $data = $this->formatMenu($menu);
-        $data['path'] = $menu->getPath();
+        $data['path_names'] = $menu->getPath();
         $data['menu_type_name'] = $menu->getMenuTypeName();
 
         return $data;
