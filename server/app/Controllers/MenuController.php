@@ -179,7 +179,8 @@ class MenuController extends BaseController
     #[Permission('core:menu:read')]
     public function detail(Request $request): BaseJsonResponse
     {
-        $id = $request->attributes->get('id');
+        $id = (int)$request->attributes->get('id');
+
         $result = $this->menuService->getDetail($id);
 
         if (!$result) {
@@ -356,7 +357,7 @@ class MenuController extends BaseController
     #[Permission('core:menu:update')]
     public function updateStatus(Request $request): BaseJsonResponse
     {
-        $id = $request->attributes->get('id');
+        $id = (int)$request->attributes->get('id');
         $body = $this->getJsonBody($request);
         $status = (int)($body['status'] ?? 1);
 
