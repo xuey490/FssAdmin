@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Framework\Attributes;
 
 use Attribute;
+use App\Middlewares\PermissionMiddleware;
 
 /**
  * #[Permission]
@@ -18,7 +19,7 @@ use Attribute;
  * #[Permission(['core:user:index', 'core:dept:index'], mode: 'AND')]  // AND模式
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
-class Permission
+class Permission implements MiddlewareProviderInterface
 {
     public array $slugs;
     public string $mode;
@@ -34,5 +35,13 @@ class Permission
         // 将字符串格式标准化为数组格式
         $this->slugs = is_string($permissions) ? [$permissions] : $permissions;
         $this->mode = strtoupper($mode);
+    }
+
+    /**
+     * 告诉 Loader：只要用了我这个注解，就请加载 PermissionMiddleware
+     */
+    public function getMiddleware(): string|array
+    {
+        return PermissionMiddleware::class;
     }
 }
