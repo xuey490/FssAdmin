@@ -51,8 +51,9 @@ class DeptController extends BaseController
      * @return BaseJsonResponse
      */
     #[Route(path: '/api/system/dept/access-dept', methods: ['GET'], name: 'dept.accessDept')]
-    ##[Permission(['core:user:index', 'core:dept:index'], mode: 'OR')]
-    #[Permission('core:dept:index')]
+    /*##[Permission(['core:user:index', 'core:dept:index'], mode: 'OR')]*/
+	#[Auth(required: true)]
+	#[Permission('core:dept:index')]
     public function accessDept(Request $request): BaseJsonResponse
     {
         $result = $this->deptService->getAccessDeptTree();
@@ -82,7 +83,7 @@ class DeptController extends BaseController
      * @return BaseJsonResponse
      */
     #[Route(path: '/api/system/dept/list', methods: ['GET'], name: 'dept.list')]
-	##[Auth(required: true, roles: ['admin', 'super_admin'])]
+	#[Auth(required: true)]
 	##[Role(['admin'])]
     #[Permission('core:dept:index')]
     public function list(Request $request): BaseJsonResponse

@@ -18,6 +18,7 @@ use Framework\Basic\BaseJsonResponse;
 use Framework\Tenant\TenantContext;
 use Framework\Attributes\Route;
 use Framework\Attributes\Auth;
+use Framework\Attributes\Permission;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -49,6 +50,7 @@ class ArticleController extends BaseController
      */
     #[Route(path: '/api/article/list', methods: ['GET'], name: 'article.list')]
     #[Auth(required: true)]
+    #[Permission('cms:article:index')]
     public function list(Request $request): BaseJsonResponse
     {
         $params = [
@@ -75,6 +77,7 @@ class ArticleController extends BaseController
      */
     #[Route(path: '/api/article/detail/{id}', methods: ['GET'], name: 'article.detail')]
     #[Auth(required: true)]
+    #[Permission('cms:article:index')]
     public function detail(Request $request): BaseJsonResponse
     {
         $id = (int) $request->attributes->get('id');
@@ -100,6 +103,7 @@ class ArticleController extends BaseController
      */
     #[Route(path: '/api/article/create', methods: ['POST'], name: 'article.create')]
     #[Auth(required: true)]
+    #[Permission('cms:article:save')]
     public function create(Request $request): BaseJsonResponse
     {
         $userId = $this->getOperatorId($request);
@@ -124,6 +128,7 @@ class ArticleController extends BaseController
      */
     #[Route(path: '/api/article/update/{id}', methods: ['PUT'], name: 'article.update')]
     #[Auth(required: true)]
+    #[Permission('cms:article:update')]
     public function update(Request $request): BaseJsonResponse
     {
         $id = (int) $request->attributes->get('id');
@@ -147,6 +152,7 @@ class ArticleController extends BaseController
      */
     #[Route(path: '/api/article/delete/{id}', methods: ['DELETE'], name: 'article.delete')]
     #[Auth(required: true)]
+    #[Permission('cms:article:destroy')]
     public function delete(Request $request): BaseJsonResponse
     {
         $id = (int) $request->attributes->get('id');
@@ -167,6 +173,7 @@ class ArticleController extends BaseController
      */
     #[Route(path: '/api/article/status/{id}', methods: ['PUT'], name: 'article.status')]
     #[Auth(required: true)]
+    #[Permission('cms:article:update')]
     public function updateStatus(Request $request): BaseJsonResponse
     {
         $id = (int) $request->attributes->get('id');

@@ -26,7 +26,7 @@ class PermissionMiddleware
         // 3. Resolve and validate user
         $sysUser = $this->resolveUser($request);
         if (!$sysUser) {
-            return $this->unauthorized('请先登录');
+            return $this->unauthorized('请先登录!');
         }
 
         if ($sysUser->isDisabled()) {
@@ -88,6 +88,7 @@ class PermissionMiddleware
     protected function resolveUser(Request $request): ?SysUser
     {
         $currentUser = $request->attributes->get('current_user');
+		
         if ($currentUser instanceof SysUser) {
             return $currentUser;
         }
@@ -140,7 +141,10 @@ class PermissionMiddleware
     {
         $userSlugs = $user->getPermissions();
         $requiredSlugs = $permission->slugs;
-
+		
+		//dump($userSlugs);
+		//dump($requiredSlugs);
+		
         // Empty slugs array = no permission requirement
         if (empty($requiredSlugs)) {
             return true;

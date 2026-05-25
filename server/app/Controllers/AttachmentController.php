@@ -52,6 +52,7 @@ class AttachmentController extends BaseController
      */
     #[Route(path: '/api/system/attachment/detail/{id}', methods: ['GET'], name: 'attachment.detail')]
     #[Auth(required: true)]
+    #[Permission('core:attachment:index')]
     public function detail(Request $request): BaseJsonResponse
     {
         $id     = (int)$request->attributes->get('id');
@@ -69,6 +70,7 @@ class AttachmentController extends BaseController
      */
     #[Route(path: '/api/system/attachment/upload', methods: ['POST'], name: 'attachment.upload')]
     #[Auth(required: true)]
+    #[Permission('core:attachment:edit')]
     public function upload(Request $request): BaseJsonResponse
     {
         $file       = $request->files->get('file');
@@ -157,6 +159,7 @@ class AttachmentController extends BaseController
      */
     #[Route(path: '/api/system/attachment/move', methods: ['PUT'], name: 'attachment.move')]
     #[Auth(required: true)]
+    #[Permission('core:attachment:edit')]
     public function move(Request $request): BaseJsonResponse
     {
         $body       = $this->parseBody($request);
@@ -186,6 +189,7 @@ class AttachmentController extends BaseController
      */
     #[Route(path: '/api/system/attachment/download/{id}', methods: ['GET'], name: 'attachment.download')]
     #[Auth(required: true)]
+    #[Permission('core:attachment:index')]
     public function download(Request $request)
     {
         $id         = (int)$request->attributes->get('id');
@@ -213,6 +217,7 @@ class AttachmentController extends BaseController
      */
     #[Route(path: '/api/system/attachment/stats', methods: ['GET'], name: 'attachment.stats')]
     #[Auth(required: true)]
+    #[Permission('core:attachment:index')]
     public function stats(Request $request): BaseJsonResponse
     {
         $result = $this->attachmentService->getStorageStats();
@@ -226,6 +231,7 @@ class AttachmentController extends BaseController
      */
     #[Route(path: '/api/system/attachment-category/list', methods: ['GET'], name: 'attachmentCategory.list')]
     #[Auth(required: true)]
+    #[Permission('core:attachment:index')]
     public function categoryList(Request $request): BaseJsonResponse
     {
         $params = $request->query->all();
@@ -238,6 +244,7 @@ class AttachmentController extends BaseController
      */
     #[Route(path: '/api/system/attachment-category/detail/{id}', methods: ['GET'], name: 'attachmentCategory.detail')]
     #[Auth(required: true)]
+    #[Permission('core:attachment:index')]
     public function categoryDetail(Request $request): BaseJsonResponse
     {
         $id     = (int)$request->attributes->get('id');

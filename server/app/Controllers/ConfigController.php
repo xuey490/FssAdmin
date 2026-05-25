@@ -91,6 +91,7 @@ class ConfigController extends BaseController
 
     #[Route(path: '/api/core/configGroup/testEmail', methods: ['POST'], name: 'config.group.testEmail')]
     #[Auth(required: true, roles: ['admin', 'super_admin'])]
+    #[Permission('core:config:edit')]
     public function testEmail(Request $request): BaseJsonResponse
     {
         $data = $this->parseBody($request);

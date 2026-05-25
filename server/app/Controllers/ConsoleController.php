@@ -8,12 +8,14 @@ use Framework\Basic\BaseController;
 use Framework\Basic\BaseJsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Framework\Attributes\Route;
+use Framework\Attributes\Auth;
 use Framework\Attributes\Permission;
 use App\Models\SysUser;
 
 class ConsoleController extends BaseController
 {
     #[Route(path: '/api/core/console/list', methods: ['GET'], name: 'console.list')]
+    #[Auth(required: true)]
     #[Permission(['core:console:list'])]
     public function list(Request $request): BaseJsonResponse
     {
@@ -29,6 +31,7 @@ class ConsoleController extends BaseController
     }
 
     #[Route(path: '/api/core/console/login-bar', methods: ['GET'], name: 'console.login_bar')]
+    #[Auth(required: true)]
     #[Permission(['core:console:list'])]
     public function loginBar(Request $request): BaseJsonResponse
     {
@@ -40,6 +43,7 @@ class ConsoleController extends BaseController
     }
 
     #[Route(path: '/api/core/console/login-chart', methods: ['GET'], name: 'console.login_chart')]
+    #[Auth(required: true)]
     #[Permission(['core:console:list'])]
     public function loginChart(Request $request): BaseJsonResponse
     {
