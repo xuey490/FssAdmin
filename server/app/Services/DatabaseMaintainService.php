@@ -148,7 +148,7 @@ class DatabaseMaintainService extends BaseService
         }, $rows);
 
         return [
-            'data'  => $list,
+            'list'  => $list,
             'total' => $total,
             'page'  => $page,
             'limit' => $limit,

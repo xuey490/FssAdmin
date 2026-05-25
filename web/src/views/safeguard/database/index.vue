@@ -124,15 +124,7 @@
     refreshData
   } = useTable({
     core: {
-      apiFn: async (params: any) => {
-        const response = await api.list(params)
-		//console.log(response);
-        // 返回格式为 { code: 200, data: { list: [...], total: 10 }, message: 'success' }
-        return {
-          list: response.list || [],
-          total: response.total || 0
-        }
-      },
+      apiFn: api.list,
       apiParams: {
         ...searchForm.value
       },

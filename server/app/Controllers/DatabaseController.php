@@ -30,7 +30,7 @@ class DatabaseController extends BaseController
     {
         $params = $request->query->all();
         $list = $this->databaseService->getTables($params);
-        return $this->success(['data' => $list, 'total' => count($list)]);
+        return $this->success(['list' => $list, 'total' => count($list)]);
     }
 
     #[Route(path: '/api/core/database/table/dataSource', methods: ['GET'], name: 'database.table.dataSource')]
@@ -48,7 +48,7 @@ class DatabaseController extends BaseController
     public function tableDetailed(Request $request): BaseJsonResponse
     {
         $tableName = $request->query->get('table');
-        
+        return $this->fail('禁止远程访问数据库!');
         if (empty($tableName)) {
             return $this->fail('表名不能为空');
         }
@@ -68,7 +68,7 @@ class DatabaseController extends BaseController
     public function createSql(Request $request): BaseJsonResponse
     {
         $tableName = $request->query->get('table');
-        
+        return $this->fail('禁止远程访问数据库!');
         if (empty($tableName)) {
             return $this->fail('表名不能为空');
         }
