@@ -29,6 +29,8 @@
     </template>
 
     <AboutProject />
+
+    <SponsorQrPopup />
   </div>
 </template>
 
@@ -40,6 +42,7 @@
   import NewUser from './modules/new-user.vue'
   import Dynamic from './modules/dynamic-stats.vue'
   import TodoList from './modules/todo-list.vue'
+  import SponsorQrPopup from '@/components/custom/sponsor-qr-popup.vue'
   import { useCommon } from '@/hooks/core/useCommon'
   import { useUserStore } from '@/store/modules/user'
 

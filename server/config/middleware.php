@@ -31,7 +31,8 @@ return [
             'localhost',
             '127.0.0.1',
             'yourdomain.com',
-            'sub.yourdomain.com'
+            'sub.yourdomain.com',
+			'localhost:5173'
         ],
         'allowed_schemes' => ['http', 'https'],
         'except' => [
@@ -59,7 +60,7 @@ return [
     ],
 	
 	'debug'	=> [
-		'enabled' => env('APP_DEBUG' , true),
+		'enabled' => env('APP_DEBUG' , false),
 	],
 
     // 测试环境写操作保护（拦截 POST/PUT/PATCH/DELETE）
@@ -72,7 +73,8 @@ return [
             '/api/core/logout',
             '/api/core/refresh',
             '/api/core/captcha*',
-            '/api/core/switch-tenant',
+			'/api/core/switch-tenant',
+            '/api/flow/*',
         ],
     ],
 
