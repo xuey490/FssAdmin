@@ -1,7 +1,7 @@
 <!-- 登录、注册、忘记密码左侧背景 -->
 <template>
-  <div class="login-left-view">
-    <div class="logo">
+  <div class="login-left-view" :class="{ 'is-center-mode': centerMode }">
+    <div class="logo" v-if="!hideLogo">
       <ArtLogo class="icon" size="46" />
       <h1 class="title">{{ AppConfig.systemInfo.name }}</h1>
     </div>
@@ -78,6 +78,8 @@
   // 定义 props
   defineProps<{
     hideContent?: boolean // 是否隐藏内容，只显示 logo
+    hideLogo?: boolean // 是否隐藏左上角 logo（由页面固定 logo 接管）
+    centerMode?: boolean // 居中布局：背景全屏平铺
   }>()
 </script>
 
@@ -102,6 +104,17 @@
     padding: 15px;
     overflow: hidden;
     background-color: $bg-mix-light-9;
+
+    &.is-center-mode {
+      width: 100%;
+      padding: 0;
+
+      .left-img,
+      .text-wrap,
+      .circle-top-right {
+        display: none;
+      }
+    }
 
     .logo {
       position: relative;

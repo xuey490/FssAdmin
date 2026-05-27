@@ -1,14 +1,95 @@
 @reference '@styles/core/tailwind.css';
 
-/* 授权页右侧区域 */
+/* 登录页布局容器 */
+.login-page {
+  @apply relative overflow-hidden;
+}
+
+/* 固定 Logo：始终左上角 */
+.login-page-logo {
+  @apply fixed top-[15px] left-[15px] z-20 flex items-center max-sm:left-6;
+}
+
+.login-page-logo .title {
+  @apply ml-2.5 text-xl font-normal text-g-900;
+}
+
+/* 登录框层：全屏 overlay，垂直始终居中，水平按布局平移 */
+.login-page .login-main {
+  @apply absolute inset-0 z-10 flex items-center pointer-events-none;
+  flex: none;
+  width: 100%;
+  height: 100%;
+}
+
+.login-page .auth-right-wrap {
+  @apply relative pointer-events-auto w-[440px] h-auto py-6 px-8 m-0 overflow-hidden max-sm:px-7 max-sm:w-full;
+  background-color: var(--default-box-color);
+  border-radius: calc(var(--custom-radius) + 4px);
+  box-shadow: 0 8px 40px rgb(0 0 0 / 8%);
+}
+
+/* 居中：背景全屏平铺，登录框水平居中 */
+.login-layout-center {
+  @apply block;
+}
+
+.login-layout-center .login-bg,
+.login-layout-center .login-left-view {
+  @apply absolute inset-0 z-0;
+  width: 100% !important;
+  height: 100%;
+}
+
+.login-layout-center .login-main {
+  @apply justify-center;
+}
+
+/* 居左：背景在右，登录框自中心平移至左侧 */
+.login-layout-left {
+  @apply block;
+}
+
+.login-layout-left .login-bg,
+.login-layout-left .login-left-view {
+  @apply absolute top-0 right-0 z-0;
+  left: auto;
+  flex: none;
+  width: 65vw !important;
+  height: 100%;
+}
+
+.login-layout-left .login-main {
+  @apply justify-start;
+  padding-left: max(5vw, 32px);
+}
+
+/* 居右：背景在左，登录框自中心平移至右侧 */
+.login-layout-right {
+  @apply block;
+}
+
+.login-layout-right .login-bg,
+.login-layout-right .login-left-view {
+  @apply absolute top-0 left-0 z-0;
+  right: auto;
+  flex: none;
+  width: 65vw !important;
+  height: 100%;
+}
+
+.login-layout-right .login-main {
+  @apply justify-end;
+  padding-right: max(5vw, 32px);
+}
+
+/* 授权页表单区域 */
 .auth-right-wrap {
-  @apply absolute inset-0 w-[440px] h-[650px] py-[5px] m-auto overflow-hidden
-    max-sm:px-7 max-sm:w-full
-    animate-[slideInRight_0.6s_cubic-bezier(0.25,0.46,0.45,0.94)_forwards]
+  @apply animate-[slideInRight_0.6s_cubic-bezier(0.25,0.46,0.45,0.94)_forwards]
     max-md:animate-none;
 
   .form {
-    @apply h-full py-[40px];
+    @apply py-7;
   }
 
   .title {
@@ -16,7 +97,7 @@
   }
 
   .sub-title {
-    @apply mt-[10px] text-g-600 text-sm;
+    @apply mt-2 text-g-600 text-sm;
   }
 
   .custom-height {
@@ -34,5 +115,42 @@
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@media only screen and (width <= 1600px) {
+  .login-layout-left .login-bg,
+  .login-layout-left .login-left-view,
+  .login-layout-right .login-bg,
+  .login-layout-right .login-left-view {
+    width: 60vw !important;
+  }
+}
+
+@media only screen and (width <= 1180px) {
+  .login-layout-center,
+  .login-layout-left,
+  .login-layout-right {
+    @apply block;
+  }
+
+  .login-layout-center .login-bg,
+  .login-layout-left .login-bg,
+  .login-layout-right .login-bg {
+    @apply hidden;
+  }
+
+  .login-layout-center .login-main,
+  .login-layout-left .login-main,
+  .login-layout-right .login-main {
+    @apply justify-center px-0;
+    background-color: var(--default-box-color);
+  }
+
+  .login-layout-center .auth-right-wrap,
+  .login-layout-left .auth-right-wrap,
+  .login-layout-right .auth-right-wrap {
+    @apply bg-transparent shadow-none;
+    border-radius: 0;
   }
 }

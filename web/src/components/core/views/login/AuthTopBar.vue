@@ -1,14 +1,53 @@
 <!-- 授权页右上角组件 -->
 <template>
   <div
-    class="absolute w-full flex-cb top-4.5 z-10 flex-c !justify-end max-[1180px]:!justify-between"
+    :class="[
+      fixedToViewport
+        ? 'login-auth-topbar fixed left-0 right-0 top-4.5 z-20 flex w-full flex-c !justify-end'
+        : 'absolute w-full flex-cb top-4.5 z-10 flex-c !justify-end max-[1180px]:!justify-between'
+    ]"
   >
-    <div class="flex-cc !hidden max-[1180px]:!flex ml-2 max-sm:ml-6">
+    <div
+      v-if="!fixedToViewport"
+      class="flex-cc !hidden max-[1180px]:!flex ml-2 max-sm:ml-6"
+    >
       <ArtLogo class="icon" size="46" />
       <h1 class="text-xl ont-mediumf ml-2">{{ AppConfig.systemInfo.name }}</h1>
     </div>
 
     <div class="flex-cc gap-1.5 mr-2 max-sm:mr-5">
+      <ElDropdown
+        v-if="showLoginLayout"
+        trigger="hover"
+        @command="handleLayoutChange"
+        popper-class="loginLayoutDropDownStyle"
+        class="max-[1180px]:!hidden"
+      >
+        <div class="btn layout-btn h-8 w-8 c-p flex-cc tad-300">
+          <ArtSvgIcon
+            icon="ri:layout-line"
+            class="text-xl text-g-800 transition-colors duration-300"
+          />
+        </div>
+        <template #dropdown>
+          <ElDropdownMenu>
+            <ElDropdownItem
+              v-for="item in layoutOptions"
+              :key="item.value"
+              :command="item.value"
+              :class="{ 'is-selected': loginLayout === item.value }"
+            >
+              <ArtSvgIcon :icon="item.icon" class="text-base mr-2" />
+              <span class="menu-txt">{{ item.label }}</span>
+              <ArtSvgIcon
+                v-if="loginLayout === item.value"
+                icon="ri:check-fill"
+                class="text-base ml-2"
+              />
+            </ElDropdownItem>
+          </ElDropdownMenu>
+        </template>
+      </ElDropdown>
       <div class="color-picker-expandable relative flex-c max-sm:!hidden">
         <div
           class="color-dots absolute right-0 rounded-full flex-c gap-2 rounded-5 px-2.5 py-2 pr-9 pl-2.5 opacity-0"
@@ -81,6 +120,36 @@
   import AppConfig from '@/config'
 
   defineOptions({ name: 'AuthTopBar' })
+
+  type LoginLayout = 'center' | 'left' | 'right'
+
+  const props = withDefaults(
+    defineProps<{
+      showLoginLayout?: boolean
+      loginLayout?: LoginLayout
+      fixedToViewport?: boolean
+    }>(),
+    {
+      showLoginLayout: false,
+      loginLayout: 'center',
+      fixedToViewport: false
+    }
+  )
+
+  const emit = defineEmits<{
+    'update:loginLayout': [value: LoginLayout]
+  }>()
+
+  const layoutOptions: { label: string; value: LoginLayout; icon: string }[] = [
+    { label: '居中', value: 'center', icon: 'ri:layout-column-line' },
+    { label: '居左', value: 'left', icon: 'ri:layout-left-line' },
+    { label: '居右', value: 'right', icon: 'ri:layout-right-line' }
+  ]
+
+  const handleLayoutChange = (layout: LoginLayout) => {
+    if (props.loginLayout === layout) return
+    emit('update:loginLayout', layout)
+  }
 
   const settingStore = useSettingStore()
   const userStore = useUserStore()

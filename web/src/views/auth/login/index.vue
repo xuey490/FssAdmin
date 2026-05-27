@@ -1,11 +1,20 @@
 <!-- 登录页面 -->
 <template>
-  <div class="flex w-full h-screen">
-    <LoginLeftView />
+  <div class="login-page flex w-full h-screen" :class="`login-layout-${loginLayout}`">
+    <div class="login-page-logo">
+      <ArtLogo class="icon" size="46" />
+      <h1 class="title">{{ systemName }}</h1>
+    </div>
 
-    <div class="relative flex-1">
-      <AuthTopBar />
+    <AuthTopBar
+      fixed-to-viewport
+      show-login-layout
+      v-model:login-layout="loginLayout"
+    />
 
+    <LoginLeftView class="login-bg" hide-logo :center-mode="loginLayout === 'center'" />
+
+    <div class="login-main">
       <div class="auth-right-wrap">
         <div class="form">
           <h3 class="title">{{ $t('login.title') }}</h3>
@@ -16,7 +25,7 @@
             :rules="rules"
             :key="formKey"
             @keyup.enter="handleSubmit"
-            style="margin-top: 25px"
+            class="login-form"
           >
             <ElFormItem prop="username">
               <ElInput
@@ -82,7 +91,7 @@
               }}</RouterLink> -->
             </div>
 
-            <div style="margin-top: 30px">
+            <div class="login-submit-wrap">
               <ElButton
                 class="w-full custom-height"
                 type="primary"
@@ -116,6 +125,9 @@
   import { ElNotification, type FormInstance, type FormRules } from 'element-plus'
 
   defineOptions({ name: 'Login' })
+
+  type LoginLayout = 'center' | 'left' | 'right'
+  const loginLayout = ref<LoginLayout>('center')
 
   const { t, locale } = useI18n()
   const formKey = ref(0)
@@ -282,5 +294,17 @@
 <style lang="scss" scoped>
   :deep(.el-select__wrapper) {
     height: 40px !important;
+  }
+
+  .login-form {
+    margin-top: 20px;
+
+    :deep(.el-form-item) {
+      margin-bottom: 16px;
+    }
+  }
+
+  .login-submit-wrap {
+    margin-top: 20px;
   }
 </style>
