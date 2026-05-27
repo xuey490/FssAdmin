@@ -24,9 +24,24 @@
 
 .login-page .auth-right-wrap {
   @apply relative pointer-events-auto w-[440px] h-auto py-6 px-8 m-0 overflow-hidden max-sm:px-7 max-sm:w-full;
+}
+
+.login-layout-center .auth-right-wrap {
   background-color: var(--default-box-color);
   border-radius: calc(var(--custom-radius) + 4px);
   box-shadow: 0 8px 40px rgb(0 0 0 / 8%);
+}
+
+.login-layout-left,
+.login-layout-right {
+  background-color: var(--default-box-color);
+}
+
+.login-layout-left .auth-right-wrap,
+.login-layout-right .auth-right-wrap {
+  background-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* 居中：背景全屏平铺，登录框水平居中 */
