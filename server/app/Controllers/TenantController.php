@@ -62,7 +62,7 @@ class TenantController extends BaseController
      * @return BaseJsonResponse
      */
     #[Route(path: '/api/system/tenant/detail/{id}', methods: ['GET'], name: 'tenant.detail')]
-    #[Auth(required: true)]
+    #[Auth(required: true, roles: ['admin', 'super_admin'])]
     #[Permission('core:tenant:read')]
     public function detail(Request $request): BaseJsonResponse
     {
@@ -127,7 +127,7 @@ class TenantController extends BaseController
      * @return BaseJsonResponse
      */
     #[Route(path: '/api/system/tenant/update/{id}', methods: ['PUT'], name: 'tenant.update')]
-    ##[Auth(required: true, roles: ['admin', 'super_admin'])]
+    #[Auth(required: true, roles: ['admin', 'super_admin'])]
     #[Permission('core:tenant:update')]
     public function update(Request $request): BaseJsonResponse
     {
@@ -233,7 +233,7 @@ class TenantController extends BaseController
      * @return BaseJsonResponse
      */
     #[Route(path: '/api/system/tenant/users/{tenantId}', methods: ['GET'], name: 'tenant.users')]
-    ##[Auth(required: true, roles: ['admin', 'super_admin'])]
+    #[Auth(required: true)]
     #[Permission('core:tenant:read')]
     public function users(Request $request): BaseJsonResponse
     {
@@ -257,7 +257,7 @@ class TenantController extends BaseController
      * @return BaseJsonResponse
      */
     #[Route(path: '/api/system/tenant/available-users/{tenantId}', methods: ['GET'], name: 'tenant.availableUsers')]
-    ##[Auth(required: true, roles: ['admin', 'super_admin'])]
+    #[Auth(required: true)]
     #[Permission('core:tenant:read')]
     public function availableUsers(Request $request): BaseJsonResponse
     {
