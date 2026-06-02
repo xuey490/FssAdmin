@@ -704,9 +704,17 @@ class LaravelORMFactory
      */
     protected function filterWhere(array $where = []): array
     {
-        $fields = $this->getModel()->getFields(); // 获取模型的可填充字段
+        $model = $this->getModel();
+        // Eloquent 无 getFields()，改用获取实际表列名；若失败则回退到 getFillable()
+        try {
+            $fields = $model->getConnection()
+                ->getSchemaBuilder()
+                ->getColumnListing($model->getTable());
+        } catch (\Throwable) {
+            $fields = $model->getFillable();
+        }
         foreach ($where as $key => $item) {
-            // 检查键是否在可填充字段中
+            // 检查键是否在表字段中
             if (!in_array($key, $fields)) {
                 unset($where[$key]); // 过滤掉不存在的字段
             }
