@@ -75,7 +75,7 @@
             v-model:page-size="pagination.limit"
             :total="pagination.total"
             layout="total, prev, pager, next"
-            small
+            size="small"
             background
             @current-change="handlePageChange"
             @size-change="handleSizeChange"
