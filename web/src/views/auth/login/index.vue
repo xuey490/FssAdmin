@@ -113,6 +113,44 @@
         </div>
       </div>
     </div>
+
+    <ElDialog
+      v-model="welcomeDialogVisible"
+      title="FssAdmin"
+      width="520px"
+      align-center
+      :close-on-click-modal="false"
+    >
+      <div class="welcome-dialog">
+        <p class="welcome-dialog__intro">
+          FssAdmin 努力成为 PHP 届后台管理系统的 RuoYi，一个后台适配多个多个前端系统
+        </p>
+        <ul class="welcome-dialog__list">
+          <li>
+            适配 Art Design Pro：
+            <a href="https://v3.phpframe.org" target="_blank" rel="noopener noreferrer">https://v3.phpframe.org</a>
+            <span class="welcome-dialog__tag">（本演示，已开源）</span>
+          </li>
+          <li>
+            适配 SoyBeanAdmin：
+            <a href="https://v4.phpframe.org" target="_blank" rel="noopener noreferrer">https://v4.phpframe.org</a>
+            <span class="welcome-dialog__tag">（已开源）</span>
+          </li>
+          <li>
+            适配 Vben5-Ele：
+            <a href="https://v5.phpframe.org" target="_blank" rel="noopener noreferrer">https://v5.phpframe.org</a>
+          </li>
+        </ul>
+        <p class="welcome-dialog__footer">目前基础底座已开源，欢迎 Star：</p>
+        <div class="welcome-dialog__links">
+          <a href="https://gitee.com/fsscms/FssAdmin" target="_blank" rel="noopener noreferrer">Gitee</a>
+          <a href="https://github.com/xuey490/FssAdmin" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </div>
+      </div>
+      <template #footer>
+        <ElButton type="primary" @click="welcomeDialogVisible = false">知道了</ElButton>
+      </template>
+    </ElDialog>
   </div>
 </template>
 
@@ -167,12 +205,23 @@
   }))
 
   const loading = ref(false)
+  const welcomeDialogVisible = ref(false)
+  let welcomeDialogTimer: ReturnType<typeof setTimeout> | undefined
 
   onMounted(() => {
     refreshCaptcha()
     // 如果有默认用户名，自动加载租户列表
     if (formData.username) {
       loadTenantList()
+    }
+    welcomeDialogTimer = setTimeout(() => {
+      welcomeDialogVisible.value = true
+    }, 2000)
+  })
+
+  onUnmounted(() => {
+    if (welcomeDialogTimer) {
+      clearTimeout(welcomeDialogTimer)
     }
   })
 
@@ -306,5 +355,60 @@
 
   .login-submit-wrap {
     margin-top: 20px;
+  }
+
+  .welcome-dialog {
+    line-height: 1.7;
+    font-size: 14px;
+    color: var(--el-text-color-regular);
+
+    &__intro {
+      margin: 0 0 16px;
+      font-weight: 500;
+      color: var(--el-text-color-primary);
+    }
+
+    &__list {
+      margin: 0 0 16px;
+      padding-left: 20px;
+
+      li + li {
+        margin-top: 10px;
+      }
+
+      a {
+        color: var(--el-color-primary);
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    &__tag {
+      color: var(--el-text-color-secondary);
+      font-size: 13px;
+    }
+
+    &__footer {
+      margin: 0 0 10px;
+      color: var(--el-text-color-primary);
+    }
+
+    &__links {
+      display: flex;
+      gap: 16px;
+
+      a {
+        color: var(--el-color-primary);
+        font-weight: 500;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
   }
 </style>
