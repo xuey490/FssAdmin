@@ -4,8 +4,10 @@
       <div class="sponsor-page__header">
         <h2 class="sponsor-page__title">赞助方式</h2>
         <p class="sponsor-page__desc">
-          如果您觉得这个项目对您有帮助，可以请作者喝一杯咖啡，感谢您对开源项目的支持。
-          赞助金额超过￥500元，请添加作者微信号：xdbyvibm6 ,将提供提供全套源码！
+		  If this project has been helpful to you, donations are welcome! Your support will be used to purchase tools like ChatGPT, Copilot,Claude Code, Cursor, etc., to improve development efficiency and make the project even better. Thank you for your encouragement and support!<br />
+		  如果这个项目对你有所帮助，欢迎捐赠支持！你的支持将用于订阅ChatGPT、Copilot、Claude Code、Cursor 等工具，以提升开发效率，让项目变得更好。感谢你的鼓励与支持！<br />
+		  If your sponsorship exceeds ¥200, please contact the author via email: xuey863toy@gmail.com. Full source code will be provided.<br />
+          赞助金额超过￥200元，请添加作者微信号：<span @click="copyInstanceNo"><b>xdbyvibm6</b></span> ,将提供提供全套源码！
         </p>
       </div>
 
@@ -31,6 +33,7 @@
         <p class="sponsor-page__sub-title">您的赞助将用于：</p>
         <ul class="sponsor-page__list">
           <li>项目基础设施投入（服务器、域名、带宽等）。</li>
+		  <li>订阅ChatGPT、Copilot、Claude Code、Cursor等工具</li>
           <li>支持开发者持续维护与新功能开发。</li>
           <li>...</li>
         </ul>
@@ -53,6 +56,7 @@
 
 <script setup lang="ts">
   defineOptions({ name: 'Sponsor' })
+  import { ElMessage } from 'element-plus'  
 
   type QrItem = {
     key: 'alipay' | 'wechat'
@@ -61,7 +65,18 @@
     hint: string
     placeholder: string
   }
-
+  
+  const copyInstanceNo = async () => {
+    const no = String('xdbyvibm6' || '').trim()
+    if (!no) return
+    try {
+      await navigator.clipboard.writeText(no)
+      ElMessage.success('微信号已复制')
+    } catch {
+      ElMessage.warning('复制失败，请手动复制')
+    }
+  }
+  
   const qrItems = ref<QrItem[]>([
     {
       key: 'alipay',

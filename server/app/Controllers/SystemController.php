@@ -172,7 +172,7 @@ class SystemController extends BaseController
         ob_start();
         imagepng($image);
         $imageData = ob_get_clean();
-        imagedestroy($image);
+        unset($image);
 
         return [
             'code' => $code,
@@ -189,7 +189,7 @@ class SystemController extends BaseController
      */
     #[Route(path: '/api/core/system/getLoginLogList', methods: ['GET'], name: 'system.loginLogList')]
     #[Auth(required: true)]
-    #[Permission(['core:logs:login'])]
+    ##[Permission(['core:logs:login'])]
     public function getLoginLogList(Request $request): BaseJsonResponse
     {
         $operator = $this->getOperatorId($request);
@@ -216,7 +216,7 @@ class SystemController extends BaseController
      */
     #[Route(path: '/api/core/system/getOperationLogList', methods: ['GET'], name: 'system.operationLogList')]
     #[Auth(required: true)]
-    #[Permission(['core:logs:Oper'])]
+    ##[Permission(['core:logs:Oper'])]
     public function getOperationLogList(Request $request): BaseJsonResponse
     {
         $params = [
@@ -388,7 +388,7 @@ class SystemController extends BaseController
     {
         $params = [
             'page' => (int)$this->input('page', 1),
-            'limit' => (int)$this->input('limit', 20),
+            'limit' => (int)$this->input('limit', 5),
             'keyword' => $this->input('keyword', ''),
             'username' => $this->input('username', ''),
             'status' => $this->input('status', ''),
@@ -396,6 +396,28 @@ class SystemController extends BaseController
         ];
 
         $result = $this->userService->getList($params);
+
+        return $this->success($result);
+    }
+
+    /**
+     * 获取用户下拉选择列表（专用于组件）
+     *
+     * @param Request $request 请求对象
+     * @return BaseJsonResponse
+     */
+    #[Route(path: '/api/core/system/getUserSelectorList', methods: ['GET'], name: 'system.getUserSelectorList')]
+    #[Auth(required: true)]
+    public function getUserSelectorList(Request $request): BaseJsonResponse
+    {
+        $params = [
+            'page' => (int)$this->input('page', 1, true, $request),
+            'limit' => (int)$this->input('limit', 5, true, $request),
+            'keyword' => $this->input('keyword', '', true, $request),
+            'status' => $this->input('status', '', true, $request),
+        ];
+
+        $result = $this->userService->getSelectorList($params);
 
         return $this->success($result);
     }
@@ -573,7 +595,7 @@ class SystemController extends BaseController
      */
     #[Route(path: '/api/core/system/statistics', methods: ['GET'], name: 'system.statistics')]
     #[Auth(required: true)]
-    #[Permission(['core:console:list'])]
+    ##[Permission(['core:logs:login'])]
     public function statistics(Request $request): BaseJsonResponse
     {
         $userCount    = \App\Models\SysUser::count();
@@ -597,7 +619,7 @@ class SystemController extends BaseController
      */
     #[Route(path: '/api/core/system/loginChart', methods: ['GET'], name: 'system.loginChart')]
     #[Auth(required: true)]
-    #[Permission(['core:console:list'])]
+    ##[Permission(['core:logs:login'])]
     public function loginChart(Request $request): BaseJsonResponse
     {
         $days = 30;
@@ -625,7 +647,7 @@ class SystemController extends BaseController
      */
     #[Route(path: '/api/core/system/loginBarChart', methods: ['GET'], name: 'system.loginBarChart')]
     #[Auth(required: true)]
-    #[Permission(['core:console:list'])]
+    ##[Permission(['core:logs:login'])]
     public function loginBarChart(Request $request): BaseJsonResponse
     {
         $months = 12;

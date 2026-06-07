@@ -278,6 +278,7 @@ class AuthMiddleware
     protected function extractAccessToken(Request $request): ?string
     {
         $header = $request->headers->get('Authorization');
+		//dump($header);
 		if($header !== '' || !empty($header)){
 			if (is_string($header) && str_starts_with($header, 'Bearer ')) {
 				return substr($header, 7);
@@ -310,6 +311,11 @@ class AuthMiddleware
 
         // 验证码接口（前缀匹配）
         if (str_starts_with($path, '/api/core/captcha')) {
+            return true;
+        }
+
+        // 公开配置读取（登录页站点名等）
+        if (str_starts_with($path, '/api/core/config/public/')) {
             return true;
         }
 

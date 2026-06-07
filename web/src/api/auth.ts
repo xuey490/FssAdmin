@@ -2,6 +2,16 @@ import request from '@/utils/http'
 import { AppRouteRecord } from '@/types/router'
 
 /**
+ * 获取公开系统配置值（无需登录）
+ * @param key 配置键，如 site_name
+ */
+export function fetchPublicConfigValue(key: string) {
+  return request.get<{ key: string; value: string }>({
+    url: `/api/core/config/public/${encodeURIComponent(key)}`
+  })
+}
+
+/**
  * 获取验证码
  * @returns 响应
  */

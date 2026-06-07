@@ -104,6 +104,25 @@ class ConfigController extends BaseController
 
     // ==================== 配置项管理 ====================
 
+    /**
+     * 按配置键获取配置值（公开接口，登录页等场景使用）
+     */
+    #[Route(path: '/api/core/config/public/{key}', methods: ['GET'], name: 'config.publicValue')]
+    public function publicValue(Request $request): BaseJsonResponse
+    {
+        $key = trim((string)$request->attributes->get('key'));
+        if ($key === '') {
+            return $this->fail('配置键不能为空');
+        }
+
+        $value = $this->configService->getByKey($key);
+
+        return $this->success([
+            'key' => $key,
+            'value' => $value ?? '',
+        ]);
+    }
+
     #[Route(path: '/api/core/config/list', methods: ['GET'], name: 'config.list')]
     #[Auth(required: true)]
     #[Permission('core:config:index')]

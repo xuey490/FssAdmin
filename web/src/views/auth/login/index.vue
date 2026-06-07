@@ -79,7 +79,7 @@
                   />
                 </template>
               </ElInput>
-              <b>测试环境，验证码随便填</b>
+             
             </ElFormItem>
 
             <div class="flex-cb mt-2 text-sm">
@@ -115,6 +115,7 @@
     </div>
 
     <ElDialog
+      v-if="homeDebugEnabled"
       v-model="welcomeDialogVisible"
       title="FssAdmin"
       width="520px"
@@ -159,7 +160,13 @@
   import { useUserStore } from '@/store/modules/user'
   import { useI18n } from 'vue-i18n'
   import { HttpError } from '@/utils/http/error'
-  import { fetchCaptcha, fetchLogin, fetchGetUserInfo, fetchTenantsByUsername } from '@/api/auth'
+  import {
+    fetchCaptcha,
+    fetchLogin,
+    fetchGetUserInfo,
+    fetchTenantsByUsername,
+    fetchPublicConfigValue
+  } from '@/api/auth'
   import { ElNotification, type FormInstance, type FormRules } from 'element-plus'
 
   defineOptions({ name: 'Login' })
@@ -182,13 +189,13 @@
     'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
   )
 
-  const systemName = AppConfig.systemInfo.name
+  const systemName = ref(AppConfig.systemInfo.name)
   const formRef = ref<FormInstance>()
 
   const formData = reactive({
     username: 'admin',
     password: '123456',
-    code: '',
+    code: '1234',
     uuid: '',
     tenant_id: undefined as number | undefined,
     rememberPassword: true
@@ -205,18 +212,34 @@
   }))
 
   const loading = ref(false)
+  const homeDebugEnabled = import.meta.env.VITE_HOME_DEGBUG === 'true'
   const welcomeDialogVisible = ref(false)
   let welcomeDialogTimer: ReturnType<typeof setTimeout> | undefined
 
+  const loadSystemName = async () => {
+    try {
+      const res = await fetchPublicConfigValue('site_name')
+      const name = res?.value?.trim()
+      if (name) {
+        systemName.value = name
+      }
+    } catch (error) {
+      console.error('[Login] 加载站点名称失败:', error)
+    }
+  }
+
   onMounted(() => {
+    loadSystemName()
     refreshCaptcha()
     // 如果有默认用户名，自动加载租户列表
     if (formData.username) {
       loadTenantList()
     }
-    welcomeDialogTimer = setTimeout(() => {
-      welcomeDialogVisible.value = true
-    }, 2000)
+    if (homeDebugEnabled) {
+      welcomeDialogTimer = setTimeout(() => {
+        welcomeDialogVisible.value = true
+      }, 2000)
+    }
   })
 
   onUnmounted(() => {
