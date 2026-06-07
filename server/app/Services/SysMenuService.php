@@ -15,6 +15,7 @@ namespace App\Services;
 use App\Models\SysMenu;
 use App\Models\SysRoleMenu;
 use App\Models\SysUserMenu;
+use App\Models\SysUser;
 use App\Services\Casbin\CasbinService;
 use App\Dao\SysMenuDao;
 use Framework\Basic\BaseService;
@@ -154,7 +155,10 @@ class SysMenuService extends BaseService
         $data['created_by'] = $operator;
         $data['updated_by'] = $operator;
 
-        return SysMenu::create($data);
+        $menu = SysMenu::create($data);
+        SysUser::clearAllMenuTreeCache();
+
+        return $menu;
     }
 
     /**
@@ -247,7 +251,10 @@ class SysMenuService extends BaseService
      */
     public function updateStatus(int $menuId, int $status): bool
     {
-        return $this->menuDao->updateStatus($menuId, $status);
+        $result = $this->menuDao->updateStatus($menuId, $status);
+        SysUser::clearAllMenuTreeCache();
+
+        return $result;
     }
 
     /**

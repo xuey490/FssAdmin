@@ -14,6 +14,7 @@ namespace App\Models;
 
 use Framework\Basic\BaseLaORMModel;
 use Framework\Tenant\TenantContext;
+use Psr\SimpleCache\CacheInterface;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -420,8 +421,6 @@ class SysUser extends BaseLaORMModel
             $roleIds = $this->getRoleIds();
         }
 
-        
-
         // 超级管理员拥有所有菜单（菜单为全局共享资源）
         if ($this->isSuperAdmin()) {
             return SysMenu::where('status', SysMenu::STATUS_ENABLED)
@@ -434,9 +433,11 @@ class SysUser extends BaseLaORMModel
         if (!empty($roleIds) && $tenantId) {
             $roleMenuIds = SysRoleMenu::whereIn('role_id', $roleIds)
                 ->where('tenant_id', $tenantId)
+                //->pluck('menu_id','id')
                 ->pluck('menu_id')
                 ->toArray();
         }
+        //dump($roleMenuIds);
         
         // 2. 获取用户个人菜单ID（按当前租户过滤）
         $userMenuIds = [];
@@ -463,6 +464,17 @@ class SysUser extends BaseLaORMModel
      */
     public function getMenuTree(): array
     {
+        $tenantId = TenantContext::getTenantId();
+        $cacheKey = 'user_menu_tree_v' . self::getMenuTreeVersion() . '_' . $this->id . '_tenant_' . ($tenantId ?? '0');
+
+        /** @var CacheInterface $cache */
+        $cache = app('cache');
+
+        $cached = $cache->get($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
+
         $menuIds = $this->getMergedMenuIds();
 
         if (empty($menuIds)) {
@@ -484,7 +496,12 @@ class SysUser extends BaseLaORMModel
             return [];
         }
 
-        return $this->buildMenuTree($menus, 0);
+        $tree = $this->buildMenuTree($menus, 0);
+
+        // Cache the tree for 300 seconds
+        $cache->set($cacheKey, $tree, 600);
+
+        return $tree;
     }
 
     /**
@@ -494,6 +511,7 @@ class SysUser extends BaseLaORMModel
      * @param int   $parentId 父ID
      * @return array
      */
+
     protected function buildMenuTree(array $menus, int $parentId = 0): array
     {
         $tree = [];
@@ -510,7 +528,7 @@ class SysUser extends BaseLaORMModel
     }
 
     /**
-     * 获取用户的所有权限标识
+     * Get user permission slugs
      *
      * @return array
      */
@@ -530,9 +548,9 @@ class SysUser extends BaseLaORMModel
     }
 
     /**
-     * 更新最后登录信息
+     * Update last login info
      *
-     * @param string $ip 登录IP
+     * @param string $ip Login IP
      * @return void
      */
     public function updateLoginInfo(string $ip): void
@@ -540,5 +558,43 @@ class SysUser extends BaseLaORMModel
         $this->login_ip = $ip;
         $this->login_time = date('Y-m-d H:i:s',time());
         $this->save();
+    }
+
+    /**
+     * Clear menu tree cache for a specific user
+     *
+     * @param int      $userId    User ID
+     * @param int|null $tenantId  Tenant ID, null uses current tenant context
+     * @return void
+     */
+    public static function clearMenuTreeCache(int $userId, ?int $tenantId = null): void
+    {
+        $tenantId = $tenantId ?? TenantContext::getTenantId();
+        $cacheKey = 'user_menu_tree_v' . self::getMenuTreeVersion() . '_' . $userId . '_tenant_' . ($tenantId ?? '0');
+        $cache = app('cache');
+        $cache->delete($cacheKey);
+    }
+
+    /**
+     * Clear all users menu tree cache by incrementing version
+     *
+     * Call when menu structure/status changes to invalidate all cached trees at once.
+     * @return void
+     */
+    public static function clearAllMenuTreeCache(): void
+    {
+        $cache = app('cache');
+        $version = (int)$cache->get('user_menu_tree_version', 0);
+        $cache->set('user_menu_tree_version', $version + 1, 86400);
+    }
+
+    /**
+     * Get the current menu tree cache version
+     *
+     * @return int
+     */
+    public static function getMenuTreeVersion(): int
+    {
+        return (int)app('cache')->get('user_menu_tree_version', 0);
     }
 }

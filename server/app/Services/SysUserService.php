@@ -32,6 +32,7 @@ use Framework\Tenant\TenantContext;
  */
 class SysUserService extends BaseService
 {
+    protected const SYSTEM_PROTECTED_USER_ID = 1;
     /**
      * DAO 实例
      * @var SysUserDao
@@ -250,12 +251,77 @@ class SysUserService extends BaseService
     }
 
     /**
+     * 获取用户下拉选择列表（专用于选择组件）
+     *
+     * @param array $params 查询参数
+     * @return array
+     */
+    public function getSelectorList(array $params): array
+    {
+        $page = max(1, (int)($params['page'] ?? 1));
+        $limit = max(1, (int)($params['limit'] ?? 5));
+        $keyword = trim((string)($params['keyword'] ?? ''));
+        $status = $params['status'] ?? '';
+
+        $tenantId = TenantContext::getTenantId();
+        $query = SysUser::query();
+
+        // 仅返回当前租户用户
+        if ($tenantId) {
+            $tenantUserIds = SysUserTenant::where('tenant_id', $tenantId)
+                ->pluck('user_id')
+                ->toArray();
+
+            if (empty($tenantUserIds)) {
+                return [
+                    'list' => [],
+                    'total' => 0,
+                    'page' => $page,
+                    'limit' => $limit,
+                ];
+            }
+
+            $query->whereIn('id', $tenantUserIds);
+        }
+
+        // 搜索用户名 / 姓名 / 手机号
+        if ($keyword !== '') {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('username', 'like', "%{$keyword}%")
+                    ->orWhere('realname', 'like', "%{$keyword}%")
+                    ->orWhere('phone', 'like', "%{$keyword}%");
+            });
+        }
+
+        if ($status !== '') {
+            $query->where('status', (int)$status);
+        }
+
+        $total = (int)$query->count();
+
+        $list = $query->select(['id', 'username', 'realname', 'phone', 'avatar', 'email', 'status'])
+            ->orderBy('id', 'desc')
+            ->skip(($page - 1) * $limit)
+            ->take($limit)
+            ->get()
+            ->toArray();
+
+        return [
+            'list' => $list,
+            'total' => $total,
+            'page' => $page,
+            'limit' => $limit,
+        ];
+    }
+
+    /**
      * 获取用户详情
      *
      * @param int $userId 用户 ID
      * @return array|null
      */
     public function getDetail(int $userId): ?array
+
     {
         $user = SysUser::find($userId);
 
@@ -386,6 +452,9 @@ class SysUserService extends BaseService
                 \App\Models\SysUserDept::syncUserDept($user->id, $tenantId, $data['dept_id'], $operator);
             }
 
+            // Clear menu tree cache if user has role/menu assignments
+            SysUser::clearMenuTreeCache($user->id);
+
             return $user;
         });
     }
@@ -400,6 +469,9 @@ class SysUserService extends BaseService
      */
     public function update(int $userId, array $data, int $operator = 0): bool
     {
+        if ($userId === self::SYSTEM_PROTECTED_USER_ID) {
+            throw new \Exception('系统内置用户不允许编辑');
+        }
         return $this->transaction(function () use ($userId, $data, $operator) {
 
             //app('cache')->set('update_user_' . $operator, $data);
@@ -460,6 +532,11 @@ class SysUserService extends BaseService
                 \App\Models\SysUserDept::syncUserDept($userId, $tenantId, $data['dept_id'], $operator);
             }
 
+            // Clear menu tree cache if roles or menus changed
+            if (isset($data['role_ids']) || isset($data['menu_ids'])) {
+                SysUser::clearMenuTreeCache($userId);
+            }
+
             return true;
         });
     }
@@ -472,6 +549,9 @@ class SysUserService extends BaseService
      */
     public function delete(int $userId): bool
     {
+        if ($userId === self::SYSTEM_PROTECTED_USER_ID) {
+            throw new \Exception('系统内置用户不允许删除');
+        }
         $user = SysUser::find($userId);
         if (!$user) {
             return false;
@@ -510,6 +590,9 @@ class SysUserService extends BaseService
      */
     public function updateStatus(int $userId, int $status): bool
     {
+        if ($userId === self::SYSTEM_PROTECTED_USER_ID) {
+            throw new \Exception('系统内置用户状态不允许修改');
+        }
         return $this->userDao->updateStatus($userId, $status);
     }
 
@@ -613,6 +696,9 @@ class SysUserService extends BaseService
 
         // 同步用户菜单权限到 Casbin
         $this->casbinService->syncUserMenuPermissions($userId);
+
+        // Clear menu tree cache (framework cache)
+        SysUser::clearMenuTreeCache($userId);
 
         // 清除用户菜单/权限缓存，使变更立即生效
         $redis = app('redis');

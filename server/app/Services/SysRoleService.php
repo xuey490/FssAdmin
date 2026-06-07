@@ -19,6 +19,7 @@ use App\Models\SysMenu;
 use App\Models\SysUserRole;
 use App\Dao\SysRoleDao;
 use App\Services\Casbin\CasbinService;
+use App\Models\SysUser;
 use Framework\Basic\BaseService;
 
 /**
@@ -189,6 +190,9 @@ class SysRoleService extends BaseService
                 SysRoleMenu::syncRoleMenus($role->id, $data['menu_ids'], $tenantId, $operator);
             }
 
+            // Clear menu tree cache for affected users
+            SysUser::clearAllMenuTreeCache();
+
             // 同步自定义数据权限部门
             if ((int)($data['data_scope'] ?? 1) === 5) {
                 SysRoleDept::syncRoleDepts($role->id, $data['dept_ids'] ?? []);
@@ -240,6 +244,9 @@ class SysRoleService extends BaseService
                 // 同步 Casbin 权限
                 $this->casbinService->syncRoleMenuPermissions($roleId);
             }
+
+            // Clear menu tree cache for affected users
+            SysUser::clearAllMenuTreeCache();
 
             // 同步自定义数据权限部门
             if (isset($data['data_scope'])) {
@@ -340,6 +347,9 @@ class SysRoleService extends BaseService
 
         // 同步 Casbin 权限
         $this->casbinService->syncRoleMenuPermissions($roleId);
+
+        // Clear menu tree cache for affected users
+        SysUser::clearAllMenuTreeCache();
 
         return true;
     }
