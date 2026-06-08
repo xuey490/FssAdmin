@@ -61,41 +61,39 @@ export default ({ mode }: { mode: string }) => {
       },
       rollupOptions: {
         output: {
-          // Vite 8 (Rolldown) 要求 manualChunks 为函数，不再支持对象写法
-          manualChunks(id) {
-            if (!id.includes('node_modules')) return
-            if (/node_modules[\\/](vue|vue-router|pinia|@vueuse[\\/]core)/.test(id)) {
-              return 'vue-vendor'
-            }
-            if (id.includes('node_modules/element-plus') || id.includes('element-plus@')) {
-              return 'element-plus'
-            }
-            if (id.includes('node_modules/echarts') || id.includes('echarts@')) {
-              return 'echarts'
-            }
-            if (id.includes('node_modules/xlsx') || id.includes('xlsx@')) {
-              return 'xlsx'
-            }
-            if (/node_modules[\\/](axios|crypto-js|file-saver)/.test(id)) {
-              return 'utils'
-            }
+          // Vite 8 使用 Rolldown：manualChunks 已废弃，需用 codeSplitting.groups
+          // vue-i18n 必须与 vue 同 chunk，否则 Rolldown 会丢失 init_runtime_dom_esm_bundler 引用
+          codeSplitting: {
+            groups: [
+              {
+                name: 'vue-vendor',
+                test: /node_modules[\\/](vue|vue-router|pinia|vue-i18n|@intlify|@vueuse[\\/])/
+              },
+              {
+                name: 'element-plus',
+                test: /node_modules[\\/]element-plus/
+              },
+              {
+                name: 'echarts',
+                test: /node_modules[\\/]echarts/
+              },
+              {
+                name: 'xlsx',
+                test: /node_modules[\\/]xlsx/
+              },
+              {
+                name: 'utils',
+                test: /node_modules[\\/](axios|crypto-js|file-saver)/
+              }
+            ]
           },
-          chunkFileNames: 'js/[name]-[hash].js',
-          entryFileNames: 'js/[name]-[hash].js',
+          chunkFileNames: 'assets/[name]-[hash].js',
+          entryFileNames: 'assets/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash].[ext]'
         }
       },
-	  // Rolldown专属配置，不影响rollupOptions，底层Rust引擎生效
-	  rolldownOptions: {
-		  parallel: true, // 开启Rust多线程打包
-		  treeshake: true,
-	  },
       outDir: 'dist',
-	  // Vite8 默认bundler: 'rolldown'，可显式写死确认
-	  bundler: 'rolldown',
-	  logLevel: 'debug', // 构建开启debug日志
       chunkSizeWarningLimit: 2000,
-      // ✅ Rolldown 内置压缩，无需 terser
       minify: 'esbuild'
     },
     plugins: [
