@@ -289,7 +289,7 @@ class SysAttachmentService extends BaseService
         // 访问域名（默认读 app.url）
         $domain = !empty($cfg['upload_local_domain'])
             ? rtrim($cfg['upload_local_domain'], '/')
-            : rtrim(config('app.url', 'http://127.0.0.1:8000'), '/');
+            : rtrim(config('app.url', 'http://localhost:8000'), '/');
 
         // ---- 校验后缀 ----
         $suffix = strtolower($file->getClientOriginalExtension());
