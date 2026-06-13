@@ -84,6 +84,19 @@ class CorsMiddleware implements MiddlewareInterface
     protected array $exposeHeaders = [];
 
     /**
+     * @param array|string $allowOrigin      允许的来源：显式白名单数组（推荐），或 '*'。
+     *                                        开启凭证时禁止 '*'（见 addCorsHeaders 的安全保护）。
+     * @param bool         $allowCredentials 是否允许携带凭证（Cookie）。
+     */
+    public function __construct(
+        array|string $allowOrigin = '*',
+        bool $allowCredentials = true
+    ) {
+        $this->allowOrigin      = $allowOrigin;
+        $this->allowCredentials = $allowCredentials;
+    }
+
+    /**
      * 处理请求
      *
      * 对预检请求返回 CORS 头，对实际请求在响应中添加 CORS 头。
@@ -126,6 +139,10 @@ class CorsMiddleware implements MiddlewareInterface
         $origin = $this->getAllowedOrigin($request);
         if ($origin) {
             $response->headers->set('Access-Control-Allow-Origin', $origin);
+            // 回显具体 Origin 时需声明 Vary，避免缓存串源
+            if ($origin !== '*') {
+                $response->headers->set('Vary', 'Origin');
+            }
         }
 
         // 设置允许的方法
@@ -141,7 +158,9 @@ class CorsMiddleware implements MiddlewareInterface
         );
 
         // 设置是否允许凭证
-        if ($this->allowCredentials) {
+        // 安全保护：浏览器规范禁止 Allow-Origin:'*' 与 Allow-Credentials:true 并存，
+        // 因此仅在回显了具体 Origin 时才下发凭证许可。
+        if ($this->allowCredentials && $origin && $origin !== '*') {
             $response->headers->set('Access-Control-Allow-Credentials', 'true');
         }
 
@@ -166,6 +185,10 @@ class CorsMiddleware implements MiddlewareInterface
         $origin = $this->getAllowedOrigin($request);
         if ($origin) {
             $response->headers->set('Access-Control-Allow-Origin', $origin);
+            // 回显具体 Origin 时需声明 Vary，避免缓存串源
+            if ($origin !== '*') {
+                $response->headers->set('Vary', 'Origin');
+            }
         }
 
         // 设置允许的请求头（供客户端了解可用的请求头）
@@ -181,7 +204,9 @@ class CorsMiddleware implements MiddlewareInterface
         );
 
         // 设置是否允许凭证
-        if ($this->allowCredentials) {
+        // 安全保护：浏览器规范禁止 Allow-Origin:'*' 与 Allow-Credentials:true 并存，
+        // 因此仅在回显了具体 Origin 时才下发凭证许可。
+        if ($this->allowCredentials && $origin && $origin !== '*') {
             $response->headers->set('Access-Control-Allow-Credentials', 'true');
         }
 

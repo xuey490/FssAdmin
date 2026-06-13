@@ -55,42 +55,41 @@ class AuthMiddleware
             $claims = $parsed->claims();
 
             $uid  = (int) $claims->get('uid');
-            $roleClaim = $claims->get('role');
-            $rolesClaim = $claims->get('roles');
-
             $tenantId = (int) ($claims->get('tenant_id') ?? 0);
             $exp  = $claims->get('exp')->getTimestamp();
-
-            // 兼容 role(string|array) 与 roles(string|array) 两种 claim 形态
-            $userRoles = [];
-            if (is_string($roleClaim) && $roleClaim !== '') {
-                $userRoles[] = $roleClaim;
-            } elseif (is_array($roleClaim)) {
-                foreach ($roleClaim as $r) {
-                    if (is_string($r) && $r !== '') {
-                        $userRoles[] = $r;
-                    }
-                }
-            }
-           
-            if (is_string($rolesClaim) && $rolesClaim !== '') {
-                $userRoles[] = $rolesClaim;
-            } elseif (is_array($rolesClaim)) {
-                foreach ($rolesClaim as $r) {
-                    if (is_string($r) && $r !== '') {
-                        $userRoles[] = $r;
-                    }
-                }
-            }
-            
-
-            $userRoles = array_values(array_unique($userRoles));
-            $role = $userRoles[0] ?? 'user';
 
             // 2.设置租户上下文（多租户隔离）
             TenantContext::setTenantIdToRequest($request, $tenantId > 0 ? $tenantId : null);
 
-            // 3.角色校验（仅当路由明确声明了角色限制时才校验）
+            // 3.加载用户并校验状态（必须在角色门禁之前，授权以数据库为准）
+            // 注意：不再预加载 dept 关系，因为部门信息现在从 sa_system_user_dept 表获取
+            $currentUser = SysUser::with(['roles', 'roles.dataScopeDepts', 'roles.menus'])->find($uid);
+            if (! $currentUser) {
+                return BaseJsonResponse::unauthorized('用户不存在');
+            }
+            // 检查用户是否被禁用（status = 0 表示禁用）
+            if ($currentUser->isDisabled()) {
+                return BaseJsonResponse::unauthorized('账号已被禁用');
+            }
+            // 检查用户是否被软删除
+            if ($currentUser->trashed()) {
+                return BaseJsonResponse::unauthorized('账号已被删除');
+            }
+            $request->attributes->set('current_user', $currentUser);
+
+            // 角色以数据库为准，不信任 token 中的 role/roles：
+            // 1) 即便签名密钥泄露，攻击者也无法靠篡改 claim 提升角色；
+            // 2) 角色被吊销/变更后立即生效，避免旧 token 携带过期角色。
+            $userRoles = $tenantId > 0
+                ? $currentUser->getRoleCodesByTenant($tenantId)
+                : $currentUser->getRoleCodes();
+            $userRoles = array_values(array_unique(array_filter(
+                $userRoles,
+                static fn ($r) => is_string($r) && $r !== ''
+            )));
+            $role = $userRoles[0] ?? 'user';
+
+            // 4.角色校验（仅当路由明确声明了角色限制时才校验）
             $attributes = $request->attributes->get('_attributes', []);
 			
             /** @var Auth|null $auth */
@@ -114,10 +113,11 @@ class AuthMiddleware
                 $requiredRoles = $routeRoles;
             }
 
-            if ((! empty($requiredRoles) && empty(array_intersect($userRoles, $requiredRoles)))
-                /*|| (! empty($routeRoles) && ! in_array($role, $routeRoles, true))*/   
-			) {
-                
+            // 超管不受角色门禁限制（与 PermissionMiddleware 行为一致）
+            if (! empty($requiredRoles)
+                && ! $currentUser->isSuperAdmin()
+                && empty(array_intersect($userRoles, $requiredRoles))
+            ) {
                 $this->debugLog('[AuthMiddleware] 403 - 角色不匹配', [
                     'path' => $request->getPathInfo(),
                     'user_role' => $role,
@@ -127,15 +127,13 @@ class AuthMiddleware
                 return BaseJsonResponse::error('无权限访问！', 403);
             }
 
-            // 4.自动续期（失败不影响当前请求）
+            // 5.自动续期（失败不影响当前请求）
             $remaining = $exp - time();
             if ($remaining < $this->refreshThreshold) {
                 $this->tryRefresh($request, $jwt, $uid, $claims->all());
             }
 
-            //error_log(json_encode($claims->all()));
-
-            // 5. 注入用户上下文
+            // 6. 注入用户上下文（roles 同样以数据库为准）
             $request->attributes->set('user', [
                 'id'        => $uid,
                 'username'  => $claims->get('name') ?? '',
@@ -145,25 +143,6 @@ class AuthMiddleware
             ]);
 
             $request->attributes->set('user_claims', $claims->all());
-
-            // 6.验证用户状态（使用数据库字段：status 和 deleted_at）
-            // 注意：不再预加载 dept 关系，因为部门信息现在从 sa_system_user_dept 表获取
-            $currentUser = SysUser::with(['roles', 'roles.dataScopeDepts', 'roles.menus'])->find($uid);
-            if ($currentUser) {
-                // 检查用户是否被禁用（status = 0 表示禁用）
-                if ($currentUser->isDisabled()) {
-                    return BaseJsonResponse::unauthorized('账号已被禁用');
-                }
-
-                // 检查用户是否被软删除
-                if ($currentUser->trashed()) {
-                    return BaseJsonResponse::unauthorized('账号已被删除');
-                }
-
-                $request->attributes->set('current_user', $currentUser);
-            } else {
-                return BaseJsonResponse::unauthorized('用户不存在');
-            }
 
         } catch (\Throwable $e) {
             $this->debugLog('[AuthMiddleware] 401 - parseForAccess 异常', [

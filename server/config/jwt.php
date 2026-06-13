@@ -6,7 +6,9 @@ return [
 
     'single_device_login' => env('JWT_SINGLE_DEVICE_LOGIN', false), // 默认允许多点登录
 
-    'secret' => env('JWT_SECRET', 'your-secret-key-here_dGkiOiJhNTE0YzhhMzZjZGRkZDhkM2FlOGY2NDRhMDdlMTJjYXQiOjE3Nj'),
+    // 安全要求：不得提供可猜测的默认密钥。生产环境必须通过 .env 的 JWT_SECRET 设置一个
+    // >=32 字符的随机强密钥；为空或弱值会在框架启动时被拒绝（见 JwtFactory::buildConfiguration）。
+    'secret' => env('JWT_SECRET', ''),
 
     'algo' => 'HS256', // 支持 HS256, HS384, HS512, RS256 等
 

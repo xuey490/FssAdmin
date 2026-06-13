@@ -25,9 +25,11 @@ use Framework\Middleware\CorsMiddleware;
 use Framework\Middleware\CsrfProtectionMiddleware;
 use Framework\Middleware\DebugMiddleware;
 use Framework\Middleware\IpBlockMiddleware;
+use Framework\Middleware\LoginRateLimitMiddleware;
 use Framework\Middleware\MethodOverrideMiddleware;
 use Framework\Middleware\RateLimitMiddleware;
 use Framework\Middleware\RefererCheckMiddleware;
+use Framework\Middleware\SecurityHeadersMiddleware;
 use Framework\Middleware\XssFilterMiddleware;
 use Framework\Security\CsrfTokenManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -49,9 +51,16 @@ final class MiddlewaresProvider implements ServiceProviderInterface
             ->autoconfigure()
             ->public();
 
-        // Cors
+        // 加载中间件配置（供 CORS / 限流 / CSRF / Referer 等使用）
+        $middlewareConfig = require BASE_PATH . '/config/middleware.php';
+
+        // Cors：来源白名单与凭证开关由 config/middleware.php（env 驱动）控制
+        $corsConfig = $middlewareConfig['cors'] ?? [];
         $services->set(CorsMiddleware::class)
-            ->autowire()
+            ->args([
+                $corsConfig['allowed_origins'] ?? [],
+                $corsConfig['allow_credentials'] ?? true,
+            ])
             ->autoconfigure()->public();
 
 		// ContextInitMiddleware
@@ -93,9 +102,7 @@ final class MiddlewaresProvider implements ServiceProviderInterface
             ->autowire()
             ->public();
 
-        // 加载中间件配置
-        $middlewareConfig = require BASE_PATH . '/config/middleware.php';
-        // 动态注册：Rate_Limit 中间件
+        // 动态注册：Rate_Limit 中间件（$middlewareConfig 已在上方加载）
         if ($middlewareConfig['rate_limit']['enabled']) {
             // 限流器
             $services->set(RateLimitMiddleware::class)
@@ -145,6 +152,20 @@ final class MiddlewaresProvider implements ServiceProviderInterface
         $services->set(DebugMiddleware::class)
             ->args([$middlewareConfig['debug']['enabled']])
             ->autowire()
+            ->public();
+
+        // 安全响应头中间件
+        $services->set(SecurityHeadersMiddleware::class)
+            ->args([$middlewareConfig['security_headers'] ?? []])
+            ->public();
+
+        // 敏感认证接口限流中间件（始终注册，启用与否由配置内 enabled 决定，
+        // 避免它在全局中间件链中被容器解析时缺失）
+        $services->set(LoginRateLimitMiddleware::class)
+            ->args([
+                service('redis'),
+                $middlewareConfig['login_rate_limit'] ?? [],
+            ])
             ->public();
     }
 

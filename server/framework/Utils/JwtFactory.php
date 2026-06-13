@@ -27,6 +27,7 @@ use Lcobucci\JWT\Signer\Rsa\Sha256 as RsaSha256;
 use Lcobucci\JWT\Token\Plain;
 use Lcobucci\JWT\Validation\Constraint\IssuedBy;
 use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
+use Lcobucci\JWT\Validation\Constraint\PermittedFor;
 // 校验token
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
 
@@ -144,25 +145,43 @@ class JwtFactory
 			throw new \RuntimeException('Token expired.');
 		}
 
-		// 3️⃣ Redis 活跃校验（是否被提前注销）
+		// 3️⃣ Redis 活跃校验：不仅要求 jti 仍活跃，且其绑定的 uid 必须与 token 声明的 uid 一致。
+		// 这可阻断「复用他人/自己的活跃 jti + 篡改 uid」的伪造提权攻击：即便签名密钥泄露，
+		// 攻击者也无法把任意 jti 冒用为另一个用户（如 super_admin）的身份。
 		$jti = $parsed->claims()->get('jti');
-		if (! $jti || ! app('redis.client')->exists("login:token:{$jti}")) {
+		if (! $jti) {
 			throw new \RuntimeException('Token not active.');
 		}
 
-		// 4️⃣ issuer / nbf / iat 校验
+		$storedUid = app('redis.client')->get("login:token:{$jti}");
+		if ($storedUid === null || $storedUid === false) {
+			throw new \RuntimeException('Token not active.');
+		}
+
+		$claimUid = $parsed->claims()->get('uid');
+		if (! hash_equals((string) $storedUid, (string) $claimUid)) {
+			throw new \RuntimeException('Token identity mismatch.');
+		}
+
+		// 4️⃣ issuer / audience / nbf / iat 校验
 		$clock = new SystemClock($this->timezone);
 
-		$this->config->validator()->assert(
-			$parsed,
+		$constraints = [
 			new IssuedBy($this->jwtConfig['issuer'] ?? null),
 			new LooseValidAt(
 				$clock,
 				new \DateInterval(
 					'PT' . intval($this->jwtConfig['blacklist_grace_period'] ?? 0) . 'S'
 				)
-			)
-		);
+			),
+		];
+
+		// 签发时已设置 audience（permittedFor），此处补齐受众校验。
+		if (! empty($this->jwtConfig['audience'])) {
+			$constraints[] = new PermittedFor($this->jwtConfig['audience']);
+		}
+
+		$this->config->validator()->assert($parsed, ...$constraints);
 
 		return $parsed;
 	}
@@ -393,7 +412,10 @@ class JwtFactory
 
         // 对称签名（HMAC）
         if (in_array($algo, ['HS256', 'HS384', 'HS512'], true)) {
-            $signingKey = InMemory::plainText($secret);
+            // 安全守卫：拒绝空/过短/已知默认或弱密钥，杜绝因未设置 JWT_SECRET 而回退到
+            // 可被公开猜测的密钥（CWE-798）。base64: 前缀的密钥按其原始字节长度衡量。
+            $this->assertStrongSecret($secret);
+            $signingKey = InMemory::plainText($this->normalizeSecret($secret));
             // 对称签名使用 forSymmetricSigner
             return Configuration::forSymmetricSigner($signer, $signingKey);
         }
@@ -411,6 +433,59 @@ class JwtFactory
 
         // 一般不会到这里
         throw new \InvalidArgumentException("Unsupported algorithm: {$algo}");
+    }
+
+    /**
+     * 支持 base64: 前缀的密钥，返回最终用于签名的原始字符串。
+     */
+    protected function normalizeSecret(string $secret): string
+    {
+        if (str_starts_with($secret, 'base64:')) {
+            $decoded = base64_decode(substr($secret, 7), true);
+            if ($decoded !== false && $decoded !== '') {
+                return $decoded;
+            }
+        }
+
+        return $secret;
+    }
+
+    /**
+     * 校验对称签名密钥强度：禁止空值、过短（<32 字节）以及已知默认/弱密钥。
+     * 不合格时直接抛出异常，使应用拒绝启动，避免使用可被伪造的密钥签发 Token。
+     */
+    protected function assertStrongSecret(string $secret): void
+    {
+        $effective = $this->normalizeSecret($secret);
+
+        if ($effective === '') {
+            throw new \RuntimeException(
+                'JWT_SECRET is not set. Please configure a strong random JWT secret (>=32 bytes) in your .env.'
+            );
+        }
+
+        // 已知不安全密钥黑名单（框架历史默认值 / 明显的弱占位值）。
+        $weakSecrets = [
+            'your-secret-key-here_dGkiOiJhNTE0YzhhMzZjZGRkZDhkM2FlOGY2NDRhMDdlMTJjYXQiOjE3Nj',
+            'your-secret-key-here',
+            'this-is-a-secret-key@20260613',
+            'secret',
+            'changeme',
+        ];
+
+        foreach ($weakSecrets as $weak) {
+            if (hash_equals($weak, $secret) || hash_equals($weak, $effective)) {
+                throw new \RuntimeException(
+                    'JWT_SECRET is using a known default/weak value. Please replace it with a strong random secret.'
+                );
+            }
+        }
+
+        if (strlen($effective) < 32) {
+            throw new \RuntimeException(
+                'JWT_SECRET is too short. Please use a random secret of at least 32 bytes.'
+            );
+        }
     }
 
     /**

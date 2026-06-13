@@ -72,6 +72,14 @@ class CsrfProtectionMiddleware
             return $next($request);
         }
 
+        // 带 Bearer Token 的请求跳过 CSRF：
+        // CSRF 攻击依赖浏览器自动携带的 Cookie，且跨站页面无法设置自定义 Authorization 头。
+        // 因此只要请求显式携带 Authorization: Bearer，即可判定为非跨站伪造，免校验。
+        // 这样纯 Bearer 的前端零改动，而「仅靠 Cookie 自动携带」的写请求仍会被强制校验。
+        if ($this->hasBearerToken($request)) {
+            return $next($request);
+        }
+
         // 排除路径
         foreach ($this->except as $pattern) {
             if ($this->matchPath($request->getPathInfo(), $pattern)) {
@@ -162,5 +170,14 @@ class CsrfProtectionMiddleware
     {
         $regex = str_replace('\*', '.*', preg_quote($pattern, '#'));
         return (bool) preg_match('#^' . $regex . '$#', $path);
+    }
+
+    /**
+     * 判断请求是否携带 Authorization: Bearer 凭证
+     */
+    private function hasBearerToken(Request $request): bool
+    {
+        $header = (string) $request->headers->get('Authorization', '');
+        return stripos($header, 'Bearer ') === 0;
     }
 }

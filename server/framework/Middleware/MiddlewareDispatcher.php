@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Framework\Middleware;
 
 use App\Middlewares\AuthMiddleware;
+use App\Middlewares\PermissionMiddleware;
 use Framework\Container\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -37,18 +38,22 @@ class MiddlewareDispatcher
     // 框架全局中间件（所有请求都会执行，框架底层）
     private array $globalMiddleware = [
         ContextInitMiddleware::class,
+        SecurityHeadersMiddleware::class,   // 统一注入安全响应头（对所有响应生效）
+        IpBlockMiddleware::class,           // 尽早拒绝黑名单 IP，节省后续开销
         MethodOverrideMiddleware::class,
-        #CorsMiddleware::class,
-        #CsrfTokenGenerateMiddleware::class,
+        CorsMiddleware::class,
+        CsrfTokenGenerateMiddleware::class,
+        LoginRateLimitMiddleware::class,    // 敏感认证接口限流（登录/刷新/验证码）
 		RateLimitMiddleware::class,
-        #CircuitBreakerMiddleware::class, //熔断中间件，正式环境使用，开发环境直接溢出错误堆栈
-        IpBlockMiddleware::class,
+        // CircuitBreakerMiddleware::class, // ⚠️ 不作为全局中间件：单一全局熔断器会因少量 500/异常
+        //                                  // 触发后让整站返回 503，且会吞掉真实错误。
+        //                                  // 如需熔断请按下游依赖（支付/外部API）单独挂载并分 serviceName。
         XssFilterMiddleware::class,
-        #CsrfProtectionMiddleware::class,
-        #RefererCheckMiddleware::class,
+        CsrfProtectionMiddleware::class,
+        RefererCheckMiddleware::class,
         CookieConsentMiddleware::class,
         DebugMiddleware::class,
-        // 添加日志、CORS、熔断器、限流器，xss、 ip block、Debug等全局中间件
+        // 顺序：上下文 → 安全头 → IP封禁 → 方法重写 → CORS → CSRF生成 → 登录限流 → 全局限流 → XSS → CSRF校验 → Referer → CookieConsent → Debug
     ];
 
     // 应用层中间件（从config/middlewares.php加载）
@@ -123,10 +128,26 @@ class MiddlewareDispatcher
         $excludeMiddleware = array_merge($this->globalMiddleware, $this->appMiddleware);
         $uniqueRouteMiddleware = array_values(array_diff($flattenedRouteMiddleware, $excludeMiddleware));
 
+        // 3.1 权限中间件依赖登录上下文：仅有 Permission 时自动补 Auth
+        $hasAuthInGlobal = in_array(AuthMiddleware::class, $this->globalMiddleware, true);
+        $hasAuthInApp = in_array(AuthMiddleware::class, $this->appMiddleware, true);
+        $hasAuthInRoute = in_array(AuthMiddleware::class, $uniqueRouteMiddleware, true);
+        $hasPermissionInRoute = in_array(PermissionMiddleware::class, $uniqueRouteMiddleware, true);
+
+        if (
+            $hasPermissionInRoute
+            && !$hasAuthInGlobal
+            && !$hasAuthInApp
+            && !$hasAuthInRoute
+        ) {
+            array_unshift($uniqueRouteMiddleware, AuthMiddleware::class);
+            $hasAuthInRoute = true;
+            $request->attributes->set('_auth', true);
+        }
+
+        $uniqueRouteMiddleware = $this->ensureAuthBeforePermission($uniqueRouteMiddleware);
+
         // 4. AuthMiddleware 特殊处理：标记请求需要认证
-        $hasAuthInGlobal = in_array(AuthMiddleware::class, $this->globalMiddleware);
-        $hasAuthInApp = in_array(AuthMiddleware::class, $this->appMiddleware);
-        $hasAuthInRoute = in_array(AuthMiddleware::class, $uniqueRouteMiddleware);
         if ($hasAuthInGlobal || $hasAuthInApp || $hasAuthInRoute) {
             $request->attributes->set('_auth', true);
         }
@@ -168,6 +189,24 @@ class MiddlewareDispatcher
 
         // 8. 启动中间件链条
         return $middlewareChain($request);
+    }
+
+    /**
+     * 保证 AuthMiddleware 在 PermissionMiddleware 之前执行。
+     */
+    private function ensureAuthBeforePermission(array $middleware): array
+    {
+        $authIndex = array_search(AuthMiddleware::class, $middleware, true);
+        $permissionIndex = array_search(PermissionMiddleware::class, $middleware, true);
+
+        if ($authIndex === false || $permissionIndex === false || $authIndex < $permissionIndex) {
+            return $middleware;
+        }
+
+        unset($middleware[$authIndex]);
+        array_unshift($middleware, AuthMiddleware::class);
+
+        return array_values($middleware);
     }
 
     /**

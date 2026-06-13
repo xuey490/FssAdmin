@@ -65,6 +65,17 @@ class CsrfTokenGenerateMiddleware
         $method = strtoupper($request->getMethod());
 
         /**
+         * 带 Bearer Token 的请求跳过 CSRF Token 生成：
+         * 这类请求走无状态 JWT 鉴权，不依赖 Cookie/CSRF，
+         * 若仍生成 Token 会强制开启 Session 并下发 XSRF-TOKEN，徒增开销。
+         * 仅「依赖 Cookie 的客户端」才需要 CSRF Token。
+         */
+        $authHeader = (string) $request->headers->get('Authorization', '');
+        if (stripos($authHeader, 'Bearer ') === 0) {
+            return $next($request);
+        }
+
+        /**
          * ❗ 特殊接口跳过 CSRF 生成
          * 例如：
          * - /login/getCsrfToken
