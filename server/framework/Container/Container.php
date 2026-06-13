@@ -172,7 +172,61 @@ class Container implements SymfonyContainerInterface, ArrayAccess
             return $instance;
 
         } catch (ReflectionException $e) {
-            throw new RuntimeException('Container make failed: ' . $e->getMessage());
+            $message = $e->getMessage();
+
+            // 区分"类文件不存在"和"依赖解析失败"两种场景
+            if (str_contains($message, 'does not exist')) {
+                // 提取类名
+                preg_match('/Class "([^"]+)" does not exist/', $message, $m);
+                $className = $m[1] ?? $abstract;
+
+                // 检查可能的 autoload 问题
+                $hints = [];
+                $filePath = BASE_PATH . '/vendor/autoload.php';
+                if (!file_exists($filePath)) {
+                    $hints[] = 'vendor/autoload.php 不存在，请运行 composer install';
+                } else {
+                    $namespace = implode('\\', array_slice(explode('\\', $className), 0, -1)) . '\\';
+                    $composerAutoload = null;
+                    foreach (spl_autoload_functions() as $func) {
+                        if (is_array($func) && isset($func[0]) && $func[0] instanceof \Composer\Autoload\ClassLoader) {
+                            $composerAutoload = $func[0];
+                            break;
+                        }
+                    }
+                    if ($composerAutoload) {
+                        $prefixes = $composerAutoload->getPrefixesPsr4();
+                        $foundPrefix = false;
+                        foreach ($prefixes as $prefix => $dirs) {
+                            if (str_starts_with($namespace, $prefix)) {
+                                $foundPrefix = true;
+                                break;
+                            }
+                        }
+                        if (!$foundPrefix) {
+                            $hints[] = "命名空间 \"$namespace\" 未注册到 PSR-4 自动加载器";
+                            $hints[] = '请检查 config/apps.php 中 namespace 配置是否正确，或在 composer.json 中添加映射后执行 composer dump-autoload';
+                        }
+                    } else {
+                        $hints[] = '找不到 Composer ClassLoader，请检查 vendor/autoload.php 加载情况';
+                    }
+
+                    // 检查控制器文件是否存在
+                    $expectedFile = BASE_PATH . '/app/' . str_replace('App\\', '', str_replace('\\', '/', $className)) . '.php';
+                    if (!file_exists($expectedFile)) {
+                        $hints[] = "预期文件不存在: $expectedFile";
+                    }
+                }
+
+                $detail = $hints ? ' (建议: ' . implode('; ', $hints) . ')' : '';
+                throw new RuntimeException("容器解析失败: 类 \"$className\" 不存在{$detail}");
+            }
+
+            if (str_contains($message, 'is not instantiable')) {
+                throw new RuntimeException("容器解析失败: 类 {$abstract} 不可实例化（可能是抽象类或接口），请确认类定义");
+            }
+
+            throw new RuntimeException("容器解析失败: {$abstract} -> {$message}");
         }
     }
 

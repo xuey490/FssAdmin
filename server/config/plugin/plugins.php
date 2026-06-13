@@ -8,7 +8,7 @@ return array (
   ),
   'paths' => 
   array (
-    0 => 'C:\\Users\\Administrator\\Desktop\\fssphp\\project/plugins',
+    0 => 'C:\\Users\\Administrator\\Desktop\\project-root\\NovaPHP0.0.9\\project/plugins',
   ),
   'defaults' => 
   array (

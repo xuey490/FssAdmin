@@ -101,6 +101,22 @@ class RouteListCommand extends Command
             $allRoutes[] = $this->formatRoute($name, $route, '主应用');
         }
 
+        // 2.1 加载多应用注解路由（从 apps.php 配置读取）
+        $appsConfig = $this->loadAppsConfig();
+        foreach ($appsConfig as $appName => $appConfig) {
+            // 跳过默认应用（已在上面加载）
+            if ($appName === 'default') {
+                continue;
+            }
+            $appRoutes = $this->loadAnnotatedRoutes(
+                $appConfig['dir'],
+                $appConfig['namespace']
+            );
+            foreach ($appRoutes as $name => $route) {
+                $allRoutes[] = $this->formatRoute($name, $route, $appName);
+            }
+        }
+
         // 3. 加载插件路由
         $pluginRoutes = $this->loadPluginRoutes();
         foreach ($pluginRoutes as $name => $route) {
@@ -149,6 +165,26 @@ class RouteListCommand extends Command
         }
 
         return $result;
+    }
+
+    /**
+     * 加载多应用配置
+     *
+     * @return array
+     */
+    private function loadAppsConfig(): array
+    {
+        $appsFile = BASE_PATH . '/config/apps.php';
+        if (!file_exists($appsFile)) {
+            return [];
+        }
+
+        $config = require $appsFile;
+        if (!is_array($config)) {
+            return [];
+        }
+
+        return $config;
     }
 
     /**

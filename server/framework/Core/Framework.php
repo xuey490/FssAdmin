@@ -51,6 +51,8 @@ final class Framework
 
     private static ?Framework $instance = null;
 
+    private ?string $lastControllerClass = null;
+
     private ?Request $request = null;
 
     private ContainerInterface $container;
@@ -72,6 +74,9 @@ final class Framework
     {
         $this->initializeBasePath();
         $this->createRequiredDirs();
+        // 动态注册 app 命名空间到 Composer 自动加载器
+        // 新增应用只需在 config/apps.php 中配置，无需修改 composer.json 和 dump-autoload
+        $this->registerAppAutoloadNamespaces();
         $this->initializeConfigAndContainer();
         $this->initializeDependencies();
     }
@@ -148,6 +153,69 @@ final class Framework
     }
 
     /**
+     * 动态注册应用命名空间到 Composer PSR-4 自动加载器.
+     *
+     * 从 config/apps.php 读取所有应用配置，自动注册 namespace → dir 映射。
+     * 新增应用只需在 apps.php 中配置即可，无需修改 composer.json 和 dump-autoload。
+     *
+     * 注意：如果找不到 Composer ClassLoader（极端情况），会通过 error_log 记录警告，
+     * 此时需要回退到手动修改 composer.json + dump-autoload。
+     */
+    private function registerAppAutoloadNamespaces(): void
+    {
+        // 查找 Composer 的 ClassLoader 实例
+        $composerLoader = null;
+        foreach (spl_autoload_functions() as $func) {
+            if (is_array($func) && isset($func[0]) && $func[0] instanceof \Composer\Autoload\ClassLoader) {
+                $composerLoader = $func[0];
+                break;
+            }
+        }
+        if ($composerLoader === null) {
+            error_log('[Framework] 找不到 Composer ClassLoader，动态注册 PSR-4 命名空间失败。'
+                . '请确保 vendor/autoload.php 已加载。'
+                . '如问题持续，请在 composer.json 中手动添加命名空间映射并执行 composer dump-autoload。');
+            return;
+        }
+
+        $apps = $this->getAppsConfig();
+        $registered = [];
+        foreach ($apps as $key => $app) {
+            if ($key === 'default') {
+                continue;
+            }
+            $namespace = rtrim($app['namespace'] ?? '', '\\');
+            $dir       = $app['dir'] ?? '';
+
+            if ($namespace === '' || $dir === '') {
+                continue;
+            }
+
+            // 推导基础命名空间和基础目录（去掉 \Controllers 后缀）
+            // 例如 App\Admin\Controllers → App\Admin,  app/admin/Controllers → app/admin
+            // 这样注册后，App\Admin\Models\、App\Admin\Providers\ 等均自动加载
+            $baseNamespace = preg_replace('/\\\\Controllers$/', '', $namespace);
+            $baseDir       = preg_replace('/\/Controllers$/D', '', $dir);
+
+            if ($baseNamespace !== $namespace && $baseDir !== $dir && $baseDir !== '' && is_dir($baseDir)) {
+                // 注册宽泛映射: App\Admin\ → app/admin/
+                $prefix = $baseNamespace . '\\';
+                $path   = $baseDir . '/';
+                $composerLoader->addPsr4($prefix, $path);
+                $registered[] = "$prefix => $path";
+            } elseif (is_dir($dir)) {
+                // fallback: 仅注册控制器命名空间（原行为）
+                $prefix = $namespace . '\\';
+                $composerLoader->addPsr4($prefix, $dir);
+                $registered[] = "$prefix => $dir";
+            }
+        }
+        if (!empty($registered)) {
+            $this->logger?->info('[Framework] 动态注册 PSR-4 命名空间: ' . implode('; ', $registered));
+        }
+    }
+
+    /**
      * 初始化配置和容器（核心流程）.
      */
     private function initializeConfigAndContainer(): void
@@ -200,7 +268,6 @@ final class Framework
         $this->router = new Router(
             $allRoutes,
             $this->container,
-			#$this->logger,
             self::MAIN_CONTROLLER_NAMESPACE
         );
 		// 5. 从容器获取缓存实例
@@ -224,6 +291,24 @@ final class Framework
 			requireExplicitAction: false, // 默认关闭，建议开启，强制要求 #[Action]
 			blacklist: []
 		);
+
+        // 8. 注入插件自动路由映射（/blog/post/list 风格）
+        if ($this->pluginManager !== null) {
+            $pluginAutoNamespaces = [];
+            foreach ($this->pluginManager->getLoaded() as $pluginName => $manifest) {
+                if (!is_string($pluginName) || $pluginName === '') {
+                    continue;
+                }
+                $pluginAutoNamespaces[strtolower($pluginName)] = rtrim($manifest->namespace, '\\') . '\\Controllers';
+            }
+            $this->router->setPluginAutoRouteNamespaces($pluginAutoNamespaces);
+        }
+
+        // 9. 注入应用自动路由映射（/admin/xxx, /api/xxx 风格）
+        $appNamespaces = $this->getAppAutoRouteNamespaces();
+        if (!empty($appNamespaces)) {
+            $this->router->setAppAutoRouteNamespaces($appNamespaces);
+        }
 		
     }
 
@@ -289,6 +374,10 @@ final class Framework
         $start         = microtime(true);
         $this->request = $request;
 
+        // 域名绑定解析：匹配 config/apps.php 中的 domain 字段
+        // 命中后自动激活对应应用，URL 无需 prefix 前缀
+        $this->resolveDomainApp($request);
+
         $response = new Response('', Response::HTTP_INTERNAL_SERVER_ERROR);
 
         try {
@@ -325,6 +414,7 @@ final class Framework
         } finally {
             // Workerman 下必须释放
             $this->request = null;
+            $this->lastControllerClass = null;
         }
     }
 
@@ -389,18 +479,43 @@ final class Framework
             }
         }
 
-        // 2. 加载 Attribute 注解路由（主应用）
-        $attrLoader = new AttributeRouteLoader(
-            self::MAIN_CONTROLLER_DIR,
-            self::MAIN_CONTROLLER_NAMESPACE
-        );
+        // 2. 加载 Attribute 注解路由（多应用 + 主应用）
+        $appConfigs = $this->getAppsConfig();
+        $annotatedCount = 0;
 
-        $annotatedRoutes = $attrLoader->loadRoutes();
-        $annotatedCount  = 0;
+        // 构建多应用控制器目录映射 [namespace => dir]
+        $appControllerDirs = [];
+        foreach ($appConfigs as $appKey => $app) {
+            $dir = $app['dir'] ?? '';
+            $ns  = $app['namespace'] ?? '';
+            if ($dir && $ns && is_dir($dir)) {
+                $nsKey = rtrim($ns, '\\');
+                if (!isset($appControllerDirs[$nsKey])) {
+                    $appControllerDirs[$nsKey] = $dir;
+                }
+            }
+        }
 
-        if ($annotatedRoutes instanceof RouteCollection) {
-            $allRoutes->addCollection($annotatedRoutes);
-            $annotatedCount = $annotatedRoutes->count();
+        // 始终包含默认应用目录（兜底）
+        if (!isset($appControllerDirs[self::MAIN_CONTROLLER_NAMESPACE])) {
+            $appControllerDirs[self::MAIN_CONTROLLER_NAMESPACE] = self::MAIN_CONTROLLER_DIR;
+        }
+
+        if (!empty($appControllerDirs)) {
+            $attrLoader = new AttributeRouteLoader(
+                self::MAIN_CONTROLLER_DIR,
+                self::MAIN_CONTROLLER_NAMESPACE
+            );
+
+            $annotatedRoutes = match (true) {
+                count($appControllerDirs) === 1 => $attrLoader->loadRoutes(),
+                default => $attrLoader->loadRoutesFromMultipleDirs($appControllerDirs),
+            };
+
+            if ($annotatedRoutes instanceof RouteCollection) {
+                $allRoutes->addCollection($annotatedRoutes);
+                $annotatedCount = $annotatedRoutes->count();
+            }
         }
 
         // 3. 加载插件路由
@@ -443,6 +558,100 @@ final class Framework
     }
 
     /**
+     * 获取多应用配置
+     *
+     * @return array<string, array{dir: string, namespace: string, prefix: string}>
+     */
+    private function getAppsConfig(): array
+    {
+        static $apps = null;
+        if ($apps !== null) {
+            return $apps;
+        }
+
+        $configFile = BASE_PATH . '/config/apps.php';
+        if (file_exists($configFile)) {
+            $apps = require $configFile;
+        }
+
+        if (!is_array($apps)) {
+            $apps = [];
+        }
+
+        // 始终保证 default 应用存在（向后兼容）
+        if (!isset($apps['default'])) {
+            $apps = array_merge([
+                'default' => [
+                    'dir'       => self::MAIN_CONTROLLER_DIR,
+                    'namespace' => self::MAIN_CONTROLLER_NAMESPACE,
+                    'prefix'    => '',
+                ],
+            ], $apps);
+        }
+
+        return $apps;
+    }
+
+    /**
+     * 获取应用自动路由命名空间映射
+     *
+     * 格式: [ 'admin' => 'App\Admin\Controllers', 'api' => 'App\Api\Controllers' ]
+     * 用于 Router 自动路由解析 /admin/xxx → App\Admin\Controllers\XxxController
+     *
+     * @return array<string, string>
+     */
+    private function getAppAutoRouteNamespaces(): array
+    {
+        $apps = $this->getAppsConfig();
+        $map  = [];
+
+        foreach ($apps as $key => $app) {
+            // default 应用无前缀，不加入自动路由映射（作为最终兜底）
+            if ($key === 'default') {
+                continue;
+            }
+            $prefix = $app['prefix'] ?? $key;
+            if ($prefix === '') {
+                $prefix = $key;
+            }
+            $ns     = $app['namespace'] ?? '';
+            if (is_string($prefix) && $prefix !== '' && $ns !== '') {
+                $map[strtolower(trim($prefix))] = rtrim($ns, '\\');
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * 解析域名绑定：根据请求 Host 匹配 config/apps.php 中的 domain 配置.
+     *
+     * 匹配成功后，将 app key 写入请求属性 _domain_app，
+     * Router 据此可在无 URL prefix 的情况下直接路由到对应应用。
+     */
+    private function resolveDomainApp(Request $request): void
+    {
+        $host = $request->getHost();
+        if ($host === '' || $host === null) {
+            return;
+        }
+
+        $apps = $this->getAppsConfig();
+        foreach ($apps as $key => $app) {
+            if ($key === 'default') {
+                continue;
+            }
+            $domain = $app['domain'] ?? '';
+            if ($domain !== '' && $domain === $host) {
+                // 使用 prefix 作为 _domain_app 值，与 getAppAutoRouteNamespaces() 的 key 对齐
+                $prefix = $app['prefix'] ?? $key;
+                $request->attributes->set('_domain_app', strtolower(trim($prefix)));
+                return;
+            }
+        }
+    }
+
+    /**
      * 缓存路由集合（添加序列化错误处理）.
      */
     private function cacheRoutes(RouteCollection $routes): void
@@ -480,6 +689,8 @@ final class Framework
         //$controller = $this->container->get($controllerClass);
         // 它会尝试从容器获取，如果获取不到，会自动 new 并执行我们注入逻辑#
         $controller = \Framework\Core\App::make($controllerClass);
+        // 记录控制器类名，供 dispatch finally 中释放引用
+        $this->lastControllerClass = $controllerClass;
 		
         // 处理路径参数和查询参数的类型转换
         $this->processRequestParameters($controllerClass, $method, $routeParams);
@@ -691,6 +902,7 @@ final class Framework
                     'status_text' => Response::$statusTexts[$statusCode] ?? 'Server Error',
                     'message'     => 'An unexpected error occurred. Please try again later. 程序发生错误，请稍后再试！',
                 ]);
+				//$content = view('errors/debug.html.twig', $templateVars);
             }
         } catch (Throwable $e2) {
             // 记录渲染模板失败的错误日志

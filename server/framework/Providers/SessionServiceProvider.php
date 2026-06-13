@@ -59,7 +59,7 @@ final class SessionServiceProvider implements ServiceProviderInterface
         // 注册 RedisFactory 服务
         $services->set('redis.client', \Redis::class)
             ->factory([RedisFactory::class, 'createRedisClient']) // 工厂方法放在自身
-            ->args([$redisConfig])
+            ->args([$redisConfig['nodes'] ?? $redisConfig])       // 兼容新旧配置格式
             ->public();
 
         // 或者注册封装类别名

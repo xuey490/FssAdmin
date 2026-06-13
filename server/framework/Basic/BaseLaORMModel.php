@@ -50,7 +50,8 @@ class BaseLaORMModel extends Model
 
     /**
      * 是否自增主键（默认使用自增ID）
-     * 子类如需使用雪花ID，设为 false 并配置 pkGenerateType = 'snowflake'
+     * 子类如需使用雪花ID：$incrementing = false、$keyType = 'string'，
+     * 并覆盖 resolvePkGenerateType() 返回 'snowflake'（勿在子类重复声明 $pkGenerateType 属性）
      * @var bool
      */
     public $incrementing = true;
@@ -179,10 +180,11 @@ class BaseLaORMModel extends Model
 
         // 创建事件
         static::creating(function ($model) {
-            // 1. 雪花ID生成
-            if ($model->pkGenerateType === 'snowflake') {
-                if (empty($model->{$model->getKeyName()})) {
-                    $model->{$model->getKeyName()} = self::generateSnowflakeID();
+            // 1. 雪花ID生成（须通过实例方法读取策略，子类 redeclare 的 protected 属性在闭包内不可见）
+            if ($model->resolvePkGenerateType() === 'snowflake') {
+                $keyName = $model->getKeyName();
+                if (empty($model->getAttribute($keyName))) {
+                    $model->setAttribute($keyName, self::generateSnowflakeID());
                 }
             }
 
@@ -614,6 +616,16 @@ class BaseLaORMModel extends Model
     }
 
     // ================= 雪花算法部分优化 =================
+
+    /**
+     * 解析主键生成策略（供子类覆盖，避免在子类重复声明 $pkGenerateType 导致父类闭包读不到）
+     *
+     * @return string 'snowflake' | 'auto'
+     */
+    protected function resolvePkGenerateType(): string
+    {
+        return $this->pkGenerateType;
+    }
 
     /**
      * 生成雪花ID

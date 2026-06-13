@@ -607,7 +607,7 @@ abstract class BaseRepository implements RepositoryInterface
 		}
 		#dump($cacheDisabled);
 		if ($cacheDisabled) {
-			return true;
+			return false;
 		}
 		
 		// 2. 包含闭包的查询不缓存（闭包无法序列化）

@@ -23,8 +23,8 @@ use Framework\Attributes\MiddlewareProviderInterface;
 use Symfony\Component\Routing\Route as SymfonyRoute;
 use Symfony\Component\Routing\RouteCollection;
 use InvalidArgumentException;
-use ReflectionClass;
-use ReflectionMethod;
+use \ReflectionClass;
+use \ReflectionMethod;
 
 /**
  * AttributeRouteLoader
@@ -242,6 +242,11 @@ class AttributeRouteLoader
             // 解析路由定义（显式注解 > 自动生成）
             $route_def = $this->parse_method_route_definition($method, $ref_class, $doc_block_data);
             
+            // 如果没有路由定义（无 #[Route] 注解），跳过该方法
+            if ($route_def === null) {
+                continue;
+            }
+            
             // 合并所有配置
             $final_data = $this->merge_final_route_data($class_data, $route_def, $doc_block_data, $collected_method_data, $ref_class, $method);
             
@@ -304,7 +309,7 @@ class AttributeRouteLoader
      * @param array $doc_block_data
      * @return object
      */
-    private function parse_method_route_definition(ReflectionMethod $method, ReflectionClass $ref_class, array $doc_block_data): object
+    private function parse_method_route_definition(ReflectionMethod $method, ReflectionClass $ref_class, array $doc_block_data): ?object
     {
         // 查找显式路由注解
         foreach ($method->getAttributes() as $attr) {
@@ -331,22 +336,25 @@ class AttributeRouteLoader
             }
         }
 
-        // 自动生成路由（兜底）
-        $auto_path = $doc_block_data['path'] ?? $this->generate_auto_path($ref_class, $method);
-        
-        return (object)[
-            'path' => $auto_path,
-            'methods' => $doc_block_data['methods'] ?? [self::DEFAULT_HTTP_METHOD],
-            'middleware' => [],
-            'defaults' => [],
-            'host' => null,
-            'schemes' => [],
-            'name' => $doc_block_data['name'] ?? null,
-            'group' => $doc_block_data['group'] ?? null,
-            'auth' => $doc_block_data['auth'] ?? null,
-            'roles' => $doc_block_data['roles'] ?? [],
-            'requirements' => []
-        ];
+        // 没有显式路由注解，但 docblock 有 @path 时生成路由（兼容旧写法）
+        if (isset($doc_block_data['path'])) {
+            return (object)[
+                'path' => $doc_block_data['path'],
+                'methods' => $doc_block_data['methods'] ?? [self::DEFAULT_HTTP_METHOD],
+                'middleware' => [],
+                'defaults' => [],
+                'host' => null,
+                'schemes' => [],
+                'name' => $doc_block_data['name'] ?? null,
+                'group' => $doc_block_data['group'] ?? null,
+                'auth' => $doc_block_data['auth'] ?? null,
+                'roles' => $doc_block_data['roles'] ?? [],
+                'requirements' => []
+            ];
+        }
+
+        // 没有路由定义，不自动生成路由
+        return null;
     }
 
     /**
@@ -755,7 +763,7 @@ class AttributeRouteLoader
 			$ref_class = new ReflectionClass($class_name);
 			$this->reflection_cache[$class_name] = $ref_class;
 			return $ref_class;
-		} catch (ReflectionException $e) {
+		} catch (\ReflectionException $e) {
 			error_log(sprintf('反射类 %s 失败: %s', $class_name, $e->getMessage()));
 			return null;
 		}
