@@ -1,0 +1,128 @@
+<?php
+
+namespace Framework\Database;
+
+class DatabaseFactory
+{
+    public function getSchemaBuilder(): mixed {}
+
+    /**
+     * @param array<int|string, mixed> $bindings
+     */
+    public function statement(string $sql, array $bindings = []): bool {}
+
+    /**
+     * @param array<int|string, mixed> $bindings
+     * @return array<int, object>
+     */
+    public function select(string $sql, array $bindings = []): array {}
+
+    public function table(string $table): mixed {}
+}
+
+namespace think\db;
+
+class Query extends BaseQuery
+{
+    /**
+     * @param array<int|string, mixed> $bind
+     */
+    public function orderRaw(string $field, array $bind = []): self {}
+
+    public function dec(string $field, int $step = 1): self {}
+
+    public function inc(string $field, int $step = 1): self {}
+}
+
+abstract class BaseQuery
+{
+    /**
+     * @param array<int|string, mixed> $bind
+     */
+    public function orderRaw(string $field, array $bind = []): self {}
+
+    public function dec(string $field, int $step = 1): self {}
+
+    public function inc(string $field, int $step = 1): self {}
+}
+
+namespace think\facade;
+
+class Db
+{
+    /**
+     * @param array<int|string, mixed> $bindings
+     * @return array<int, mixed>
+     */
+    public static function query(string $sql, array $bindings = []): array {}
+
+    /**
+     * @param array<int|string, mixed> $bindings
+     */
+    public static function execute(string $sql, array $bindings = []): int {}
+}
+
+namespace Illuminate\Database\Capsule;
+
+class Manager
+{
+    public static function transaction(\Closure $callback): mixed {}
+
+    /**
+     * @param array<int|string, mixed> $bindings
+     * @return array<int, object>
+     */
+    public static function select(string $query, array $bindings = []): array {}
+
+    /**
+     * @param array<int|string, mixed> $bindings
+     */
+    public static function affectingStatement(string $query, array $bindings = []): int {}
+}
+
+namespace Illuminate\Support\Facades;
+
+class DB
+{
+    public static function transaction(\Closure $callback): mixed {}
+
+    /**
+     * @param array<int|string, mixed> $bindings
+     * @return array<int, object>
+     */
+    public static function select(string $query, array $bindings = []): array {}
+
+    /**
+     * @param array<int|string, mixed> $bindings
+     */
+    public static function affectingStatement(string $query, array $bindings = []): int {}
+
+    public static function schema(): mixed {}
+
+    public static function connection(?string $name = null): mixed {}
+}
+
+namespace phpseclib3\Crypt\Common;
+
+interface PrivateKey
+{
+    public function withHash(string $hash): self;
+
+    public function withPadding(int $padding): self;
+
+    /** @param string $data */
+    public function sign($data): string;
+
+    /** @param string $data */
+    public function decrypt($data): string;
+}
+
+interface AsymmetricKey
+{
+    public function withPadding(int $padding): self;
+
+    public function encrypt(string $data): string;
+
+    /** @param string $data */
+    public function verify($data, string $signature): bool;
+}

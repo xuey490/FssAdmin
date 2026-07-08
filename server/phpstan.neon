@@ -1,0 +1,18 @@
+parameters:
+    level: 6
+
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+
+    stubFiles:
+        - phpstan/stubs/magic-methods.stub
+
+    paths:
+        - app
+
+    excludePaths:
+        - vendor
+
+    inferPrivatePropertyTypeFromConstructor: true
+    treatPhpDocTypesAsCertain: false
+#php vendor/bin/phpstan analyze -c phpstan.neon --level=5 --memory-limit=4G
