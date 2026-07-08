@@ -60,7 +60,7 @@ class MigrationRunner
      *
      * @param string $pluginName 插件名称
      * @param string $migrationDir 迁移目录
-     * @return array 已执行的迁移文件列表
+     * @return array<mixed> 已执行的迁移文件列表
      */
     public function run(string $pluginName, string $migrationDir): array
     {
@@ -101,7 +101,7 @@ class MigrationRunner
      * @param string $pluginName 插件名称
      * @param string $migrationDir 迁移目录
      * @param int $steps 回滚步数（0 表示全部回滚）
-     * @return array 已回滚的迁移文件列表
+     * @return array<mixed> 已回滚的迁移文件列表
      */
     public function rollback(string $pluginName, string $migrationDir, int $steps = 0): array
     {
@@ -151,8 +151,7 @@ class MigrationRunner
      *
      * @param string $pluginName 插件名称
      * @param string $migrationDir 迁移目录
-     * @return array
-     */
+     * @return array<mixed> */
     public function getPendingMigrations(string $pluginName, string $migrationDir): array
     {
         if (!is_dir($migrationDir)) {
@@ -184,8 +183,7 @@ class MigrationRunner
      * 获取已执行的迁移记录
      *
      * @param string $pluginName 插件名称
-     * @return array
-     */
+     * @return array<mixed> */
     public function getExecutedMigrations(string $pluginName): array
     {
         try {
@@ -198,7 +196,6 @@ class MigrationRunner
             $normalized = [];
             foreach ($rows as $row) {
                 if (is_object($row)) {
-                    /** @var object $row */
                     $row = get_object_vars($row);
                 }
                 if (!is_array($row)) {

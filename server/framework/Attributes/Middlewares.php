@@ -39,6 +39,10 @@ class Middlewares implements MiddlewareProviderInterface
 
     /**
      * 直接返回中间件数组
+
+     * @return string|array<mixed>
+    
+
      */
     public function getMiddleware(): string|array
     {

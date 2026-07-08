@@ -212,7 +212,7 @@ class RedisConsumerService
             return;
         }
 
-        /** @var PredisClient $redis */
+        
         $redis = null;
 
         try {
@@ -385,7 +385,7 @@ class RedisConsumerService
             '_queued_at' => time(),
         ];
 
-        /** @var PredisClient $redis */
+        
         $redis = PoolManager::borrow($poolName);
 
         try {

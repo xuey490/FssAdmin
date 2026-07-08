@@ -1,0 +1,10 @@
+parameters:
+    level: 6
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+    paths:
+        - app
+    excludePaths:
+        - vendor		
+    inferPrivatePropertyTypeFromConstructor: true
+    treatPhpDocTypesAsCertain: false

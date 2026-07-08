@@ -39,7 +39,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  *
  * @package Framework\Basic
  */
-class BaseJsonResponse extends JsonResponse
+final class BaseJsonResponse extends JsonResponse
 {
     /**
      * 返回业务成功响应
@@ -52,14 +52,15 @@ class BaseJsonResponse extends JsonResponse
      */
     public static function success(
         mixed $data = [],
-        string $msg = 'ok'
+        string $msg = 'ok',
+        int $httpStatus = self::HTTP_OK
     ): static {
         return new static([
             'code' => 200, // 与前端 ApiStatus.success 对齐
             'msg' => $msg,
             'message' => $msg,
             'data' => $data,
-        ], self::HTTP_OK);
+        ], $httpStatus);
     }
 
     /**

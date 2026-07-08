@@ -78,7 +78,7 @@ class LaTenantScope implements Scope
      * 如果当前处于"忽略租户"状态或租户ID为空，则不添加限制条件。
      * 只有模型表包含 tenant_id 字段时才会生效。
      *
-     * @param Builder $builder Eloquent 查询构建器
+     * @param \Illuminate\Database\Eloquent\Builder<\Illuminate\Database\Eloquent\Model> $builder Eloquent 查询构建器
      * @param Model $model 模型实例
      * @return void
      */
@@ -115,19 +115,22 @@ class LaTenantScope implements Scope
     /**
      * 扩展查询构建器，增加租户相关方法
      *
-     * @param Builder $builder Eloquent 查询构建器
+     * @param \Illuminate\Database\Eloquent\Builder<\Illuminate\Database\Eloquent\Model> $builder Eloquent 查询构建器
      * @return void
      */
     public function extend(Builder $builder): void
     {
+        // 捕获当前作用域实例，避免 macro 闭包中 $this 被重新绑定到 Query Builder
+        $scope = $this;
+
         // 移除全局租户作用域
-        $builder->macro('withoutTenancy', function (Builder $builder) {
-            return $builder->withoutGlobalScope($this);
+        $builder->macro('withoutTenancy', function (Builder $builder) use ($scope) {
+            return $builder->withoutGlobalScope($scope);
         });
 
         // 为特定租户查询（超管使用）
-        $builder->macro('forTenant', function (Builder $builder, int $tenantId) {
-            return $builder->withoutGlobalScope($this)
+        $builder->macro('forTenant', function (Builder $builder, int $tenantId) use ($scope) {
+            return $builder->withoutGlobalScope($scope)
                 ->where($builder->getModel()->qualifyColumn('tenant_id'), '=', $tenantId);
         });
 

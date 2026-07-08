@@ -20,6 +20,10 @@ use think\Validate;
 
 class ThinkValidatorFactory
 {
+    /**
+    * @param array<mixed> $rule
+    * @param array<mixed> $message
+    */
     public function create(array $rule = [], array $message = []): Validate
     {
         // 可在此处统一配置全局规则/提示（如手机号、邮箱正则）
@@ -32,9 +36,10 @@ class ThinkValidatorFactory
             // 'email' => '邮箱格式错误',
         ];
 
-        return new Validate(
-            array_merge($globalRule, $rule),
-            array_merge($globalMsg, $message)
-        );
+        $validate = new Validate();
+        $validate->rule(array_merge($globalRule, $rule));
+        $validate->message(array_merge($globalMsg, $message));
+
+        return $validate;
     }
 }

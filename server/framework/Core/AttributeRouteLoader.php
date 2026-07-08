@@ -39,7 +39,6 @@ use \ReflectionMethod;
 class AttributeRouteLoader
 {
     // 常量定义 - 消除魔法字符串/硬编码
-    private const CONTROLLER_SUFFIX = 'Controller';
     private const ROUTE_CONTROLLER_KEY = '_controller';
     private const ROUTE_GROUP_KEY = '_group';
     private const ROUTE_MIDDLEWARE_KEY = '_middleware';
@@ -52,13 +51,10 @@ class AttributeRouteLoader
 	
 	// 支持 Symfony 风格的 {参数名} 占位符，同时限制参数名只能是字母/数字/下划线
 	private const PATH_REGEX = '/^\/[a-zA-Z0-9_\/{}-]+$/';
-	// 补充：参数占位符格式校验（确保 { } 成对且内部是合法字符）
-	private const ROUTE_PARAM_REGEX = '/\{[a-zA-Z0-9_]+\}/';
-
 	// 新增：反射结果缓存（key=类名，value=ReflectionClass）
+	/** @var array<mixed> */
 	private array $reflection_cache = [];
-	
-	private bool $debug = false;
+
 
     // 路由默认参数配置
     private const DEFAULT_ROUTE_PARAMS = [
@@ -72,18 +68,27 @@ class AttributeRouteLoader
 
     private string $controller_dir;
     private string $controller_namespace;
+    /** @var array<mixed> */
     private array $allowed_middleware; // 中间件白名单
 	
+	/** @var array<mixed> */
 	private array $scan_whitelist = []; // 只扫描含 Controller 的文件 'Controller.php'
+	/** @var array<mixed> */
 	private array $scan_blacklist = ['BaseController.php']; // 排除基础控制器
-	private ?array $scanned_files_cache = null;
+	/** @var array<mixed> */
+	/** @var array<mixed> */
+	/** @var array<mixed> */
+	/** @var array<mixed>  */
+	/** @var array<mixed>  */
+	private ?array /** @var array<mixed>  */
+$scanned_files_cache = null;
 
     /**
      * 构造函数
      *
      * @param string $controller_dir 控制器目录路径
      * @param string $controller_namespace 控制器命名空间
-     * @param array $allowed_middleware 允许的中间件白名单
+     * @param array<mixed> $allowed_middleware 允许的中间件白名单
      */
     public function __construct(string $controller_dir, string $controller_namespace, array $allowed_middleware = [])
     {
@@ -95,7 +100,7 @@ class AttributeRouteLoader
     /**
      * 从多个目录加载路由（支持插件）
      *
-     * @param array $controllerDirs 控制器目录映射 [namespace => directory]
+     * @param array<mixed> $controllerDirs 控制器目录映射 [namespace => directory]
      * @return RouteCollection
      */
     public function loadRoutesFromMultipleDirs(array $controllerDirs): RouteCollection
@@ -169,9 +174,9 @@ class AttributeRouteLoader
     /**
      * 处理类级别数据（前缀、中间件、权限等）
      *
-     * @param ReflectionClass $ref_class 类反射对象
-     * @param array $class_attributes 类属性列表
-     * @return array 处理后的类级别数据
+     * @param \ReflectionClass<object> $ref_class 类反射对象
+     * @param array<mixed> $class_attributes 类属性列表
+     * @return array<mixed> 处理后的类级别数据
      */
     private function process_class_level_data(ReflectionClass $ref_class, array $class_attributes): array
     {
@@ -216,8 +221,8 @@ class AttributeRouteLoader
     /**
      * 处理方法级别数据并生成路由
      *
-     * @param ReflectionClass $ref_class 类反射对象
-     * @param array $class_data 类级别数据
+     * @param \ReflectionClass<object> $ref_class 类反射对象
+     * @param array<mixed> $class_data 类级别数据
      * @param RouteCollection $route_collection 路由集合
      */
     private function process_method_level_data(ReflectionClass $ref_class, array $class_data, RouteCollection $route_collection): void
@@ -251,16 +256,15 @@ class AttributeRouteLoader
             $final_data = $this->merge_final_route_data($class_data, $route_def, $doc_block_data, $collected_method_data, $ref_class, $method);
             
             // 验证并创建路由
-            $this->create_and_add_route($final_data, $route_collection, $ref_class, $method);
+            $this->create_and_add_route($final_data, $route_collection);
         }
     }
 
     /**
      * 解析类级 Prefix 注解
      *
-     * @param ReflectionClass $ref_class
-     * @return array
-     */
+     * @param \ReflectionClass<object> $ref_class
+     * @return array<mixed> */
     private function parse_class_prefix_attributes(ReflectionClass $ref_class): array
     {
         $prefix_attrs = $ref_class->getAttributes(Prefix::class);
@@ -271,9 +275,9 @@ class AttributeRouteLoader
         $inst = $prefix_attrs[0]->newInstance();
         return [
             'prefix' => $inst->prefix ?? '',
-            'middleware' => $inst->middleware ?? [],
+            'middleware' => $inst->middleware,
             'auth' => $inst->auth ?? null,
-            'roles' => $inst->roles ?? [],
+            'roles' => $inst->roles,
             'group' => null
         ];
     }
@@ -281,9 +285,8 @@ class AttributeRouteLoader
     /**
      * 解析类级 Route 注解
      *
-     * @param ReflectionClass $ref_class
-     * @return array
-     */
+     * @param \ReflectionClass<object> $ref_class
+     * @return array<mixed> */
     private function parse_class_route_attributes(ReflectionClass $ref_class): array
     {
         $route_attrs = $ref_class->getAttributes(Route::class);
@@ -294,9 +297,9 @@ class AttributeRouteLoader
         $inst = $route_attrs[0]->newInstance();
         return [
             'prefix' => $inst->prefix ?? '',
-            'middleware' => $inst->middleware ?? [],
+            'middleware' => $inst->middleware,
             'auth' => $inst->auth ?? null,
-            'roles' => $inst->roles ?? [],
+            'roles' => $inst->roles,
             'group' => $inst->group ?? null
         ];
     }
@@ -305,8 +308,8 @@ class AttributeRouteLoader
      * 解析方法级路由定义（显式注解或自动生成）
      *
      * @param ReflectionMethod $method
-     * @param ReflectionClass $ref_class
-     * @param array $doc_block_data
+     * @param \ReflectionClass<object> $ref_class
+     * @param array<mixed> $doc_block_data
      * @return object
      */
     private function parse_method_route_definition(ReflectionMethod $method, ReflectionClass $ref_class, array $doc_block_data): ?object
@@ -322,15 +325,15 @@ class AttributeRouteLoader
             if ($inst instanceof BaseMapping) {
                 return (object)[
                     'path' => $inst->path,
-                    'methods' => $inst->methods ?? [],
-                    'middleware' => $inst->middleware ?? [],
+                    'methods' => $inst->methods,
+                    'middleware' => $inst->middleware,
                     'defaults' => [],
                     'host' => null,
                     'schemes' => [],
                     'name' => null,
                     'group' => null,
                     'auth' => $inst->auth ?? null,
-                    'roles' => $inst->roles ?? [],
+                    'roles' => $inst->roles,
                     'requirements' => []
                 ];
             }
@@ -358,29 +361,15 @@ class AttributeRouteLoader
     }
 
     /**
-     * 生成自动路由路径
-     *
-     * @param ReflectionClass $ref_class
-     * @param ReflectionMethod $method
-     * @return string
-     */
-    private function generate_auto_path(ReflectionClass $ref_class, ReflectionMethod $method): string
-    {
-        $controller_name = str_replace(self::CONTROLLER_SUFFIX, '', $ref_class->getShortName());
-        return '/' . strtolower($controller_name) . '/' . $method->getName();
-    }
-
-    /**
      * 合并最终路由数据
      *
-     * @param array $class_data
+     * @param array<mixed> $class_data
      * @param object $route_def
-     * @param array $doc_block_data
-     * @param array $collected_method_data
-     * @param ReflectionClass $ref_class
+     * @param array<mixed> $doc_block_data
+     * @param array<mixed> $collected_method_data
+     * @param \ReflectionClass<object> $ref_class
      * @param ReflectionMethod $method
-     * @return array
-     */
+     * @return array<mixed> */
     private function merge_final_route_data(array $class_data, object $route_def, array $doc_block_data, array $collected_method_data, ReflectionClass $ref_class, ReflectionMethod $method): array
     {
         // 路径规范化
@@ -440,7 +429,7 @@ class AttributeRouteLoader
     /**
      * 创建并添加路由到集合
      *
-     * @param array $final_data
+     * @param array<mixed> $final_data
      * @param RouteCollection $route_collection
      */
     private function create_and_add_route(array $final_data, RouteCollection $route_collection): void
@@ -480,9 +469,8 @@ class AttributeRouteLoader
     /**
      * 收集注解对象 & 从接口自动提取中间件
      *
-     * @param array $attributes
-     * @return array
-     */
+     * @param array<mixed> $attributes
+     * @return array<mixed> */
     private function collect_attributes_and_middleware(array $attributes): array
     {
         $attributes_map = [];
@@ -537,8 +525,7 @@ class AttributeRouteLoader
      * 从 DocBlock 解析注解数据
      *
      * @param string|null $doc_comment
-     * @return array
-     */
+     * @return array<mixed> */
     private function parse_doc_block_annotations(?string $doc_comment): array
     {
         if ($doc_comment === null || trim($doc_comment) === '') {
@@ -586,8 +573,7 @@ class AttributeRouteLoader
      *
      * @param string $doc_comment
      * @param string $prefix
-     * @return array
-     */
+     * @return array<mixed> */
     private function extract_list_annotation(string $doc_comment, string $prefix): array
     {
         $value = $this->extract_single_annotation($doc_comment, $prefix);
@@ -658,9 +644,8 @@ class AttributeRouteLoader
     /**
      * 处理中间件列表（去重、过滤、白名单校验）
      *
-     * @param array $middleware_list
-     * @return array
-     */
+     * @param array<mixed> $middleware_list
+     * @return array<mixed> */
     private function process_middleware_list(array $middleware_list): array
     {
         // 过滤空值和非字符串
@@ -682,8 +667,7 @@ class AttributeRouteLoader
      * 扫描目录获取所有PHP文件
      *
      * @param string $dir
-     * @return array
-     */
+     * @return array<mixed> */
     private function scan_directory(string $dir): array
     {
 				if ($this->scanned_files_cache !== null) {
@@ -744,9 +728,9 @@ class AttributeRouteLoader
 	 * 获取反射类并缓存结果，避免重复反射
 	 *
 	 * @param string $class_name 类名（带命名空间）
-	 * @return \ReflectionClass|null 反射类对象，类不存在则返回null
-	 */
-	private function get_reflection_class(string $class_name): ?ReflectionClass
+     * @return \ReflectionClass<object>|null 反射类对象，类不存在则返回null
+     */
+    private function get_reflection_class(string $class_name): ?ReflectionClass
 	{
 		// 1. 优先从缓存获取，避免重复创建ReflectionClass
 		if (isset($this->reflection_cache[$class_name])) {
@@ -759,14 +743,9 @@ class AttributeRouteLoader
 		}
 
 		// 3. 创建反射类并缓存
-		try {
-			$ref_class = new ReflectionClass($class_name);
-			$this->reflection_cache[$class_name] = $ref_class;
-			return $ref_class;
-		} catch (\ReflectionException $e) {
-			error_log(sprintf('反射类 %s 失败: %s', $class_name, $e->getMessage()));
-			return null;
-		}
+        $ref_class = new ReflectionClass($class_name);
+        $this->reflection_cache[$class_name] = $ref_class;
+        return $ref_class;
 	}
 	
 	/**
@@ -785,16 +764,5 @@ class AttributeRouteLoader
 	public function clear_reflection_cache_for_class(string $class_name): void
 	{
 		unset($this->reflection_cache[$class_name]);
-	}
-	// 新增方法
-	public function set_debug(bool $debug): void
-	{
-	/*
-	// 在关键步骤添加调试日志
-	if ($this->debug) {
-		error_log(sprintf('加载控制器 %s，生成路由 %s', $class_name, $final_path));
-	}
-	*/
-		$this->debug = $debug;
 	}
 }

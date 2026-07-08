@@ -203,7 +203,7 @@ class PluginCacheManager
             // 清除指定插件的配置缓存
             $cacheFile = "{$configCacheDir}/{$pluginName}.php";
             if (file_exists($cacheFile)) {
-                return unlink($cacheFileFile);
+                return unlink($cacheFile);
             }
         } else {
             // 清除所有配置缓存
@@ -263,7 +263,7 @@ class PluginCacheManager
     /**
      * 获取缓存的插件清单
      *
-     * @return array|null
+     * @return array<mixed>|null
      */
     public function getCachedManifests(): ?array
     {
@@ -299,7 +299,7 @@ class PluginCacheManager
     /**
      * 缓存插件清单
      *
-     * @param array $manifests
+     * @param array<mixed> $manifests
      * @return bool
      */
     public function cacheManifests(array $manifests): bool
@@ -325,7 +325,7 @@ class PluginCacheManager
     /**
      * 获取缓存的控制器目录
      *
-     * @return array|null
+     * @return array<mixed>|null
      */
     public function getCachedControllerDirs(): ?array
     {
@@ -346,7 +346,7 @@ class PluginCacheManager
     /**
      * 缓存控制器目录
      *
-     * @param array $dirs
+     * @param array<mixed> $dirs
      * @return bool
      */
     public function cacheControllerDirs(array $dirs): bool
@@ -366,7 +366,7 @@ class PluginCacheManager
      * 获取插件配置缓存
      *
      * @param string $pluginName
-     * @return array|null
+     * @return array<mixed>|null
      */
     public function getCachedPluginConfig(string $pluginName): ?array
     {
@@ -402,7 +402,7 @@ class PluginCacheManager
      * 缓存插件配置
      *
      * @param string $pluginName
-     * @param array $config
+     * @param array<mixed> $config
      * @return bool
      */
     public function cachePluginConfig(string $pluginName, array $config): bool
@@ -445,8 +445,7 @@ class PluginCacheManager
     /**
      * 获取缓存统计信息
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public function getStats(): array
     {
         $stats = [

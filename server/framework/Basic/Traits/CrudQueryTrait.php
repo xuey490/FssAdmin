@@ -45,7 +45,7 @@ trait CrudQueryTrait
      * 同时构建 WHERE 查询条件数组。
      * 
      * @param Request $request HTTP 请求对象
-     * @return array 返回包含查询参数的数组：[$where, $format, $limit, $field, $order, $page]
+     * @return array<mixed> 返回包含查询参数的数组：[$where, $format, $limit, $field, $order, $page]
      *               - $where: 查询条件数组
      *               - $format: 输出格式（normal/select/tree）
      *               - $limit: 每页条数
@@ -98,9 +98,9 @@ trait CrudQueryTrait
      * - NE_: 不等于查询
      * - BETWEEN_: 区间查询（值需为包含两个元素的数组，用于时间范围查询）
      * 
-     * @param array $params 请求参数数组
+     * @param array<mixed> $params 请求参数数组
      * @param array<string> $allowColumns 允许查询的字段列表
-     * @return array 查询条件数组，每个元素为 [$column, $operator, $value] 格式
+     * @return array<mixed> 查询条件数组，每个元素为 [$column, $operator, $value] 格式
      */
     protected function buildWhereConditions(array $params, array $allowColumns): array
     {

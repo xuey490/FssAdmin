@@ -94,7 +94,7 @@ class CsrfTokenGenerateMiddleware
          */
         $token = $this->tokenManager->getToken($this->tokenId);
 
-        /** @var Response $response */
+        
         $response = $next($request);
 
         /**

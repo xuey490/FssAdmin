@@ -74,8 +74,7 @@ class ThinkCache
      * 包含 default（默认驱动）、stores（各驱动详细配置）等配置项，
      * 用于初始化 ThinkPHP Cache 门面。
      *
-     * @var array
-     */
+     * @var array<mixed> */
     private array $config;
 
     /**
@@ -83,7 +82,7 @@ class ThinkCache
      * 
      * 初始化 ThinkCache 工厂实例，配置 ThinkPHP Cache 门面。
      *
-     * @param array $config 缓存配置数组，包含 default 和 stores 配置
+     * @param array<mixed> $config 缓存配置数组，包含 default 和 stores 配置
      */
     public function __construct(array $config = [])
     {

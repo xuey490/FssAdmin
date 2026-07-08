@@ -31,6 +31,12 @@ use Twig\Error\SyntaxError;
 if (! function_exists('validate')) {
     /**
      * 生成验证对象
+     *
+     * @param array<string, mixed>  $data    待验证数据
+     * @param array<string, string> $message 字段错误信息映射
+
+     * @param  array<mixed>|string  $validate
+
      */
     function validate(array $data, array|string $validate = '', array $message = [], bool $batch = false, bool $failException = true): bool
     {
@@ -111,6 +117,8 @@ if (! function_exists('redirectToRoute')) {
     /**
      * 根据路由名称生成 URL 并返回重定向响应.
      *
+     * @param array<string, mixed> $parameters 路由参数
+     *
      * @throws InvalidArgumentException
      */
     function redirectToRoute(string $routeName, array $parameters = [], int $status = 302): RedirectResponse
@@ -130,6 +138,8 @@ if (! function_exists('redirectToRoute')) {
 if (! function_exists('app')) {
     /**
      * 获取容器或解析服务
+     *
+     * @param array<string, mixed>|null $params 构造参数
      */
     function app(?string $id = null, ?array $params = []): mixed
     {
@@ -144,6 +154,8 @@ if (! function_exists('app')) {
 if (! function_exists('getService')) {
     /**
      * 从容器中获取服务（别名或类名）.
+     *
+     * @param array<string, mixed> $params 构造参数
      */
     function getService(string $id, array $params = []): object
     {
@@ -262,7 +274,7 @@ if (! function_exists('config')) {
      */
     function config(?string $key = null, mixed $default = null): mixed
     {
-        /** @var \Framework\Config\Config $configService */
+        
         $configService = Container::getInstance()->get('config');
 
         // 使用配置服务里的配置数组作为最终数据源
@@ -308,6 +320,8 @@ if (! function_exists('generateRequestId')) {
 if (! function_exists('trans')) {
     /**
      * 翻译服务.
+     *
+     * @param array<string, mixed> $parameters 占位符参数
      */
     function trans(string $key, array $parameters = []): string
     {
@@ -326,6 +340,9 @@ if (! function_exists('current_locale')) {
  * Twig 模板渲染助手.
  */
 if (! function_exists('view')) {
+    /**
+     * @param array<string, mixed> $data 模板变量
+     */
     function view(string $template, array $data = []): string
     {
         try {
@@ -361,6 +378,9 @@ if (! function_exists('cache_get')) {
 }
 
 if (! function_exists('cache_set')) {
+    /**
+     * @param array<string> $tags 缓存标签
+     */
     function cache_set(string $key, mixed $value, ?int $ttl = null, array $tags = []): bool
     {
         $cache = get_cache_instance();
@@ -380,6 +400,9 @@ if (! function_exists('cache_set')) {
 }
 
 if (! function_exists('cache_invalidate_tags')) {
+    /**
+     * @param array<string> $tags 缓存标签
+     */
     function cache_invalidate_tags(array $tags): bool
     {
         $cache = get_cache_instance();
@@ -402,7 +425,7 @@ if (! function_exists('cache_clear')) {
 }
 
 if (! function_exists('get_cache_instance')) {
-    function get_cache_instance(): ?object
+    function get_cache_instance(): object
     {
         static $cache = null;
 
@@ -417,9 +440,19 @@ if (! function_exists('get_cache_instance')) {
 /*
  * 数据验证助手.
  *
+ * @param array<string, mixed>  $data    待验证数据
+ * @param array<string|int, mixed> $rule 字段规则
+ * @param array<string, string> $message 字段错误信息
+ *
  * @return true|array<string, string>
  */
 if (! function_exists('ThinkValidate')) {
+    /**
+    * @param array<mixed> $data
+    * @param array<mixed> $rule
+    * @param array<mixed> $message
+    * @return array<mixed>
+    */
     function ThinkValidate(array $data, array $rule, array $message = []): array|true
     {
         $factory   = getService(ThinkValidatorFactory::class);
@@ -436,6 +469,8 @@ if (! function_exists('ThinkValidate')) {
 if (! function_exists('ThinkView')) {
     /**
      * Think 模板渲染.
+     *
+     * @param array<string, mixed> $data 模板变量
      */
     function ThinkView(string $templateName, array $data = []): string
     {
@@ -449,6 +484,10 @@ if (! function_exists('ThinkView')) {
  * 通用模板渲染（带作用域变量自动分配）.
  */
 if (! function_exists('renders')) {
+    /**
+     * @param array<string, mixed> $data    模板变量
+     * @param array<string>|null   $exclude 排除的变量名
+     */
     function renders(string $template, array $data = [], ?array $exclude = null): string
     {
         $scopeVars = get_defined_vars();

@@ -28,6 +28,9 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class SecurityHeadersMiddleware implements MiddlewareInterface
 {
+    /**
+    * @param array<mixed> $config
+    */
     public function __construct(private array $config = [])
     {
     }

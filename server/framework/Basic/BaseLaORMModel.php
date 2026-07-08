@@ -40,11 +40,167 @@ use Framework\Schema\SchemaRegistry;
  * - $createdAtColumn: 创建时间字段名（默认 'created_at'，设为 null 则不使用）
  * - $updatedAtColumn: 更新时间字段名（默认 'updated_at'，设为 null 则不使用）
  *
+ * ----------------------------------------------------------------------------
+ * Eloquent 动态方法 / 属性类型声明
+ * ----------------------------------------------------------------------------
+ * 当前 vendored 的 illuminate/database 未随附 @method 静态分析桩，导致 where/find/
+ * count 等经 __callStatic 转发的查询构造器方法、以及模型动态属性无法被 PHPStan 识别。
+ * 以下声明与 Laravel 原生 Model 的 @method 块一致，使所有继承模型在静态分析期拥有
+ * 正确的查询构造器返回类型（Builder|static、static|null、Collection<static> 等），
+ * 从而消除 staticMethod.notFound / method.notFound / property.notFound 等噪音。
+ * 这是类型信息的正确补充，并非运行时行为修改。
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|static where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder|static orWhere($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereIn($column, $values, $boolean = 'and', $not = false)
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereNotIn($column, $values, $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereNull($column, $boolean = 'and', $not = false)
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereNotNull($column, $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereBetween($column, array $values, $boolean = 'and', $not = false)
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereDate($column, $operator, $value = null, $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereYear($column, $operator, $value = null, $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereMonth($column, $operator, $value = null, $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereDay($column, $operator, $value = null, $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereTime($column, $operator, $value = null, $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereColumn($first, $operator = null, $second = null, $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereRaw($sql, $bindings = [], $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder|static orWhereRaw($sql, $bindings = [], $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereExists(\Closure $callback, $boolean = 'and', $not = false)
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereNotExists(\Closure $callback, $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereHas($relation, ?\Closure $callback = null, $operator = '>=', $count = 1)
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereDoesntHave($relation, ?\Closure $callback = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|static orderBy($column, $direction = 'asc')
+ * @method static \Illuminate\Database\Eloquent\Builder|static orderByDesc($column)
+ * @method static \Illuminate\Database\Eloquent\Builder|static latest($column = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|static oldest($column = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|static inRandomOrder($seed = '')
+ * @method static \Illuminate\Database\Eloquent\Builder|static groupBy(...$groups)
+ * @method static \Illuminate\Database\Eloquent\Builder|static having($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder|static havingRaw($sql, $bindings = [], $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder|static join($table, $first, $operator = null, $second = null, $type = 'inner', $where = false)
+ * @method static \Illuminate\Database\Eloquent\Builder|static leftJoin($table, $first, $operator = null, $second = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|static rightJoin($table, $first, $operator = null, $second = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|static crossJoin($table, $first = null, $operator = null, $second = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|static select($columns = ['*'])
+ * @method static \Illuminate\Database\Eloquent\Builder|static selectRaw($expression, $bindings = [])
+ * @method static \Illuminate\Database\Eloquent\Builder|static distinct()
+ * @method static \Illuminate\Database\Eloquent\Builder|static from($table)
+ * @method static \Illuminate\Database\Eloquent\Builder|static withCount($relations)
+ * @method static \Illuminate\Database\Eloquent\Builder|static withSum($relations, $column)
+ * @method static \Illuminate\Database\Eloquent\Builder|static withAvg($relations, $column)
+ * @method static \Illuminate\Database\Eloquent\Builder|static withMax($relations, $column)
+ * @method static \Illuminate\Database\Eloquent\Builder|static withMin($relations, $column)
+ * @method static \Illuminate\Database\Eloquent\Builder|static withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|static onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|static withoutGlobalScope($scope)
+ * @method static \Illuminate\Database\Eloquent\Builder|static withoutGlobalScopes(array $scopes = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|static lockForUpdate()
+ * @method static \Illuminate\Database\Eloquent\Builder|static sharedLock()
+ * @method static \Illuminate\Database\Eloquent\Builder|static forPage($page, $perPage = 15)
+ * @method static \Illuminate\Database\Eloquent\Builder|static take($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|static skip($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|static offset($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|static limit($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|static forPageBeforeId($perPage = 15, $lastId = 0, $column = 'id', $direction = 'asc')
+ * @method static \Illuminate\Database\Eloquent\Builder|static forPageAfterId($perPage = 15, $lastId = 0, $column = 'id', $direction = 'asc')
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereKey($id)
+ * @method static \Illuminate\Database\Eloquent\Builder|static whereKeyNot($id)
+ * @method static static|null find($id, $columns = ['*'])
+ * @method static \Illuminate\Database\Eloquent\Collection|static[] findMany($ids, $columns = ['*'])
+ * @method static static findOrFail($id, $columns = ['*'])
+ * @method static static findOrNew($id, $columns = ['*'])
+ * @method static static|null first($columns = ['*'])
+ * @method static static firstOrNew(array $attributes = [], array $values = [])
+ * @method static static firstOrCreate(array $attributes = [], array $values = [])
+ * @method static static updateOrCreate(array $attributes, array $values = [])
+ * @method static static create(array $attributes = [])
+ * @method static int insert(array $values)
+ * @method static int|string|null insertGetId(array $values, $sequence = null)
+ * @method static int count($columns = '*')
+ * @method static mixed max($column)
+ * @method static mixed min($column)
+ * @method static numeric sum($column)
+ * @method static numeric avg($column)
+ * @method static bool exists()
+ * @method static bool doesntExist()
+ * @method static mixed value($column)
+ * @method static \Illuminate\Support\Collection|array pluck($column, $key = null)
+ * @method static \Illuminate\Database\Eloquent\Collection|static[] get($columns = ['*'])
+ * @method static \Illuminate\Contracts\Pagination\LengthAwarePaginator paginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null)
+ * @method static \Illuminate\Contracts\Pagination\Paginator simplePaginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null)
+ * @method static \Illuminate\Database\Eloquent\Collection|static[] all($columns = ['*'])
+ * @method static string toSql()
+ * @method static static|null firstWhere($column, $operator = null, $value = null)
+ *
+ * @property mixed $id
+ * @property bool $exists
+ * @property bool $incrementing
+ * @property bool $timestamps
+ * @property bool $wasRecentlyCreated
+ * @property int|string|null $tenant_id
+ * @property int|string|null $created_by
+ * @property int|string|null $updated_by
+ * @property string|null $created_at
+ * @property string|null $updated_at
+ * @property string|null $deleted_at
+ * @property string|null $create_time
+ * @property string|null $update_time
+ * @property string|null $delete_time
+ * @property int|string|null $status
+ * @property string|null $remark
+ *
  * @package Framework\Basic
  */
 class BaseLaORMModel extends Model
 {
     use LaBelongsToTenant;
+
+    /**
+     * 构造函数（final：确保所有子类通过 new static() 实例化时构造函数签名一致）
+     *
+     * @param array<mixed> $attributes
+     */
+    final public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+    }
+
+    /**
+     * 重写 newQuery，使其返回泛型查询构造器 Builder<static>。
+     *
+     * illuminate/database 自带的 newQuery() 返回非泛型 Builder，
+     * 导致 with()/query()/newQuery() 等链路在静态分析期被推断为
+     * 基础 Model 类型，进而 first()/find() 解析为 Illuminate\Database\Eloquent\Model
+     * 而非具体模型。这里通过 @var 显式标注返回值类型，使所有经由 newQuery()
+     * 派生的查询构造器方法都能解析到具体模型（Builder<static>），
+     * 属于类型信息的正确补充，不改变运行时行为。
+     *
+     * @return \Illuminate\Database\Eloquent\Builder<static>
+     */
+    public function newQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        /** @var \Illuminate\Database\Eloquent\Builder<static> $query */
+        $query = parent::newQuery();
+
+        return $query;
+    }
+
+    /**
+     * 重写 with()，使其返回泛型查询构造器 Builder<static>。
+     *
+     * illuminate/database 自带的 with() 返回非泛型 Builder，导致
+     * with(...)->find()/first() 在静态分析期被推断为基础 Model 而非具体模型。
+     * 此处显式标注返回值类型，使链式查询能解析到具体模型。
+     *
+     * @return \Illuminate\Database\Eloquent\Builder<static>
+     */
+    public static function with($relations): \Illuminate\Database\Eloquent\Builder
+    {
+        /** @var \Illuminate\Database\Eloquent\Builder<static> $query */
+        $query = static::query()->with($relations);
+
+        return $query;
+    }
 
     // ================= 基础配置 =================
 
@@ -102,8 +258,7 @@ class BaseLaORMModel extends Model
 
     /**
      * 表字段缓存
-     * @var array
-     */
+     * @var array<mixed> */
     private static array $tableColumns = [];
 
     /**
@@ -246,7 +401,7 @@ class BaseLaORMModel extends Model
      *
      * 子类可覆盖此方法添加自定义的日期字段。
      *
-     * @return array 日期字段列表
+     * @return array<mixed> 日期字段列表
      */
     protected function extraDates(): array
     {
@@ -258,7 +413,7 @@ class BaseLaORMModel extends Model
      *
      * 合并父类日期字段、类属性 $dates 和子类扩展字段。
      *
-     * @return array 日期字段列表
+     * @return array<mixed> 日期字段列表
      */
     public function getDates(): array
     {
@@ -308,7 +463,7 @@ class BaseLaORMModel extends Model
      *
      * 使用缓存系统存储表结构信息，提升性能。
      *
-     * @return array 字段名列表
+     * @return array<mixed> 字段名列表
      */
     protected function getTableColumnsCached(): array
     {
@@ -334,7 +489,7 @@ class BaseLaORMModel extends Model
      * - Workerman 环境：使用 SchemaRegistry
      * - 其他环境：使用数据库查询
      *
-     * @return array 字段列表
+     * @return array<mixed> 字段列表
      */
     public function getFields(): array
     {
@@ -361,7 +516,7 @@ class BaseLaORMModel extends Model
      *
      * 管理表字段的内存缓存，避免重复查询。
      *
-     * @return array 字段列表
+     * @return array<mixed> 字段列表
      */
     protected function getTableColumns(): array
     {
@@ -388,7 +543,7 @@ class BaseLaORMModel extends Model
      * 直接查询数据库获取表结构信息。
      *
      * @param string $table 表名
-     * @return array 字段列表
+     * @return array<mixed> 字段列表
      */
     protected function loadTableColumnsFromDb(string $table): array
     {
@@ -418,8 +573,8 @@ class BaseLaORMModel extends Model
      * 将字段列表存入内存缓存，使用 FIFO 策略控制缓存大小。
      *
      * @param string $table 表名
-     * @param array $columns 字段列表
-     * @return array 字段列表
+     * @param array<mixed> $columns 字段列表
+     * @return array<mixed> 字段列表
      */
     protected function rememberTableColumns(string $table, array $columns): array
     {
@@ -450,7 +605,7 @@ class BaseLaORMModel extends Model
      *
      * 兼容 ThinkPHP 风格的动态隐藏方法。
      *
-     * @param array $fields 要隐藏的字段列表
+     * @param array<mixed> $fields 要隐藏的字段列表
      * @return static 当前模型实例
      */
     public function dynamicHidden(array $fields): static
@@ -464,7 +619,7 @@ class BaseLaORMModel extends Model
      *
      * 兼容 ThinkPHP 风格的动态显示方法。
      *
-     * @param array $fields 要显示的字段列表
+     * @param array<mixed> $fields 要显示的字段列表
      * @return static 当前模型实例
      */
     public function dynamicVisible(array $fields): static
@@ -551,7 +706,7 @@ class BaseLaORMModel extends Model
      *
      * 复用静态缓存，性能最优。
      *
-     * @return array 字段列表
+     * @return array<mixed> 字段列表
      */
     public function getFields2(): array
     {
@@ -606,13 +761,7 @@ class BaseLaORMModel extends Model
             return;
         }
 
-        try {
-            // 回收站逻辑预留
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error(
-                "Recycle bin error: " . $e->getMessage()
-            );
-        }
+        // 回收站逻辑预留
     }
 
     // ================= 雪花算法部分优化 =================
@@ -692,7 +841,7 @@ class BaseLaORMModel extends Model
      *
      * 基于 Schema，无原生 SQL 依赖。
      *
-     * @return array 格式：[字段名 => [type, nullable, default, ...]]
+     * @return array<mixed> 格式：[字段名 => [type, nullable, default, ...]]
      */
     public function getFieldDetails(): array
     {
@@ -735,7 +884,7 @@ class BaseLaORMModel extends Model
      * 基于 Schema，兼容性强。
      *
      * @param string $column 字段名
-     * @param string|array $targetTypes 目标类型（如 'varchar'、['int', 'bigint']）
+     * @param string|array<mixed> $targetTypes 目标类型（如 'varchar'、['int', 'bigint']）
      * @return bool 是否匹配
      */
     public function isFieldType(string $column, string|array $targetTypes): bool
@@ -762,7 +911,7 @@ class BaseLaORMModel extends Model
      * 独立方法，供关联使用。
      * 支持复合主键。
      *
-     * @return array 主键字段列表
+     * @return array<mixed> 主键字段列表
      */
     public function getPrimaryKeys(): array
     {
@@ -790,3 +939,5 @@ class BaseLaORMModel extends Model
         }
     }
 }
+
+

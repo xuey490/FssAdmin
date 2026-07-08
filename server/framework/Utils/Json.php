@@ -60,7 +60,7 @@ class Json
      *
      * @param int        $code     业务状态码
      * @param string     $msg      提示信息
-     * @param array|null $data     业务数据
+     * @param array<mixed>|null $data     业务数据
      * @param int|null   $httpCode HTTP 状态码，默认 200
      *
      * @return Response Symfony Response 对象
@@ -107,7 +107,8 @@ class Json
      * $msg 错误提示
      * $code 错误码（默认 1）
      * $data 可选数据
-     */
+     * @param array<mixed> $data
+ */
     public static function fail(string $msg = 'fail', ?array $data = null, int $code = 1, ?int $httpCode = 200): Response
     {
         return self::make($code, $msg, $data, $httpCode);
@@ -123,7 +124,8 @@ class Json
 
     /**
      * 通用状态包装
-     */
+     * @param array<mixed> $data
+ */
     public static function status(string $status, string $msg = 'success', array $data = []): Response
     {
         return self::make(0, $msg, array_merge(['status' => strtoupper($status)], $data));

@@ -26,7 +26,7 @@ class DebugMiddleware implements MiddlewareInterface
 
     public function __construct(bool $debug = true)
     {
-        $this->debug = $debug ?? false;
+        $this->debug = $debug;
     }
 
     /**
@@ -381,7 +381,8 @@ class DebugMiddleware implements MiddlewareInterface
 
     /**
      * HTML拼接辅助方法
-     */
+     * @param array<mixed> $parts
+ */
     protected function joinHtml(array $parts): string
     {
         return implode("\n", $parts);

@@ -30,6 +30,7 @@ class Pagination
 
     private string $baseUrl;
 
+    /** @var array<mixed> */
     private array $baseQueryParams;
 
     public function __construct(
@@ -95,7 +96,8 @@ class Pagination
      * 生成分页数据结构.
      *
      * @param int $radius 中间显示的页码半径（默认2，即左右各2页）
-     */
+     * @return array<mixed>
+ */
     public function getData(int $radius = 2): array
     {
         $data = [
@@ -157,14 +159,12 @@ class Pagination
         }
 
         // 最后一页（如果总页数 > 1）
-        if ($this->totalPages > 1) {
-            $pages[] = [
-                'type'       => 'page',
-                'number'     => $this->totalPages,
-                'url'        => $this->buildUrl($this->totalPages),
-                'is_current' => ($this->totalPages === $this->currentPage),
-            ];
-        }
+        $pages[] = [
+            'type'       => 'page',
+            'number'     => $this->totalPages,
+            'url'        => $this->buildUrl($this->totalPages),
+            'is_current' => ($this->totalPages === $this->currentPage),
+        ];
 
         $data['pages'] = $pages;
 

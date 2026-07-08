@@ -42,6 +42,9 @@ class MarkdownExtension extends AbstractExtension
         $this->converter = new MarkdownConverter($environment);
     }
 
+    /**
+    * @return array<mixed>
+    */
     public function getFilters(): array
     {
         return [

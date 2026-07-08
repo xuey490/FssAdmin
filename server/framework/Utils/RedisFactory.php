@@ -45,7 +45,7 @@ use Workerman\Timer;
  */
 class RedisFactory
 {
-    /** @var array Redis 节点配置 */
+    /** @var array<mixed> Redis 节点配置 */
     private static array $configList = [];
 
     /** @var null|\Redis 当前连接 */
@@ -62,6 +62,9 @@ class RedisFactory
 
     // ========== 连接管理 ==========
 
+    /**
+    * @param array<mixed> $configList
+    */
     public static function createRedisClient(array $configList): \Redis
     {
         self::$configList = $configList;
@@ -79,7 +82,7 @@ class RedisFactory
     // ========== 基础 Redis 操作（略，保持不变）==========
     // === Redis 封装方法 ===
 
-    public static function set(string $key, $value, int $ttl = 0, bool $nx = false): bool
+    public static function set(string $key, mixed $value, int $ttl = 0, bool $nx = false): bool
     {
         return self::exec(function (\Redis $r) use ($key, $value, $ttl, $nx) {
             $opt = [];
@@ -93,11 +96,14 @@ class RedisFactory
         });
     }
 
-    public static function get(string $key)
+    public static function get(string $key): mixed
     {
         return self::exec(fn (\Redis $r) => $r->get($key));
     }
 
+    /**
+    * @param array<mixed>|string  $key
+    */
     public static function del(array|string $key): int
     {
         return self::exec(fn (\Redis $r) => $r->del($key));
@@ -118,16 +124,19 @@ class RedisFactory
         return self::exec(fn (\Redis $r) => $r->decrBy($key, $by));
     }
 
-    public static function hSet(string $hash, string $field, $value): int
+    public static function hSet(string $hash, string $field, mixed $value): int
     {
         return self::exec(fn (\Redis $r) => $r->hSet($hash, $field, $value));
     }
 
-    public static function hGet(string $hash, string $field)
+    public static function hGet(string $hash, string $field): mixed
     {
         return self::exec(fn (\Redis $r) => $r->hGet($hash, $field));
     }
 
+    /**
+    * @return array<mixed>
+    */
     public static function hGetAll(string $hash): array
     {
         return self::exec(fn (\Redis $r) => $r->hGetAll($hash));
@@ -224,7 +233,8 @@ class RedisFactory
 
     /**
      * 事务封装.
-     */
+     * @return array<mixed>
+ */
     public static function transaction(callable $callback): array
     {
         return self::exec(function (\Redis $r) use ($callback) {
@@ -265,7 +275,9 @@ class RedisFactory
 
     /**
      * 通用执行器（带重试与故障转移）.
-     */
+     
+     * @return mixed
+*/
     private static function exec(callable $fn)
     {
         $attempt = 0;

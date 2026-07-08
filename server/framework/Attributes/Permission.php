@@ -21,6 +21,7 @@ use App\Middlewares\PermissionMiddleware;
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 class Permission implements MiddlewareProviderInterface
 {
+    /** @var array<mixed> */
     public array $slugs;
     public string $mode;
 
@@ -39,6 +40,10 @@ class Permission implements MiddlewareProviderInterface
 
     /**
      * 告诉 Loader：只要用了我这个注解，就请加载 PermissionMiddleware
+
+     * @return string|array<mixed>
+    
+
      */
     public function getMiddleware(): string|array
     {

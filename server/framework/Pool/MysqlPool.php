@@ -123,7 +123,7 @@ class MysqlPool implements PoolInterface
 
     /**
      * {@inheritDoc}
-     */
+ */
     public function borrow(): object
     {
         if ($this->closed) {
@@ -177,7 +177,7 @@ class MysqlPool implements PoolInterface
 
     /**
      * {@inheritDoc}
-     */
+ */
     public function release(object $connection): void
     {
         if (!$connection instanceof PDO) {
@@ -218,7 +218,7 @@ class MysqlPool implements PoolInterface
 
     /**
      * {@inheritDoc}
-     */
+ */
     public function healthCheck(object $connection): bool
     {
         if (!$connection instanceof PDO) {
@@ -235,7 +235,8 @@ class MysqlPool implements PoolInterface
 
     /**
      * {@inheritDoc}
-     */
+     * @return array<mixed>
+ */
     public function stats(): array
     {
         return [
@@ -248,7 +249,7 @@ class MysqlPool implements PoolInterface
 
     /**
      * {@inheritDoc}
-     */
+ */
     public function close(): void
     {
         $this->closed = true;

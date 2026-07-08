@@ -38,6 +38,10 @@ class UserAction implements MiddlewareProviderInterface
     ) {
     }
 
+    /**
+    * @return string|array<mixed>
+    
+    */
     public function getMiddleware(): string|array
     {
         return UserActionMiddleware::class;

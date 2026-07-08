@@ -38,8 +38,7 @@ class ContainerProviders
     /**
      * 已加载的服务提供者实例列表
      *
-     * @var array
-     */
+     * @var array<mixed> */
     protected array $loadedProviders = [];
 
     /**
@@ -48,8 +47,7 @@ class ContainerProviders
      * 在 ContainerConfigurator 阶段暂时存储，
      * 等待 ContainerBuilder 阶段再执行 boot 方法。
      *
-     * @var array
-     */
+     * @var array<mixed> */
     protected array $pendingBoot = [];
 
     /**
@@ -145,7 +143,7 @@ class ContainerProviders
             return;
         }
 
-        /** @var ServiceProviderInterface $provider */
+        
         $provider = $ref->newInstance();
 
         // 调用 register 方法
@@ -162,7 +160,7 @@ class ContainerProviders
      * 在容器编译后执行，用于初始化服务逻辑。
      * 如果容器是 ContainerConfigurator，则推迟 boot 到 ContainerBuilder 阶段。
      *
-     * @param ContainerBuilder|ContainerConfigurator|\Framework\Container\Container $container 容器实例
+     * @param ContainerBuilder|ContainerConfigurator|\Framework\Container\Container|\Symfony\Component\DependencyInjection\ContainerInterface $container 容器实例
      *
      * @return void
      */

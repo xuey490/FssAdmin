@@ -31,7 +31,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class AppListCommand extends Command
 {
-    protected static $defaultName = 'app:list';
+    protected static ?string $defaultName = 'app:list';
 
     protected function configure(): void
     {
@@ -66,7 +66,7 @@ class AppListCommand extends Command
         // ================================================================
         $composerLoader = null;
         foreach (spl_autoload_functions() as $func) {
-            if (is_array($func) && isset($func[0]) && $func[0] instanceof \Composer\Autoload\ClassLoader) {
+            if (is_array($func) && $func[0] instanceof \Composer\Autoload\ClassLoader) {
                 $composerLoader = $func[0];
                 break;
             }

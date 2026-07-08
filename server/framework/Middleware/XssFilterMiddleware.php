@@ -15,12 +15,16 @@ class XssFilterMiddleware
     private ?\HTMLPurifier $purifier = null;
     
     // 默认不处理的字段，例如密码字段不应被修改
+    /** @var array<mixed> */
     private array $except = [
         'password',
         'password_confirmation',
         '_token'
     ];
 
+    /**
+    * @param array<mixed> $allowedHtml
+    */
     public function __construct(bool $enabled = true, array $allowedHtml = [])
     {
         $this->enabled = $enabled;
@@ -87,6 +91,10 @@ class XssFilterMiddleware
         }
     }
 
+    /**
+    * @param array<mixed> $files
+    * @return array<mixed>
+    */
     private function filterFiles(array $files): array
     {
         $filteredFiles = [];
@@ -126,6 +134,10 @@ class XssFilterMiddleware
         return mb_substr($fileName, 0, 255);
     }
 
+    /**
+    * @param array<mixed> $data
+    * @return array<mixed>
+    */
     private function filterArray(array $data): array
     {
         $clean = [];

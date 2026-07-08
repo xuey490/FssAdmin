@@ -262,8 +262,7 @@ class Sample extends BaseModel
     /**
      * 可批量赋值的字段
      *
-     * @var array
-     */
+     * @var array<mixed> */
     protected \$fillable = [
         'name',
         'status',
@@ -272,8 +271,7 @@ class Sample extends BaseModel
     /**
      * 字段类型转换
      *
-     * @var array
-     */
+     * @var array<mixed> */
     protected \$casts = [
         'status' => 'integer',
     ];
@@ -311,8 +309,7 @@ class SampleService extends BaseService
     /**
      * 获取示例数据
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public function getSamples(): array
     {
         return [

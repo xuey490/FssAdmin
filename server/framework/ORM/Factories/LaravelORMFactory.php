@@ -19,6 +19,7 @@ namespace Framework\ORM\Factories;
 use Framework\Core\App;
 use Framework\ORM\Exception\Exception;
 use Framework\Utils\Arr;
+use ReflectionException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -67,6 +68,10 @@ class LaravelORMFactory
         }
     }
 
+    /**
+    * @param array<mixed> $where
+    * @return array<mixed>
+    */
     private function splitWhere(array $where): array
     {
         $special = [];
@@ -82,6 +87,10 @@ class LaravelORMFactory
         return [$where, $special];
     }
 
+    /**
+    * @param \Illuminate\Database\Eloquent\Builder<\Illuminate\Database\Eloquent\Model> $query
+    * @param array<mixed> $where
+    */
     private function applyConditions(Builder $query, array $where): void
     {
 		
@@ -103,6 +112,10 @@ class LaravelORMFactory
         }
     }
 
+    /**
+    * @param array<mixed> $where
+    * @return \Illuminate\Database\Eloquent\Builder<\Illuminate\Database\Eloquent\Model>
+    */
     private function buildQuery(array $where = []): Builder
     {
 		
@@ -113,6 +126,10 @@ class LaravelORMFactory
         return $query;
     }
 
+    /**
+    * @param \Illuminate\Database\Eloquent\Builder<\Illuminate\Database\Eloquent\Model> $query
+    * @param  array<mixed>|string  $field
+    */
     private function applyFields(Builder $query, array|string $field): void
     {
         $isWildcard = ($field === '*' || ($field === ['*']));
@@ -131,7 +148,7 @@ class LaravelORMFactory
      /**
      * 获取条数
      *
-     * @param array $where
+     * @param array<mixed> $where
      * @param bool  $search
      *
      * @return int
@@ -148,16 +165,16 @@ class LaravelORMFactory
     /**
      * 查询列表
      *
-     * @param array $where
-     * @param string|array $field
+     * @param array<mixed> $where
+     * @param string|array<mixed> $field
      * @param int $page
      * @param int $limit
      * @param string $order
-     * @param array $with
+     * @param array<mixed> $with
      * @param bool $search
-     * @param array|null $withoutScopes
+     * @param array<mixed>|null $withoutScopes
      *
-     * @return Collection|null
+     * @return \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Database\Eloquent\Model>|null
      * @throws Exception
      */
     public function selectList(array $where, string|array $field = '*', int $page = 0, int $limit = 0, string $order = '', array $with = [], bool $search = false, ?array $withoutScopes = null): ?Collection
@@ -178,16 +195,16 @@ class LaravelORMFactory
     /**
      * 获取某些条件数据
      *
-     * @param array $where
-     * @param array|string $field
+     * @param array<mixed> $where
+     * @param array<mixed>|string $field
      * @param int $page
      * @param int $limit
      * @param string $order
-     * @param array $with
+     * @param array<mixed> $with
      * @param bool $search
-     * @param array|null $withoutScopes
+     * @param array<mixed>|null $withoutScopes
      *
-     * @return Builder|\Illuminate\Database\Query\Builder|LengthAwarePaginator|null
+     * @return \Illuminate\Database\Eloquent\Builder<\Illuminate\Database\Eloquent\Model>|\Illuminate\Database\Query\Builder|\Illuminate\Pagination\LengthAwarePaginator<(int|string), mixed>|null
      * @throws Exception
      */
     public function selectModel(array $where, array|string $field = '*', int $page = 0, int $limit = 0, string $order = '', array $with = [], bool $search = false, ?array $withoutScopes = null): Builder|\Illuminate\Database\Query\Builder|LengthAwarePaginator|null
@@ -219,7 +236,7 @@ class LaravelORMFactory
     /**
      * 获取条数
      *
-     * @param array $where
+     * @param array<mixed> $where
      *
      * @return int
      * @throws Exception
@@ -233,7 +250,7 @@ class LaravelORMFactory
     /**
      * 计算符合条件的唯一记录数量
      *
-     * @param array  $where
+     * @param array<mixed> $where
      * @param string $field
      * @param bool   $search
      *
@@ -273,11 +290,11 @@ class LaravelORMFactory
     /**
      * 获取一条数据
      *
-     * @param            $id
-     * @param array|null $field
-     * @param array|null $with
+     * @param            mixed $id
+     * @param array<mixed>|null $field
+     * @param array<mixed>|null $with
      * @param string     $order
-     * @param array|null $withoutScopes
+     * @param array<mixed>|null $withoutScopes
      *
      * @return Model|null
      * @throws \Exception
@@ -295,14 +312,17 @@ class LaravelORMFactory
         if ($order !== '') {
             $query->orderByRaw($order);
         }
-        return $query->select($field ?? ['*'])->first();
+        /** @var \Illuminate\Database\Eloquent\Model|null $result */
+        $result = $query->select($field ?? ['*'])->first();
+
+        return $result;
     }
 
 
     /**
      * 查询一条数据是否存在
      *
-     * @param        $map
+     * @param        mixed $map
      * @param string $field
      *
      * @return bool
@@ -326,9 +346,9 @@ class LaravelORMFactory
     /**
      * 根据条件获取一条数据
      *
-     * @param array       $where
+     * @param array<mixed> $where
      * @param string|null $field
-     * @param array       $with
+     * @param array<mixed> $with
      *
      * @return Model|null
      * @throws Exception
@@ -344,14 +364,17 @@ class LaravelORMFactory
             $query->with($with);
         }
 
-        return $query->select($fieldArray)->first();
+        /** @var \Illuminate\Database\Eloquent\Model|null $result */
+        $result = $query->select($fieldArray)->first();
+
+        return $result;
     }
 
 
     /**
      * 获取某字段的值
      *
-     * @param             $where
+     * @param             mixed $where
      * @param string|null $field
      *
      * @return mixed
@@ -370,12 +393,11 @@ class LaravelORMFactory
     /**
      * 获取某个字段数组
      *
-     * @param array  $where
+     * @param array<mixed> $where
      * @param string $field
      * @param string $key
      *
-     * @return array
-     * @throws ReflectionException|Exception
+     * @return array<mixed> * @throws ReflectionException|Exception
      */
     public function getColumn(array $where, string $field, string $key = ''): array
     {
@@ -394,10 +416,9 @@ class LaravelORMFactory
     /**
      * 删除
      *
-     * @param array|int|string $id
+     * @param array<mixed>|int|string $id
      * @param string|null      $key
      *
-     * @return mixed
      * @throws Exception
      */
     public function delete(array|int|string $id, ?string $key = null): int
@@ -443,8 +464,8 @@ class LaravelORMFactory
     /**
      * 更新
      *
-     * @param string|int|array $id
-     * @param array            $data
+     * @param string|int|array<mixed> $id
+     * @param array<mixed> $data
      * @param string|null      $key
      *
      * @return mixed
@@ -498,11 +519,10 @@ class LaravelORMFactory
     /**
      * setWhere
      *
-     * @param             $where
+     * @param             mixed $where
      * @param string|null $key
      *
-     * @return array
-     * @throws Exception
+     * @return array<mixed> * @throws Exception
      */
     protected function setWhere($where, ?string $key = null): array
     {
@@ -516,11 +536,10 @@ class LaravelORMFactory
     /**
      * 批量更新
      *
-     * @param array       $ids
-     * @param array       $data
+     * @param array<mixed> $ids
+     * @param array<mixed> $data
      * @param string|null $key
      *
-     * @return mixed
      * @throws Exception
      */
     public function batchUpdate(array $ids, array $data, ?string $key = null): bool
@@ -531,7 +550,7 @@ class LaravelORMFactory
     /**
      * 保存返回模型
      *
-     * @param array $data
+     * @param array<mixed> $data
      *
      * @return Model|null
      * @throws Exception
@@ -544,7 +563,7 @@ class LaravelORMFactory
     /**
      * 批量插入
      *
-     * @param array $data
+     * @param array<mixed> $data
      *
      * @return bool
      */
@@ -577,10 +596,10 @@ class LaravelORMFactory
     /**
      * 获取某字段内的值
      *
-     * @param             $value
+     * @param             mixed $value
      * @param string      $field
      * @param string|null $valueKey
-     * @param array|null  $where
+     * @param array<mixed>|null  $where
      *
      * @return mixed
      * @throws Exception
@@ -633,9 +652,9 @@ class LaravelORMFactory
     /**
      * 获取搜索器和搜索条件key,以及不在搜索器的条件数组
      *
-     * @param array $where
+     * @param array<mixed> $where
      *
-     * @return array[]
+     * @return array<mixed>[]
      * @throws ReflectionException
      */
     private function getSearchData(array $where): array
@@ -668,10 +687,10 @@ class LaravelORMFactory
     /**
      * 根据搜索器获取内容
      *
-     * @param array $where
+     * @param array<mixed> $where
      * @param bool  $search
      *
-     * @return \Illuminate\Database\Query\Builder
+     * @return \Illuminate\Database\Eloquent\Builder<\Illuminate\Database\Eloquent\Model>
      * @throws Exception
      */
     protected function withSearchSelect(array $where, bool $search): mixed
@@ -697,10 +716,9 @@ class LaravelORMFactory
     /**
      * 过滤数据表中不存在的字段
      *
-     * @param array $where
+     * @param array<mixed> $where
      *
-     * @return array
-     * @throws Exception
+     * @return array<mixed> * @throws Exception
      */
     protected function filterWhere(array $where = []): array
     {
@@ -725,7 +743,7 @@ class LaravelORMFactory
     /**
      * 搜索
      *
-     * @param array $where
+     * @param array<mixed> $where
      * @param bool  $search
      *
      * @return mixed
@@ -743,7 +761,7 @@ class LaravelORMFactory
     /**
      * 求和
      *
-     * @param array  $where
+     * @param array<mixed> $where
      * @param string $field
      * @param bool   $search
      *
@@ -815,7 +833,7 @@ class LaravelORMFactory
     /**
      * 高精度 减法
      *
-     * @param             $key
+     * @param             mixed $key
      * @param string      $decField
      * @param string      $dec
      * @param string|null $keyField
@@ -832,7 +850,7 @@ class LaravelORMFactory
     /**
      * 高精度计算并保存
      *
-     * @param             $key
+     * @param             mixed $key
      * @param string      $field
      * @param string      $value
      * @param string|null $keyField
@@ -865,7 +883,7 @@ class LaravelORMFactory
     /**
      * 减库存加销量
      *
-     * @param array  $where
+     * @param array<mixed> $where
      * @param int    $num
      * @param string $stock
      * @param string $sales
@@ -891,7 +909,7 @@ class LaravelORMFactory
     /**
      * 加库存减销量
      *
-     * @param array  $where
+     * @param array<mixed> $where
      * @param int    $num
      * @param string $stock
      * @param string $sales
@@ -918,7 +936,7 @@ class LaravelORMFactory
     /**
      * 获取条件数据中的某个值的最大值
      *
-     * @param array  $where
+     * @param array<mixed> $where
      * @param string $field
      *
      * @return mixed
@@ -933,7 +951,7 @@ class LaravelORMFactory
     /**
      * 获取条件数据中的某个值的最小值
      *
-     * @param array  $where
+     * @param array<mixed> $where
      * @param string $field
      *
      * @return mixed
@@ -958,8 +976,8 @@ class LaravelORMFactory
     /**
      * 执行作用域移除操作
      *
-     * @param            $query
-     * @param array|null $scopes
+     * @param            mixed $query
+     * @param array<mixed>|null $scopes
      */
     protected function applyScopeRemoval($query, ?array $scopes): void
     {
@@ -980,7 +998,7 @@ class LaravelORMFactory
     /**
      * 是否in条件
      *
-     * @param array $condition
+     * @param array<mixed> $condition
      *
      * @return bool
      */
@@ -991,7 +1009,7 @@ class LaravelORMFactory
     }
     /**
      * 检测表是否存在
-     * @param $table
+     * @param mixed $table
      * @return bool
      */
     public function tableExists($table): bool

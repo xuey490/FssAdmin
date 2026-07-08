@@ -41,6 +41,10 @@ class Cache implements MiddlewareProviderInterface
         public ?string $key = null
     ) {}
 
+    /**
+    * @return string|array<mixed>
+    
+    */
     public function getMiddleware(): string|array
     {
         return CacheMiddleware::class;

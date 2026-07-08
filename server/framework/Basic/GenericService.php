@@ -28,8 +28,9 @@ namespace Framework\Basic;
  * - 提供统一的服务调用接口
  *
  * @package Framework\Basic
+ * @extends \Framework\Basic\BaseService<\Framework\Basic\BaseDao>
  */
-class GenericService extends BaseService 
+class GenericService extends BaseService
 {
     // 这是一个空壳，专门用来做通用代理
 }

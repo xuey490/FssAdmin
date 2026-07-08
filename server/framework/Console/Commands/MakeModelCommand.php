@@ -170,8 +170,7 @@ class {$className} extends Model
 
     /**
      * 时间戳字段名
-     * @var array
-     */
+     * @var array<mixed> */
     protected \$createTime = 'created_at';
     protected \$updateTime = 'updated_at';
 
@@ -183,14 +182,12 @@ class {$className} extends Model
 
     /**
      * 可以被批量赋值的属性
-     * @var array
-     */
+     * @var array<mixed> */
     protected \$fillable = [];
 
     /**
      * 隐藏的属性
-     * @var array
-     */
+     * @var array<mixed> */
     protected \$hidden = [];
 }
 PHP;

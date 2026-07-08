@@ -38,12 +38,12 @@ class PluginManifest
      * @param string $author 插件作者
      * @param string $namespace 插件命名空间
      * @param string $path 插件目录路径
-     * @param array $requires 运行环境要求（PHP版本、框架版本等）
-     * @param array $dependencies 插件依赖（其他插件）
-     * @param array $hooks 生命周期钩子
-     * @param array $routes 路由配置
-     * @param array $autoload 自动加载配置
-     * @param array $extra 额外配置
+     * @param array<mixed> $requires 运行环境要求（PHP版本、框架版本等）
+     * @param array<mixed> $dependencies 插件依赖（其他插件）
+     * @param array<mixed> $hooks 生命周期钩子
+     * @param array<mixed> $routes 路由配置
+     * @param array<mixed> $autoload 自动加载配置
+     * @param array<mixed> $extra 额外配置
      */
     public function __construct(
         public readonly string $name,
@@ -91,7 +91,7 @@ class PluginManifest
     /**
      * 从数组创建插件清单
      *
-     * @param array $data 插件数据
+     * @param array<mixed> $data 插件数据
      * @param string $path 插件目录路径
      * @return self
      * @throws InvalidArgumentException 缺少必需字段
@@ -138,8 +138,7 @@ class PluginManifest
     /**
      * 转换为数组
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public function toArray(): array
     {
         return [
@@ -232,7 +231,7 @@ class PluginManifest
     /**
      * 检查是否满足运行环境要求
      *
-     * @return array 包含 'satisfied' => bool, 'errors' => array
+     * @return array<mixed> 包含 'satisfied' => bool, 'errors' => array<mixed>
      */
     public function checkRequirements(): array
     {
@@ -299,12 +298,12 @@ class PluginManifest
         }
 
         // 处理 > 操作符
-        if (str_starts_with($constraint, '>') && !str_starts_with($constraint, '>=')) {
+        if (str_starts_with($constraint, '>')) {
             return version_compare($version, trim(substr($constraint, 1)), '>');
         }
 
         // 处理 < 操作符
-        if (str_starts_with($constraint, '<') && !str_starts_with($constraint, '<=')) {
+        if (str_starts_with($constraint, '<')) {
             return version_compare($version, trim(substr($constraint, 1)), '<');
         }
 

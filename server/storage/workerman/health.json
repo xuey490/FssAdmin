@@ -1,8 +1,12 @@
 {
-    "pid": 6996,
-    "memory": "4 MB",
-    "time": "2026-05-25 15:40:01",
-    "uptime": "97.14 s",
+    "pid": 32576,
+    "worker_id": 0,
+    "worker_name": "FSSPHP-HTTP",
+    "memory_mb": 32,
+    "peak_memory_mb": 32,
+    "memory_limit_mb": 256,
+    "time": "2026-06-13 23:31:31",
+    "uptime_s": 80.77,
     "php": "8.3.25",
     "os": "WINNT"
 }

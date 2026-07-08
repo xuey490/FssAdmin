@@ -40,6 +40,10 @@ class Role implements MiddlewareProviderInterface
 
     /**
      * 绑定中间件
+
+     * @return string|array<mixed>
+    
+
      */
     public function getMiddleware(): string|array
     {

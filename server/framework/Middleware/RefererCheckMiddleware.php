@@ -22,6 +22,11 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class RefererCheckMiddleware
 {
+    /**
+    * @param array<mixed> $allowedHosts
+    * @param array<mixed> $allowedSchemes
+    * @param array<mixed> $except
+    */
     public function __construct(
         private array $allowedHosts,
         private array $allowedSchemes = ['https'],

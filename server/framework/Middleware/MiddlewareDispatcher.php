@@ -18,7 +18,7 @@ namespace Framework\Middleware;
 
 use App\Middlewares\AuthMiddleware;
 use App\Middlewares\PermissionMiddleware;
-use Framework\Container\Container;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -33,9 +33,10 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class MiddlewareDispatcher
 {
-    private Container $container;
+    private ContainerInterface $container;
 
     // 框架全局中间件（所有请求都会执行，框架底层）
+    /** @var array<mixed> */
     private array $globalMiddleware = [
         ContextInitMiddleware::class,
         SecurityHeadersMiddleware::class,   // 统一注入安全响应头（对所有响应生效）
@@ -57,10 +58,11 @@ class MiddlewareDispatcher
     ];
 
     // 应用层中间件（从config/middlewares.php加载）
+    /** @var array<mixed> */
     private array $appMiddleware = [];
 
 
-    public function __construct(Container $container)
+    public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
         // 初始化加载应用层中间件（项目启动时仅加载一次，提升性能）
@@ -193,7 +195,9 @@ class MiddlewareDispatcher
 
     /**
      * 保证 AuthMiddleware 在 PermissionMiddleware 之前执行。
-     */
+     * @param array<mixed> $middleware
+ * @return array<mixed>
+ */
     private function ensureAuthBeforePermission(array $middleware): array
     {
         $authIndex = array_search(AuthMiddleware::class, $middleware, true);
@@ -211,7 +215,9 @@ class MiddlewareDispatcher
 
     /**
      * 将多维数组递归“拍平”成一维数组.
-     */
+     * @param array<mixed> $array
+ * @return array<mixed>
+ */
     private function flattenArray(array $array): array
     {
         $result = [];

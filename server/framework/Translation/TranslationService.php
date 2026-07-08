@@ -63,7 +63,7 @@ class TranslationService
      * 根据当前语言环境翻译指定的消息 ID，支持参数占位符替换。
      *
      * @param string      $id         翻译键（消息 ID）
-     * @param array       $parameters 占位符替换参数数组
+     * @param array<mixed> $parameters 占位符替换参数数组
      * @param string      $domain     翻译域，默认为 'messages'
      * @param string|null $locale     目标语言，为 null 时使用当前语言环境
      *

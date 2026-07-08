@@ -111,14 +111,12 @@ class BaseTpORMModel extends TpModel
 
     /**
      * 全局作用域（多租户）
-     * @var array
-     */
+     * @var array<mixed> */
     protected array $globalScope = ['tenant'];
 
     /**
      * 只读字段
-     * @var array
-     */
+     * @var array<mixed> */
     protected $readonly = ['created_by', 'tenant_id'];
 
     /**
@@ -133,6 +131,18 @@ class BaseTpORMModel extends TpModel
      * @var string
      */
     protected string $pkGenerateType = 'snowflake';
+
+    /**
+     * 模型名称（不含前缀的表名），用于兼容表前缀拼接逻辑
+     * @var string|null
+     */
+    protected ?string $name = null;
+
+    /**
+     * 完整表名（含前缀）
+     * @var string|null
+     */
+    protected ?string $table = null;
 
     // =========================================================================
     //  初始化方法
@@ -156,9 +166,9 @@ class BaseTpORMModel extends TpModel
      *
      * 处理表前缀兼容逻辑。
      *
-     * @param array $data 初始数据
+     * @param array<mixed> $data 初始数据
      */
-    public function __construct(array $data = [])
+    final public function __construct(array $data = [])
     {
         parent::__construct($data);
 
@@ -192,10 +202,10 @@ class BaseTpORMModel extends TpModel
      *
      * 执行主键生成和时间字段填充。
      *
-     * @param TpModel $model 模型实例
+     * @param BaseTpORMModel $model 模型实例
      * @return void
      */
-    protected static function beforeInsert(TpModel $model): void
+    protected static function beforeInsert(BaseTpORMModel $model): void
     {
         // 仅在自动时间戳启用时处理
         if ($model->autoWriteTimestamp) {
@@ -218,11 +228,11 @@ class BaseTpORMModel extends TpModel
      *
      * 执行主键生成、租户ID设置、创建人设置、日期字段规范化。
      *
-     * @param TpModel $model 模型实例
+     * @param BaseTpORMModel $model 模型实例
      * @return void
      * @throws \BadMethodCallException
      */
-    public static function onBeforeInsert(TpModel $model): void
+    public static function onBeforeInsert(BaseTpORMModel $model): void
     {
         try {
             self::beforeInsert($model);
@@ -244,11 +254,11 @@ class BaseTpORMModel extends TpModel
      *
      * 执行租户权限检查、日期字段规范化。
      *
-     * @param TpModel $model 模型实例
+     * @param BaseTpORMModel $model 模型实例
      * @return void
      * @throws \think\exception\ValidateException
      */
-    public static function onBeforeUpdate(TpModel $model): void
+    public static function onBeforeUpdate(BaseTpORMModel $model): void
     {
         // 1. 检查是否越权
         self::checkTenantAccess($model);
@@ -267,11 +277,11 @@ class BaseTpORMModel extends TpModel
      *
      * 物理删除和软删除通用。
      *
-     * @param TpModel $model 模型实例
+     * @param BaseTpORMModel $model 模型实例
      * @return void
      * @throws \think\exception\ValidateException
      */
-    public static function onBeforeDelete(TpModel $model): void
+    public static function onBeforeDelete(BaseTpORMModel $model): void
     {
         // 检查是否越权
         self::checkTenantAccess($model);
@@ -282,10 +292,10 @@ class BaseTpORMModel extends TpModel
      *
      * 子类可覆盖扩展。
      *
-     * @param TpModel $model 模型实例
+     * @param BaseTpORMModel $model 模型实例
      * @return void
      */
-    public static function onAfterUpdate(TpModel $model): void
+    public static function onAfterUpdate(BaseTpORMModel $model): void
     {
         // 子类可扩展
     }
@@ -295,11 +305,11 @@ class BaseTpORMModel extends TpModel
      *
      * 物理删除后执行清理逻辑。
      *
-     * @param TpModel $model 模型实例
+     * @param BaseTpORMModel $model 模型实例
      * @return void
      * @throws \BadMethodCallException
      */
-    public static function onAfterDelete(TpModel $model): void
+    public static function onAfterDelete(BaseTpORMModel $model): void
     {
         if ($model->isSoftDeleteEnabled()) {
             return;
@@ -309,11 +319,7 @@ class BaseTpORMModel extends TpModel
         $tableData = $model->getData();
         $prefix = $model->getConfig('prefix');
 
-        try {
-            // 删除后逻辑（预留）
-        } catch (\Exception $e) {
-            throw new \BadMethodCallException($e->getMessage());
-        }
+        // 删除后逻辑（预留）
     }
 
     /**
@@ -321,15 +327,11 @@ class BaseTpORMModel extends TpModel
      *
      * 格式化日期字段为字符串格式。
      *
-     * @param TpModel $model 模型实例
+     * @param BaseTpORMModel $model 模型实例
      * @return void
      */
-    public static function onAfterRead(TpModel $model): void
+    public static function onAfterRead(BaseTpORMModel $model): void
     {
-        // 只处理模型实例
-        if (!($model instanceof self)) {
-            return;
-        }
         $model->formatDateFields();
     }
 
@@ -340,7 +342,7 @@ class BaseTpORMModel extends TpModel
     /**
      * 子类可扩展日期字段
      *
-     * @return array 日期字段列表
+     * @return array<mixed> 日期字段列表
      */
     protected function extraDates(): array
     {
@@ -352,12 +354,12 @@ class BaseTpORMModel extends TpModel
      *
      * 合并类属性 $dates 和子类扩展字段。
      *
-     * @return array 日期字段列表
+     * @return array<mixed> 日期字段列表
      */
     public function getDates(): array
     {
         return array_values(array_unique(array_merge(
-            $this->dates ?? [],
+            $this->dates,
             $this->extraDates()
         )));
     }
@@ -405,28 +407,12 @@ class BaseTpORMModel extends TpModel
     }
 
     /**
-     * 将日期字符串/时间戳转为 int 时间戳
-     *
-     * @param mixed $value 输入值
-     * @return int 时间戳
-     */
-    private function convertToTimestamp($value): int
-    {
-        if (is_numeric($value)) {
-            return (int)$value;
-        } else {
-            $timestamp = strtotime($value);
-            return $timestamp !== false ? (int)$timestamp : 0;
-        }
-    }
-
-    /**
      * 将所有日期字段统一转为 int 时间戳
      *
-     * @param TpModel $model 模型实例
+     * @param BaseTpORMModel $model 模型实例
      * @return void
      */
-    protected static function normalizeDateFields(TpModel $model): void
+    protected static function normalizeDateFields(BaseTpORMModel $model): void
     {
         foreach ($model->getDates() as $field) {
             // 如果模型里根本没有这个字段，跳过
@@ -465,7 +451,7 @@ class BaseTpORMModel extends TpModel
      * 安全处理，确保返回数组。
      *
      * @param string|null $field 指定字段名
-     * @return array|mixed 字段列表或指定字段信息
+     * @return array<mixed>|mixed 字段列表或指定字段信息
      */
     public function getFields(?string $field = null): mixed
     {
@@ -484,7 +470,7 @@ class BaseTpORMModel extends TpModel
      */
     public function isSoftDeleteEnabled(): bool
     {
-        return method_exists($this, 'delete');
+        return true;
     }
 
     /**
@@ -495,7 +481,7 @@ class BaseTpORMModel extends TpModel
      */
     public static function forceDeleteById($id): bool
     {
-        return self::withTrashed()->where((new static)->getPk(), $id)->delete(true);
+        return (bool) self::withTrashed()->where((new static)->getPk(), $id)->delete(true);
     }
 
     /**
@@ -557,7 +543,7 @@ class BaseTpORMModel extends TpModel
     protected static function getCurrentTenantId(): ?string
     {
         if (class_exists(TenantContext::class)) {
-            return (string)TenantContext::getTenantId() ?? null;
+            return (string)TenantContext::getTenantId();
         }
         return null;
     }
@@ -577,11 +563,11 @@ class BaseTpORMModel extends TpModel
      *
      * 防止越权操作。在更新和删除前触发。
      *
-     * @param TpModel $model 模型实例
+     * @param BaseTpORMModel $model 模型实例
      * @return void
      * @throws \think\exception\ValidateException
      */
-    protected static function checkTenantAccess(TpModel $model): void
+    protected static function checkTenantAccess(BaseTpORMModel $model): void
     {
         $currentTenantId = self::getCurrentTenantId();
         if (!$currentTenantId) {
@@ -626,10 +612,10 @@ class BaseTpORMModel extends TpModel
      *
      * 仅雪花ID模式生效。
      *
-     * @param TpModel $model 模型实例
+     * @param BaseTpORMModel $model 模型实例
      * @return void
      */
-    private static function setPrimaryKey(TpModel $model): void
+    private static function setPrimaryKey(BaseTpORMModel $model): void
     {
         $pk = $model->getPk();
         if (is_string($pk) && empty($model->{$pk})) {
@@ -640,10 +626,10 @@ class BaseTpORMModel extends TpModel
     /**
      * 设置租户ID
      *
-     * @param TpModel $model 模型实例
+     * @param BaseTpORMModel $model 模型实例
      * @return void
      */
-    private static function setTenantId(TpModel $model): void
+    private static function setTenantId(BaseTpORMModel $model): void
     {
         if (!isset($model->tenant_id)) {
             $tenantId = self::getCurrentTenantId();

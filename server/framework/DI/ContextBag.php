@@ -18,6 +18,7 @@ namespace Framework\DI;
 
 final class ContextBag
 {
+    /** @var array<mixed> */
     protected static array $data = [];
 
     public static function set(string $key, mixed $value): void

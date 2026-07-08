@@ -51,7 +51,7 @@ class Validate implements MiddlewareProviderInterface
     /**
      * 返回关联的中间件类名
      *
-     * @return string 中间件类名
+     * @return string|array<mixed> 中间件类名
      */
     public function getMiddleware(): string|array
     {

@@ -22,8 +22,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class IpBlockMiddleware implements MiddlewareInterface
 {
+    /** @var array<mixed> */
     private array $whitelist = [];
 
+    /** @var array<mixed> */
     private array $blacklist = [];
 
     private bool $enabled = true;
@@ -65,7 +67,8 @@ class IpBlockMiddleware implements MiddlewareInterface
 
     /**
      * 判断 IP 是否匹配列表中的任意 CIDR 或精确 IP.
-     */
+     * @param array<mixed> $list
+ */
     private function isIpInList(string $ip, array $list): bool
     {
         foreach ($list as $entry) {

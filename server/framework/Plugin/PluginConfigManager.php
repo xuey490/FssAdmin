@@ -35,8 +35,7 @@ class PluginConfigManager
     /**
      * 配置缓存
      *
-     * @var array
-     */
+     * @var array<mixed> */
     private array $configCache = [];
 
     /**
@@ -83,7 +82,7 @@ class PluginConfigManager
      * 持久化插件配置到文件
      *
      * @param string $pluginName 插件名称
-     * @param array $config 完整配置
+     * @param array<mixed> $config 完整配置
      * @return bool
      */
     public function save(string $pluginName, array $config): bool
@@ -104,8 +103,7 @@ class PluginConfigManager
      * 加载插件配置（合并策略）
      *
      * @param string $pluginName
-     * @return array
-     */
+     * @return array<mixed> */
     private function loadPluginConfig(string $pluginName): array
     {
         // 检查缓存
@@ -134,8 +132,7 @@ class PluginConfigManager
     /**
      * 获取全局默认配置
      *
-     * @return array
-     */
+     * @return array<mixed> */
     private function getGlobalDefaults(): array
     {
         if (function_exists('config')) {
@@ -156,8 +153,7 @@ class PluginConfigManager
      * 获取插件默认配置
      *
      * @param string $pluginName
-     * @return array
-     */
+     * @return array<mixed> */
     private function getPluginDefaults(string $pluginName): array
     {
         // 尝试从 manifest 获取插件路径
@@ -180,8 +176,7 @@ class PluginConfigManager
      * 获取运行时配置
      *
      * @param string $pluginName
-     * @return array
-     */
+     * @return array<mixed> */
     private function getRuntimeConfig(string $pluginName): array
     {
         if (function_exists('config')) {
@@ -203,7 +198,7 @@ class PluginConfigManager
     /**
      * 获取嵌套值（支持点语法）
      *
-     * @param array $array
+     * @param array<mixed> $array
      * @param string $key
      * @param mixed $default
      * @return mixed
@@ -226,7 +221,7 @@ class PluginConfigManager
     /**
      * 设置嵌套值（支持点语法）
      *
-     * @param array &$array
+     * @param array<mixed> &$array
      * @param string $key
      * @param mixed $value
      */
@@ -248,7 +243,7 @@ class PluginConfigManager
     /**
      * 格式化数组为 PHP 代码
      *
-     * @param array $array
+     * @param array<mixed> $array
      * @param int $indent
      * @return string
      */

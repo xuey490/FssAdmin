@@ -32,14 +32,13 @@ class CorsMiddleware implements MiddlewareInterface
     /**
      * 允许的来源域名
      * 支持配置为数组形式的白名单，或 '*' 表示允许所有来源
-     * @var array|string
+     * @var array<mixed>|string
      */
     protected array|string $allowOrigin = '*';
 
     /**
      * 允许的请求方法
-     * @var array
-     */
+     * @var array<mixed> */
     protected array $allowMethods = [
         'GET',
         'POST',
@@ -51,8 +50,7 @@ class CorsMiddleware implements MiddlewareInterface
 
     /**
      * 允许的请求头
-     * @var array
-     */
+     * @var array<mixed> */
     protected array $allowHeaders = [
         'X-Requested-With',
         'Content-Type',
@@ -79,12 +77,11 @@ class CorsMiddleware implements MiddlewareInterface
 
     /**
      * 暴露给客户端的响应头
-     * @var array
-     */
+     * @var array<mixed> */
     protected array $exposeHeaders = [];
 
     /**
-     * @param array|string $allowOrigin      允许的来源：显式白名单数组（推荐），或 '*'。
+     * @param array<mixed>|string $allowOrigin      允许的来源：显式白名单数组（推荐），或 '*'。
      *                                        开启凭证时禁止 '*'（见 addCorsHeaders 的安全保护）。
      * @param bool         $allowCredentials 是否允许携带凭证（Cookie）。
      */
@@ -289,7 +286,7 @@ class CorsMiddleware implements MiddlewareInterface
     /**
      * 设置允许的来源
      *
-     * @param array|string $allowOrigin 允许的来源
+     * @param array<mixed>|string $allowOrigin 允许的来源
      * @return static 当前实例
      */
     public function setAllowOrigin(array|string $allowOrigin): static
@@ -301,7 +298,7 @@ class CorsMiddleware implements MiddlewareInterface
     /**
      * 设置允许的方法
      *
-     * @param array $allowMethods 允许的方法列表
+     * @param array<mixed> $allowMethods 允许的方法列表
      * @return static 当前实例
      */
     public function setAllowMethods(array $allowMethods): static
@@ -313,7 +310,7 @@ class CorsMiddleware implements MiddlewareInterface
     /**
      * 设置允许的请求头
      *
-     * @param array $allowHeaders 允许的请求头列表
+     * @param array<mixed> $allowHeaders 允许的请求头列表
      * @return static 当前实例
      */
     public function setAllowHeaders(array $allowHeaders): static
@@ -349,7 +346,7 @@ class CorsMiddleware implements MiddlewareInterface
     /**
      * 设置暴露的响应头
      *
-     * @param array $exposeHeaders 暴露的响应头列表
+     * @param array<mixed> $exposeHeaders 暴露的响应头列表
      * @return static 当前实例
      */
     public function setExposeHeaders(array $exposeHeaders): static

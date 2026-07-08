@@ -48,8 +48,7 @@ class PluginManager
     /**
      * 插件配置
      *
-     * @var array
-     */
+     * @var array<mixed> */
     private array $config;
 
     /**
@@ -69,7 +68,7 @@ class PluginManager
     /**
      * 构造函数
      *
-     * @param array $config 插件配置
+     * @param array<mixed> $config 插件配置
      */
     public function __construct(array $config = [])
     {
@@ -226,7 +225,7 @@ class PluginManager
      * 安装插件
      *
      * @param string $name 插件名称
-     * @return array{success: bool, message: string, migrations: array}
+     * @return array{success: bool, message: string, migrations: array<mixed>}
      */
     public function install(string $name): array
     {
@@ -552,7 +551,7 @@ class PluginManager
      * 检查插件依赖
      *
      * @param string $name 插件名称
-     * @return array{satisfied: bool, errors: array}
+     * @return array{satisfied: bool, errors: array<mixed>}
      */
     public function checkDependencies(string $name): array
     {
@@ -594,8 +593,7 @@ class PluginManager
      * 获取依赖指定插件的其他插件
      *
      * @param string $name 插件名称
-     * @return array
-     */
+     * @return array<mixed> */
     public function getDependents(string $name): array
     {
         $dependents = [];
@@ -614,9 +612,8 @@ class PluginManager
      *
      * 使用拓扑排序确保依赖的插件先加载。
      *
-     * @param array $plugins 插件列表
-     * @return array
-     */
+     * @param array<mixed> $plugins 插件列表
+     * @return array<mixed> */
     private function sortByDependencies(array $plugins): array
     {
         // 构建依赖图
@@ -693,7 +690,7 @@ class PluginManager
      * 更新已安装插件配置
      *
      * @param string $name 插件名称
-     * @param array $info 插件信息
+     * @param array<mixed> $info 插件信息
      */
     private function updateInstalledConfig(string $name, array $info): void
     {

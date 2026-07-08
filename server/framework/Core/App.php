@@ -59,12 +59,6 @@ class App
      */
     public static function setContainer(ContainerInterface $container): void
     {
-        if (! method_exists($container, 'get') || ! method_exists($container, 'has')) {
-            throw new InvalidArgumentException(
-                sprintf('容器必须实现 get() 和 has() 方法，当前类型: %s', get_class($container))
-            );
-        }
-
         self::$container = $container;
     }
 
@@ -109,7 +103,7 @@ class App
      * 2. 如果容器是自定义 Container 类，使用其 make 方法进行实例化
      *
      * @param string $id     服务名或类名
-     * @param array  $params 可选的构造参数，传递给服务构造函数
+     * @param array<mixed> $params 可选的构造参数，传递给服务构造函数
      *
      * @return object 服务实例
      *
@@ -271,11 +265,7 @@ class App
             $container->parameter($name, $value);
         } else {
             // Symfony ContainerInterface 原生支持参数设置
-            if (method_exists($container, 'setParameter')) {
-                $container->setParameter($name, $value);
-            } else {
-                throw new RuntimeException('当前容器不支持 parameter 方法。');
-            }
+            $container->setParameter($name, $value);
         }
     }
 
@@ -287,7 +277,7 @@ class App
      *
      * @param string $id         服务ID
      * @param string $tag        标签名
-     * @param array  $attributes 标签属性，用于存储额外的元数据
+     * @param array<mixed> $attributes 标签属性，用于存储额外的元数据
      *
      * @return void
      *

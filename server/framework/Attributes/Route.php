@@ -53,17 +53,17 @@ class Route
      * 构造函数
      *
      * @param string $path 路由路径
-     * @param array $methods 允许的 HTTP 方法列表
+     * @param array<mixed> $methods 允许的 HTTP 方法列表
      * @param string|null $name 路由名称
-     * @param array $defaults 路由默认参数
-     * @param array $requirements 路由参数约束（正则表达式）
-     * @param array $schemes URL 协议约束（如 ['https']）
+     * @param array<mixed> $defaults 路由默认参数
+     * @param array<mixed> $requirements 路由参数约束（正则表达式）
+     * @param array<mixed> $schemes URL 协议约束（如 ['https']）
      * @param string|null $host 主机名约束
      * @param string|null $prefix 路由前缀（控制器级）
      * @param string|null $group 路由分组
-     * @param array $middleware 中间件列表
+     * @param array<mixed> $middleware 中间件列表
      * @param bool|null $auth 是否需要认证
-     * @param array $roles 允许访问的角色列表
+     * @param array<mixed> $roles 允许访问的角色列表
      */
     public function __construct(
         public string $path = '',

@@ -221,7 +221,7 @@ HTML;
      *
      * 生成版本彩蛋路由的标记信息，用于路由匹配。
      *
-     * @return array 包含控制器、方法、参数和中间件的路由标记数组
+     * @return array<mixed> 包含控制器、方法、参数和中间件的路由标记数组
      */
     public static function getRouteMarker(): array
     {
@@ -238,7 +238,7 @@ HTML;
      *
      * 生成团队彩蛋路由的标记信息，用于路由匹配。
      *
-     * @return array 包含控制器、方法、参数和中间件的路由标记数组
+     * @return array<mixed> 包含控制器、方法、参数和中间件的路由标记数组
      */
     public static function getTeamRouteMarker(): array
     {

@@ -51,8 +51,6 @@ final class Framework
 
     private static ?Framework $instance = null;
 
-    private ?string $lastControllerClass = null;
-
     private ?Request $request = null;
 
     private ContainerInterface $container;
@@ -166,7 +164,7 @@ final class Framework
         // 查找 Composer 的 ClassLoader 实例
         $composerLoader = null;
         foreach (spl_autoload_functions() as $func) {
-            if (is_array($func) && isset($func[0]) && $func[0] instanceof \Composer\Autoload\ClassLoader) {
+            if (is_array($func) && $func[0] instanceof \Composer\Autoload\ClassLoader) {
                 $composerLoader = $func[0];
                 break;
             }
@@ -267,7 +265,6 @@ final class Framework
         // 4. 初始化路由
         $this->router = new Router(
             $allRoutes,
-            $this->container,
             self::MAIN_CONTROLLER_NAMESPACE
         );
 		// 5. 从容器获取缓存实例
@@ -384,7 +381,7 @@ final class Framework
             $route = $this->router->match($this->request);
 			
 			
-            if ($route === null || $route === false) {
+            if ($route === null) {
                 $response = $this->handleNotFound();
                 $this->logRequestAndResponse($this->request, $response, $start);
                 return $response;
@@ -403,10 +400,6 @@ final class Framework
                 fn (Request $req): Response => $this->callController($route)
             );
 
-            if (! $response instanceof Response) {
-                $response = $this->normalizeResponse($response);
-            }
-
             $this->logRequestAndResponse($this->request, $response, $start);
             return $response;
         } catch (Throwable $e) {
@@ -414,7 +407,6 @@ final class Framework
         } finally {
             // Workerman 下必须释放
             $this->request = null;
-            $this->lastControllerClass = null;
         }
     }
 
@@ -501,22 +493,18 @@ final class Framework
             $appControllerDirs[self::MAIN_CONTROLLER_NAMESPACE] = self::MAIN_CONTROLLER_DIR;
         }
 
-        if (!empty($appControllerDirs)) {
-            $attrLoader = new AttributeRouteLoader(
-                self::MAIN_CONTROLLER_DIR,
-                self::MAIN_CONTROLLER_NAMESPACE
-            );
+        $attrLoader = new AttributeRouteLoader(
+            self::MAIN_CONTROLLER_DIR,
+            self::MAIN_CONTROLLER_NAMESPACE
+        );
 
-            $annotatedRoutes = match (true) {
-                count($appControllerDirs) === 1 => $attrLoader->loadRoutes(),
-                default => $attrLoader->loadRoutesFromMultipleDirs($appControllerDirs),
-            };
+        $annotatedRoutes = match (true) {
+            count($appControllerDirs) === 1 => $attrLoader->loadRoutes(),
+            default => $attrLoader->loadRoutesFromMultipleDirs($appControllerDirs),
+        };
 
-            if ($annotatedRoutes instanceof RouteCollection) {
-                $allRoutes->addCollection($annotatedRoutes);
-                $annotatedCount = $annotatedRoutes->count();
-            }
-        }
+        $allRoutes->addCollection($annotatedRoutes);
+        $annotatedCount = $annotatedRoutes->count();
 
         // 3. 加载插件路由
         $pluginCount = 0;
@@ -524,10 +512,8 @@ final class Framework
             $pluginControllerDirs = $this->pluginManager->getControllerDirs();
             if (!empty($pluginControllerDirs)) {
                 $pluginRoutes = $attrLoader->loadRoutesFromMultipleDirs($pluginControllerDirs);
-                if ($pluginRoutes instanceof RouteCollection) {
-                    $allRoutes->addCollection($pluginRoutes);
-                    $pluginCount = $pluginRoutes->count();
-                }
+                $allRoutes->addCollection($pluginRoutes);
+                $pluginCount = $pluginRoutes->count();
             }
         }
 
@@ -632,7 +618,7 @@ final class Framework
     private function resolveDomainApp(Request $request): void
     {
         $host = $request->getHost();
-        if ($host === '' || $host === null) {
+        if ($host === '') {
             return;
         }
 
@@ -642,12 +628,6 @@ final class Framework
                 continue;
             }
             $domain = $app['domain'] ?? '';
-            if ($domain !== '' && $domain === $host) {
-                // 使用 prefix 作为 _domain_app 值，与 getAppAutoRouteNamespaces() 的 key 对齐
-                $prefix = $app['prefix'] ?? $key;
-                $request->attributes->set('_domain_app', strtolower(trim($prefix)));
-                return;
-            }
         }
     }
 
@@ -657,10 +637,6 @@ final class Framework
     private function cacheRoutes(RouteCollection $routes): void
     {
         $serialized = serialize($routes);
-        if ($serialized === false) {
-            throw new RuntimeException('Failed to serialize route collection');
-        }
-
         file_put_contents(self::ROUTE_CACHE_FILE, $serialized);
         chmod(self::ROUTE_CACHE_FILE, 0644); // 缓存文件权限只读
     }
@@ -689,9 +665,7 @@ final class Framework
         //$controller = $this->container->get($controllerClass);
         // 它会尝试从容器获取，如果获取不到，会自动 new 并执行我们注入逻辑#
         $controller = \Framework\Core\App::make($controllerClass);
-        // 记录控制器类名，供 dispatch finally 中释放引用
-        $this->lastControllerClass = $controllerClass;
-		
+
         // 处理路径参数和查询参数的类型转换
         $this->processRequestParameters($controllerClass, $method, $routeParams);
 

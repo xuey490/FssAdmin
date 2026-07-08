@@ -145,8 +145,7 @@ class RouteListCommand extends Command
     /**
      * 加载手动路由
      *
-     * @return array
-     */
+     * @return array<mixed> */
     private function loadManualRoutes(): array
     {
         $routesFile = BASE_PATH . '/config/routes.php';
@@ -170,8 +169,7 @@ class RouteListCommand extends Command
     /**
      * 加载多应用配置
      *
-     * @return array
-     */
+     * @return array<mixed> */
     private function loadAppsConfig(): array
     {
         $appsFile = BASE_PATH . '/config/apps.php';
@@ -192,8 +190,7 @@ class RouteListCommand extends Command
      *
      * @param string $controllerDir
      * @param string $namespace
-     * @return array
-     */
+     * @return array<mixed> */
     private function loadAnnotatedRoutes(string $controllerDir, string $namespace): array
     {
         if (!is_dir($controllerDir)) {
@@ -214,8 +211,7 @@ class RouteListCommand extends Command
     /**
      * 加载插件路由
      *
-     * @return array
-     */
+     * @return array<mixed> */
     private function loadPluginRoutes(): array
     {
         $pluginDir = BASE_PATH . '/plugins';
@@ -265,8 +261,7 @@ class RouteListCommand extends Command
      * @param string $name
      * @param Route $route
      * @param string $source
-     * @return array
-     */
+     * @return array<mixed> */
     private function formatRoute(string $name, Route $route, string $source): array
     {
         $methods = $route->getMethods();
@@ -286,12 +281,11 @@ class RouteListCommand extends Command
     /**
      * 筛选路由
      *
-     * @param array $routes
+     * @param array<mixed> $routes
      * @param string|null $method
      * @param string|null $path
      * @param string|null $name
-     * @return array
-     */
+     * @return array<mixed> */
     private function filterRoutes(array $routes, ?string $method, ?string $path, ?string $name): array
     {
         return array_filter($routes, function ($route) use ($method, $path, $name) {
@@ -318,7 +312,7 @@ class RouteListCommand extends Command
      * 渲染表格
      *
      * @param OutputInterface $output
-     * @param array $routes
+     * @param array<mixed> $routes
      */
     private function renderTable(OutputInterface $output, array $routes): void
     {

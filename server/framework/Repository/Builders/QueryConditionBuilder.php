@@ -24,7 +24,9 @@ class QueryConditionBuilder
 
     /**
      * 构建完整的查询条件
-     */
+     * @param array<mixed> $criteria
+ * @param array<mixed> $orderBy
+ */
     public function build(array $criteria, array $orderBy = []): mixed
     {
         try {
@@ -72,7 +74,8 @@ class QueryConditionBuilder
 
     /**
      * 处理SELECT字段
-     */
+     * @param array<mixed> $criteria
+ */
     protected function handleSelect(array &$criteria): void
     {
         if (!empty($criteria['select'])) {
@@ -83,7 +86,8 @@ class QueryConditionBuilder
 
     /**
      * 处理DISTINCT去重
-     */
+     * @param array<mixed> $criteria
+ */
     protected function handleDistinct(array &$criteria): void
     {
         if (!empty($criteria['distinct'])) {
@@ -94,7 +98,8 @@ class QueryConditionBuilder
 
     /**
      * 处理悲观锁
-     */
+     * @param array<mixed> $criteria
+ */
     protected function handleLock(array &$criteria): void
     {
         if (!empty($criteria['lock'])) {
@@ -109,7 +114,8 @@ class QueryConditionBuilder
 
     /**
      * 处理JOIN操作
-     */
+     * @param array<mixed> $criteria
+ */
     protected function handleJoins(array &$criteria): void
     {
         foreach (['join', 'leftJoin', 'rightJoin'] as $joinType) {
@@ -146,7 +152,8 @@ class QueryConditionBuilder
 
     /**
      * 处理NULL/NOT NULL条件
-     */
+     * @param array<mixed> $criteria
+ */
     protected function handleNullConditions(array &$criteria): void
     {
         if (!empty($criteria['whereNull'])) {
@@ -166,7 +173,8 @@ class QueryConditionBuilder
 
     /**
      * 处理IN/NOT IN条件
-     */
+     * @param array<mixed> $criteria
+ */
     protected function handleInConditions(array &$criteria): void
     {
         if (!empty($criteria['whereIn'])) {
@@ -186,7 +194,8 @@ class QueryConditionBuilder
 
     /**
      * 处理GROUP BY
-     */
+     * @param array<mixed> $criteria
+ */
     protected function handleGroupBy(array &$criteria): void
     {
         if (!empty($criteria['groupBy'])) {
@@ -198,7 +207,8 @@ class QueryConditionBuilder
 
     /**
      * 处理HAVING条件
-     */
+     * @param array<mixed> $criteria
+ */
     protected function handleHaving(array &$criteria): void
     {
         if (!empty($criteria['having']) && is_array($criteria['having'])) {
@@ -220,7 +230,8 @@ class QueryConditionBuilder
 
     /**
      * 处理OR分组条件
-     */
+     * @param array<mixed> $criteria
+ */
     protected function handleOrGroup(array &$criteria): void
     {
         if (empty($criteria['or_group']) || !is_array($criteria['or_group'])) {
@@ -258,7 +269,8 @@ class QueryConditionBuilder
 
     /**
      * 处理基础WHERE条件
-     */
+     * @param array<mixed> $criteria
+ */
     protected function handleWhereConditions(array &$criteria): void
     {
         foreach ($criteria as $field => $value) {
@@ -320,7 +332,8 @@ class QueryConditionBuilder
 
     /**
      * 处理数组形式的WHERE条件
-     */
+     * @param array<mixed> $value
+ */
     protected function handleArrayWhereCondition(string $field, array $value): void
     {
         [$op, $val] = $value;
@@ -364,7 +377,8 @@ class QueryConditionBuilder
 
     /**
      * 处理排序
-     */
+     * @param array<mixed> $orderBy
+ */
     protected function handleOrderBy(array $orderBy): void
     {
         foreach ($orderBy as $field => $direction) {

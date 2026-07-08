@@ -68,9 +68,9 @@ class Captcha
      * 根据配置生成验证码图片，返回 Base64 编码的图片数据和验证码键名。
      * 支持自定义配置覆盖默认配置，生成的验证码值会存储到 Redis 中。
      *
-     * @param array $_config 可选的自定义配置项，会与默认配置合并
+     * @param array<mixed> $_config 可选的自定义配置项，会与默认配置合并
      *
-     * @return array 返回包含 'key'（验证码键名）和 'base64'（Base64 图片数据）的数组
+     * @return array<mixed> 返回包含 'key'（验证码键名）和 'base64'（Base64 图片数据）的数组
      *
      * @throws \Exception 生成验证码时可能抛出异常
      */
@@ -153,9 +153,9 @@ class Captcha
      * 根据配置生成验证码内容，支持数学运算验证码和字符验证码。
      * 验证码答案经过 bcrypt 加密后存储到 Redis，设置过期时间。
      *
-     * @param array $config 验证码配置数组
+     * @param array<mixed> $config 验证码配置数组
      *
-     * @return array 返回包含 'value'（验证码显示内容）和 'key'（验证码键名）的数组
+     * @return array<mixed> 返回包含 'value'（验证码显示内容）和 'key'（验证码键名）的数组
      */
     protected static function generateValue(array $config): array
     {
@@ -200,7 +200,7 @@ class Captcha
      * 如果配置中已指定字体，则直接使用配置的字体。
      *
      * @param string $path   字体文件所在目录路径
-     * @param array  $config 配置数组，可包含 'fontttf' 指定字体文件
+     * @param array<mixed> $config 配置数组，可包含 'fontttf' 指定字体文件
      *
      * @return string 完整的字体文件路径
      */
@@ -229,7 +229,7 @@ class Captcha
      * 在验证码图片上绘制一条由两条连接的正弦曲线组成的干扰线，
      * 用于增加验证码识别难度，防止机器识别。
      *
-     * @param array $config 验证码配置数组，包含图片宽高信息
+     * @param array<mixed> $config 验证码配置数组，包含图片宽高信息
      * @param mixed $im     图像资源句柄
      * @param mixed $color  线条颜色
      */
@@ -284,7 +284,7 @@ class Captcha
      * 在验证码图片上随机绘制多个不同颜色的字母或数字杂点，
      * 增加验证码识别难度，防止机器自动识别。
      *
-     * @param array $config 验证码配置数组，包含图片宽高信息
+     * @param array<mixed> $config 验证码配置数组，包含图片宽高信息
      * @param mixed $im     图像资源句柄
      */
     protected static function writeNoise(array $config, $im): void
@@ -306,7 +306,7 @@ class Captcha
      * 从指定目录随机选择一张背景图片，并将其缩放填充到验证码图片中。
      * 注意：大尺寸背景图片会占用较多系统资源。
      *
-     * @param array $config 验证码配置数组，包含图片宽高信息
+     * @param array<mixed> $config 验证码配置数组，包含图片宽高信息
      * @param mixed $im     图像资源句柄
      */
     protected static function background(array $config, $im): void

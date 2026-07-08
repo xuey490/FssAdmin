@@ -47,12 +47,11 @@ class Arr
     /**
      * 数组中添加不存在的元素
      *
-     * @param array  $array
+     * @param array<mixed> $array
      * @param string $key
      * @param mixed  $value
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function add(array $array, string $key, mixed $value): array
     {
         if (is_null(static::get($array, $key))) {
@@ -64,10 +63,9 @@ class Arr
     /**
      * 将数组折叠单个数组
      *
-     * @param array $array
+     * @param array<mixed> $array
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function collapse(array $array): array
     {
         $results = [];
@@ -83,9 +81,9 @@ class Arr
     /**
      * 交叉给定数组返回所有排序数组
      *
-     * @param array ...$arrays
+     * @param array<mixed> ...$arrays
      *
-     * @return array|array[]
+     * @return array<mixed>|array<mixed>[]
      */
     public static function crossJoin(array ...$arrays): array
     {
@@ -107,10 +105,9 @@ class Arr
     /**
      * 分别获取数组的键名和键值，然后将它们作为一个包含两个元素的数组返回。
      *
-     * @param array $array
+     * @param array<mixed> $array
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function divide(array $array): array
     {
         return [array_keys($array), array_values($array)];
@@ -119,11 +116,10 @@ class Arr
     /**
      * 扁平化一个多维数组
      *
-     * @param array       $array
+     * @param array<mixed> $array
      * @param string|null $prepend
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function dot(array $array, string|null $prepend = ''): array
     {
         $results = [];
@@ -140,11 +136,10 @@ class Arr
     /**
      * 获取除指定键数组外的所有给定数组。
      *
-     * @param array        $array
-     * @param string|array $keys
+     * @param array<mixed> $array
+     * @param string|array<mixed> $keys
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function except(array $array, string|array $keys): array
     {
         static::forget($array, $keys);
@@ -155,10 +150,10 @@ class Arr
     /**
      * 移除指定的键名，支持多级键名的处理
      *
-     * @param array $array
-     * @param array $keys
+     * @param array<mixed> $array
+     * @param array<mixed> $keys
      */
-    public static function forget(array &$array, array $keys): void
+    public static function forget(array &$array, array|string $keys): void
     {
         $original = &$array;
         $keys     = (array)$keys;
@@ -188,7 +183,7 @@ class Arr
     /**
      * 确定给定的键名是否存在于提供的数组中
      *
-     * @param array|\ArrayAccess $array
+     * @param array<mixed>|\ArrayAccess<mixed, mixed> $array
      * @param string|int         $key
      *
      * @return bool
@@ -204,7 +199,7 @@ class Arr
     /**
      * 数组中第一个满足指定条件的元素。如果没有传入回调函数，则直接返回数组的第一个元素；如果传入了回调函数，则根据回调函数的条件来确定返回的元素。如果没有满足条件的元素，则返回指定的默认值
      *
-     * @param array         $array
+     * @param array<mixed> $array
      * @param callable|null $callback
      * @param mixed         $default
      *
@@ -232,9 +227,9 @@ class Arr
     /**
      * 返回数组中最后一个满足指定条件的元素。如果没有传入回调函数，则直接返回数组的最后一个元素；如果传入了回调函数，则先将数组反转
      *
-     * @param array         $array
+     * @param array<mixed> $array
      * @param callable|null $callback
-     * @param               $default
+     * @param               mixed $default
      *
      * @return false|mixed|null
      */
@@ -251,7 +246,7 @@ class Arr
     /**
      * 根据指定的键名从数组中获取对应的值，支持使用 "dot" 符号来访问多维数组中的元素
      *
-     * @param \ArrayAccess|array $array
+     * @param \ArrayAccess<mixed, mixed>|array<mixed> $array
      * @param string|null        $key
      * @param mixed              $default
      *
@@ -288,8 +283,8 @@ class Arr
     /**
      * 检测一个数组或单个数组
      *
-     * @param \ArrayAccess|array $array
-     * @param array|string       $keys
+     * @param \ArrayAccess<mixed, mixed>|array<mixed> $array
+     * @param array<mixed>|string       $keys
      *
      * @return bool
      */
@@ -323,7 +318,7 @@ class Arr
     /**
      * 检查数组是否关联
      *
-     * @param array $array
+     * @param array<mixed> $array
      *
      * @return bool
      */
@@ -336,11 +331,10 @@ class Arr
     /**
      * 数组中过滤出指定的键名对应的元素
      *
-     * @param array        $array
-     * @param array|string $keys
+     * @param array<mixed> $array
+     * @param array<mixed>|string $keys
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function only(array $array, array|string $keys): array
     {
         return array_intersect_key($array, array_flip((array)$keys));
@@ -349,12 +343,11 @@ class Arr
     /**
      * 输入的数组中提取指定键名对应的值，并根据需要将提取的值组装成一个新的数组返回
      *
-     * @param array       $array
+     * @param array<mixed> $array
      * @param string      $value
      * @param string|null $key
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function pluck(array $array, string $value, ?string $key = null): array
     {
         $results = [];
@@ -378,11 +371,10 @@ class Arr
     /**
      * 将value key 进行分割返回数组value&key 集合
      *
-     * @param string|array          $value
-     * @param string|int|array|null $key
+     * @param string|array<mixed>          $value
+     * @param string|int|array<mixed>|null $key
      *
-     * @return array
-     */
+     * @return array<mixed> */
     protected static function explodePluckParameters(string|array $value, string|int|array|null $key): array
     {
         $value = is_string($value) ? explode('.', $value) : $value;
@@ -393,12 +385,11 @@ class Arr
     /**
      * 将值添加到数组开头
      *
-     * @param array       $array
+     * @param array<mixed> $array
      * @param mixed       $value
      * @param string|null $key
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function prepend(array $array, mixed $value, ?string $key = null): array
     {
         if (is_null($key)) {
@@ -412,7 +403,7 @@ class Arr
     /**
      * 从数组中取出一个值并删除它
      *
-     * @param array  $array
+     * @param array<mixed> $array
      * @param string $key
      * @param mixed  $default
      *
@@ -428,7 +419,7 @@ class Arr
     /**
      * 从数组中获取一个或多个随机值
      *
-     * @param array    $array
+     * @param array<mixed> $array
      * @param int|null $number
      *
      * @return mixed
@@ -459,12 +450,11 @@ class Arr
     /**
      * 使用“点”表示法在数组中设置值
      *
-     * @param array           $array
+     * @param array<mixed> $array
      * @param string|int|null $key
      * @param mixed           $value
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function set(array &$array, string|int|null $key, mixed $value): array
     {
         if (is_null($key)) {
@@ -485,11 +475,10 @@ class Arr
     /**
      * 使用可选的种子值随机洗牌数组
      *
-     * @param array    $array
+     * @param array<mixed> $array
      * @param int|null $seed
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function shuffle(array $array, ?int $seed = null): array
     {
         if (is_null($seed)) {
@@ -506,10 +495,9 @@ class Arr
     /**
      * 递归排序数组
      *
-     * @param array $array
+     * @param array<mixed> $array
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function sortRecursive(array $array): array
     {
         foreach ($array as &$value) {
@@ -528,23 +516,22 @@ class Arr
     /**
      * 将数组转换为查询字符串
      *
-     * @param array $array
+     * @param array<mixed> $array
      *
      * @return string
      */
     public static function query(array $array): string
     {
-        return http_build_query($array, null, '&', PHP_QUERY_RFC3986);
+        return http_build_query($array, '', '&', PHP_QUERY_RFC3986);
     }
 
     /**
      * 使用给定的回调筛选数组
      *
-     * @param array    $array
+     * @param array<mixed> $array
      * @param callable $callback
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function where(array $array, callable $callback): array
     {
         return array_filter($array, $callback, ARRAY_FILTER_USE_BOTH);
@@ -555,8 +542,7 @@ class Arr
      *
      * @param mixed $value
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function wrap(mixed $value): array
     {
         if (is_null($value)) {
@@ -568,7 +554,7 @@ class Arr
     /**
      * 多维数组转对象
      *
-     * @param object|array $array
+     * @param object|array<mixed> $array
      *
      * @return \stdClass
      */
@@ -597,12 +583,11 @@ class Arr
     /**
      * 数组排序
      *
-     * @param array  $items
+     * @param array<mixed> $items
      * @param string $key
      * @param bool   $reverse 排序方式
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function sortItems(array $items, string $key, bool $reverse = false): array
     {
         usort($items, function ($a, $b) use ($key, $reverse) {
@@ -619,6 +604,10 @@ class Arr
         return $items;
     }
 
+    /**
+     * @param mixed $item
+     * @return mixed
+     */
     private static function getValueByKey($item, string $key)
     {
         if (is_array($item) && array_key_exists($key, $item)) {
@@ -632,11 +621,10 @@ class Arr
     /**
      * 获取数组中指定的列
      *
-     * @param array      $source
+     * @param array<mixed> $source
      * @param string|int $column
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function getArrayColumn(array $source, string|int $column): array
     {
         $columnArr = [];
@@ -649,11 +637,10 @@ class Arr
     /**
      * 批量获取数组中指定的列
      *
-     * @param array $source
-     * @param array $columns
+     * @param array<mixed> $source
+     * @param array<mixed> $columns
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function getArrayColumns(array $source, array $columns): array
     {
         $columnArr = [];
@@ -675,12 +662,11 @@ class Arr
     /**
      * 把二维数组中某列设置为key返回
      *
-     * @param array  $array  输入数组
+     * @param array<mixed> $array  输入数组
      * @param string $field  要作为键的字段名
      * @param bool   $unique 要做键的字段是否唯一(该字段与记录是否一一对应)
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function fieldAsKey(array $array, string $field, bool $unique = false): array
     {
         $result = [];
@@ -703,7 +689,7 @@ class Arr
     /**
      * 数组转字符串去重复
      *
-     * @param array $data
+     * @param array<mixed> $data
      *
      * @return string[]
      */
@@ -715,11 +701,10 @@ class Arr
     /**
      * 获取数组中去重复过后的指定key值
      *
-     * @param array  $list
+     * @param array<mixed> $list
      * @param string $key
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function getUniqueKey(array $list, string $key): array
     {
         return array_unique(array_column($list, $key));
@@ -728,12 +713,11 @@ class Arr
     /**
      * 合并二维数组，并且指定key去重, 第一个覆盖第二个
      *
-     * @param array  $arr1
-     * @param array  $arr2
+     * @param array<mixed> $arr1
+     * @param array<mixed> $arr2
      * @param string $key
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function mergeArray(array $arr1, array $arr2, string $key): array
     {
         $arr     = array_merge($arr1, $arr2);
@@ -751,11 +735,10 @@ class Arr
     /**
      * 相同键值的合并作为键生成新数组
      *
-     * @param array  $data
+     * @param array<mixed> $data
      * @param string $field
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function groupSameField(array $data, string $field): array
     {
         $result = [];
@@ -768,11 +751,11 @@ class Arr
     /**
      * 生成无限级树算法
      *
-     * @param array      $arr         输入数组
+     * @param array<mixed> $arr         输入数组
      * @param int|string $pid         根级的pid
      * @param string     $column_name 列名,id|pid父id的名字|children子数组的键名
      *
-     * @return array  $ret
+     * @return array<mixed> $ret
      */
     public static function makeTree(array $arr, int|string $pid = 0, string $column_name = 'id|pid|children'): array
     {
@@ -792,12 +775,11 @@ class Arr
     /**
      * 二位数组按某个键值排序
      *
-     * @param array  $arr
+     * @param array<mixed> $arr
      * @param string $key
      * @param int    $sort
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function sortArray(array $arr, string $key, int $sort = SORT_ASC): array
     {
         array_multisort(array_column($arr, $key), $sort, $arr);
@@ -807,12 +789,11 @@ class Arr
     /**
      * 数组中根据某一列中某个字段的值来查询这一列数据
      *
-     * @param array      $array
+     * @param array<mixed> $array
      * @param string|int $column
      * @param mixed      $value
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function getArrayByColumn(array $array, string|int $column, mixed $value): array
     {
         $result = [];
@@ -827,7 +808,7 @@ class Arr
     /**
      * 数组中根据key值获取value
      *
-     * @param array      $array
+     * @param array<mixed> $array
      * @param string|int $key
      *
      * @return mixed|string
@@ -845,7 +826,7 @@ class Arr
     /**
      * 数组中根据key值获取对应的值
      *
-     * @param array  $array
+     * @param array<mixed> $array
      * @param string $key
      *
      * @return mixed
@@ -858,15 +839,14 @@ class Arr
     /**
      * 参数过滤处理
      *
-     * @param array|object $params
-     * @param array        $rules 【'输入key','默认值','过滤值','重命名key'】
+     * @param array<mixed>|object $params
+     * @param array<mixed> $rules 【'输入key','默认值','过滤值','重命名key'】
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function paramsFilter(array|object $params, array $rules): array
     {
         $params = is_object($params) ? (array)$params : $params;//兼容数组对象参数
-        /** @var TYPE_NAME $filteredParams */
+        
         $filteredParams = [];
         foreach ($rules as $rule) {
             $inputKey     = $rule[0] ?? null;
@@ -916,6 +896,13 @@ class Arr
         return $filteredParams;
     }
 
+    /**
+    * @return array<mixed>
+    
+    * @param mixed $data
+
+    * @param mixed $separator
+*/
     public static function normalize($data, $separator = ','): array
     {
         if (is_array($data)) {
@@ -931,6 +918,11 @@ class Arr
         }
     }
 
+    /**
+    * @return array<mixed>
+    
+    * @param mixed $array
+*/
     public static function filterArray($array): array
     {
         return array_filter($array, function ($value) {
@@ -938,6 +930,11 @@ class Arr
         });
     }
 
+    /**
+    * @param array<mixed> $data
+    * @param array<mixed> $where
+    * @return array<mixed>
+    */
     public static function filterByWhere(array $data, array $where): array
     {
         if (empty($where)) {

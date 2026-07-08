@@ -104,7 +104,8 @@ abstract class BaseRepository implements RepositoryInterface
 
     /**
      * 统一处理Eager Loading
-     */
+     * @param array<mixed> $with
+ */
     protected function applyWith(mixed $query, array $with = []): mixed
     {
         if (empty($with) || !$this->isModelClass()) {
@@ -125,6 +126,9 @@ abstract class BaseRepository implements RepositoryInterface
      * @throws DatabaseException
      */	
 	// 修改查询方法中的缓存逻辑（增加缓存开关判断）
+	/**
+	* @param array<mixed> $with
+	*/
 	public function findById(int|string $id, array $with = []): mixed
 	{
 		try {
@@ -167,7 +171,9 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * 根据条件查找单条记录
      * @throws DatabaseException
-     */
+     * @param array<mixed> $criteria
+ * @param array<mixed> $with
+ */
     public function findOneBy(array $criteria, array $with = []): mixed
     {
         try {
@@ -194,7 +200,10 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * 根据条件查找多条记录
      * @throws DatabaseException
-     */
+     * @param array<mixed> $criteria
+ * @param array<mixed> $orderBy
+ * @param array<mixed> $with
+ */
     public function findAll(array $criteria = [], array $orderBy = [], ?int $limit = null, array $with = []): mixed
     {
         try {
@@ -230,7 +239,10 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * 分页查询
      * @throws DatabaseException
-     */
+     * @param array<mixed> $criteria
+ * @param array<mixed> $orderBy
+ * @param array<mixed> $with
+ */
     public function paginate(array $criteria = [], int $perPage = 15, array $orderBy = [], array $with = []): mixed
     {
         try {
@@ -247,7 +259,8 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * 创建记录
      * @throws DatabaseException
-     */
+     * @param array<mixed> $data
+ */
     public function create(array $data): mixed
     {
         try {
@@ -277,13 +290,15 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * 根据ID更新记录
      * @throws DatabaseException
-     */
+     * @param array<mixed> $criteria
+ * @param array<mixed> $data
+ */
     public function update(array $criteria, array $data): bool
     {
         try {
             // 统一参数格式：支持ID或条件数组
-            if (isset($criteria['id']) || is_string($criteria) || is_int($criteria)) {
-                $id = is_array($criteria) ? $criteria['id'] : $criteria;
+            if (isset($criteria['id'])) {
+                $id = $criteria['id'];
                 $item = $this->findById($id);
                 $criteria = ['id' => $id];
             } else {
@@ -322,7 +337,9 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * 按条件批量更新（兼容旧方法，统一参数格式）
      * @throws DatabaseException
-     */
+     * @param array<mixed> $criteria
+ * @param array<mixed> $data
+ */
     public function updateBy(array $criteria, array $data): int
     {
         try {
@@ -342,13 +359,14 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * 删除记录
      * @throws DatabaseException
-     */
+     * @param array<mixed> $criteria
+ */
     public function delete(array $criteria): bool
     {
         try {
             // 统一参数格式：支持ID或条件数组
-            if (isset($criteria['id']) || is_string($criteria) || is_int($criteria)) {
-                $id = is_array($criteria) ? $criteria['id'] : $criteria;
+            if (isset($criteria['id'])) {
+                $id = $criteria['id'];
                 $criteria = ['id' => $id];
             }
 
@@ -375,7 +393,8 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * 按条件批量删除（兼容旧方法）
      * @throws DatabaseException
-     */
+     * @param array<mixed> $criteria
+ */
     public function deleteBy(array $criteria): int
     {
         try {
@@ -397,7 +416,9 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * 自增操作
      * @throws DatabaseException
-     */
+     * @param array<mixed> $criteria
+ * @param array<mixed> $extra
+ */
     public function increment(array $criteria, string $field, int $amount = 1, array $extra = []): bool
     {
         try {
@@ -417,7 +438,9 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * 自减操作
      * @throws DatabaseException
-     */
+     * @param array<mixed> $criteria
+ * @param array<mixed> $extra
+ */
     public function decrement(array $criteria, string $field, int $amount = 1, array $extra = []): bool
     {
         try {
@@ -437,7 +460,8 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * 聚合查询
      * @throws DatabaseException
-     */
+     * @param array<mixed> $criteria
+ */
     public function aggregate(string $type, array $criteria = [], string $field = '*'): string|int|float
     {
         try {
@@ -476,7 +500,9 @@ abstract class BaseRepository implements RepositoryInterface
 
     /**
      * 原生查询
-     */
+     * @param array<mixed> $bindings
+ * @return array<mixed>
+ */
     public function query(string $sql, array $bindings = []): array
     {
         try {
@@ -488,7 +514,8 @@ abstract class BaseRepository implements RepositoryInterface
 
     /**
      * 原生执行
-     */
+     * @param array<mixed> $bindings
+ */
     public function execute(string $sql, array $bindings = []): int
     {
         try {
@@ -508,7 +535,9 @@ abstract class BaseRepository implements RepositoryInterface
 
     /**
      * 构建查询条件（使用独立的构建器）
-     */
+     * @param array<mixed> $criteria
+ * @param array<mixed> $orderBy
+ */
     protected function buildQuery(mixed $query, array $criteria, array $orderBy = []): mixed
     {
         $builder = new QueryConditionBuilder(
@@ -566,8 +595,8 @@ abstract class BaseRepository implements RepositoryInterface
 
 	/**
 	 * 标准化参数（解决数组顺序、空值等导致的Key不一致问题）
-	 * @param array $params 原始参数
-	 * @return array 标准化后的参数
+	 * @param array<mixed> $params 原始参数
+	 * @return array<mixed> 标准化后的参数
 	 */
 	private function normalizeParams(array $params): array
 	{
@@ -595,7 +624,7 @@ abstract class BaseRepository implements RepositoryInterface
 	/**
 	 * 是否启用缓存（子类可重写，或通过入参控制）
 	 * @param string $method 调用的方法名
-	 * @param array $params 方法入参
+	 * @param array<mixed> $params 方法入参
 	 * @return bool
 	 */
 	protected function isCacheEnabled(string $method, array $params): bool

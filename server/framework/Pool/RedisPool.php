@@ -121,7 +121,7 @@ class RedisPool implements PoolInterface
 
     /**
      * {@inheritDoc}
-     */
+ */
     public function borrow(): object
     {
         if ($this->closed) {
@@ -218,7 +218,8 @@ class RedisPool implements PoolInterface
 
     /**
      * {@inheritDoc}
-     */
+     * @return array<mixed>
+ */
     public function stats(): array
     {
         return [
@@ -231,7 +232,7 @@ class RedisPool implements PoolInterface
 
     /**
      * {@inheritDoc}
-     */
+ */
     public function close(): void
     {
         $this->closed = true;

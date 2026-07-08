@@ -38,8 +38,8 @@ class PostMapping extends BaseMapping
      *
      * @param string $path 路由路径
      * @param bool|null $auth 是否需要认证
-     * @param array $roles 允许访问的角色列表
-     * @param array $middleware 中间件列表
+     * @param array<mixed> $roles 允许访问的角色列表
+     * @param array<mixed> $middleware 中间件列表
      */
     public function __construct(
         string $path,

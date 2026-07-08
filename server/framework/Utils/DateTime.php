@@ -71,7 +71,7 @@ class DateTime
             return $timestamp;
         } else {
             // 提供了格式，使用 DateTime::createFromFormat() 解析
-            $dateTime = DateTime::createFromFormat($format, $dateTimeStr);
+            $dateTime = PhpDateTime::createFromFormat($format, $dateTimeStr);
             if ($dateTime === false) {
                 // 解析失败，返回 false
                 return false;

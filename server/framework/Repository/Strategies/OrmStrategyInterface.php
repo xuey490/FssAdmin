@@ -16,12 +16,14 @@ interface OrmStrategyInterface
 
     /**
      * 执行自增操作
-     */
+     * @param array<mixed> $extra
+ */
     public function increment(mixed $query, string $field, int $amount, array $extra): bool;
 
     /**
      * 执行自减操作
-     */
+     * @param array<mixed> $extra
+ */
     public function decrement(mixed $query, string $field, int $amount, array $extra): bool;
 
     /**
@@ -31,11 +33,14 @@ interface OrmStrategyInterface
 
     /**
      * 执行原生查询
-     */
+     * @param array<mixed> $bindings
+ * @return array<mixed>
+ */
     public function query(string $sql, array $bindings): array;
 
     /**
      * 执行原生执行
-     */
+     * @param array<mixed> $bindings
+ */
     public function execute(string $sql, array $bindings): int;
 }

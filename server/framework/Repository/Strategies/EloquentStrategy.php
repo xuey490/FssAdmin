@@ -14,11 +14,17 @@ class EloquentStrategy implements OrmStrategyInterface
         return \Illuminate\Database\Capsule\Manager::table($modelClass);
     }
 
+    /**
+    * @param array<mixed> $extra
+    */
     public function increment(mixed $query, string $field, int $amount, array $extra): bool
     {
         return (bool) $query->increment($field, $amount, $extra);
     }
 
+    /**
+    * @param array<mixed> $extra
+    */
     public function decrement(mixed $query, string $field, int $amount, array $extra): bool
     {
         return (bool) $query->decrement($field, $amount, $extra);
@@ -29,12 +35,19 @@ class EloquentStrategy implements OrmStrategyInterface
         return \Illuminate\Database\Capsule\Manager::transaction($callback);
     }
 
+    /**
+    * @param array<mixed> $bindings
+    * @return array<mixed>
+    */
     public function query(string $sql, array $bindings): array
     {
         $result = \Illuminate\Database\Capsule\Manager::select($sql, $bindings);
         return array_map(fn($item) => (array) $item, $result);
     }
 
+    /**
+    * @param array<mixed> $bindings
+    */
     public function execute(string $sql, array $bindings): int
     {
         return \Illuminate\Database\Capsule\Manager::affectingStatement($sql, $bindings);

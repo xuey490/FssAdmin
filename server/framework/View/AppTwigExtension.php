@@ -28,16 +28,16 @@ class AppTwigExtension extends AbstractExtension
 
     private $session;
 
-    private array $siteConfig;
-
     public function __construct(CsrfTokenManager $tokenManager, string $tokenName = '_token')
     {
         $this->tokenManager = $tokenManager;
         $this->tokenName    = $tokenName;
         $this->session      = app('session');
-        $this->siteConfig   = require BASE_PATH . '/config/site.php';
     }
 
+    /**
+    * @return array<mixed>
+    */
     public function getGlobals(): array
     {
         return [
@@ -54,6 +54,9 @@ class AppTwigExtension extends AbstractExtension
         return (bool) preg_match($pattern, $ua); // ✅ 强制转为 true/false
     }
 
+    /**
+    * @return array<mixed>
+    */
     public function getFunctions(): array
     {
         return [
@@ -68,6 +71,10 @@ class AppTwigExtension extends AbstractExtension
         ];
     }
 
+    /**
+    * @param array<mixed> $context
+    * @param array<mixed> $options
+    */
     public function formStart(array $context, array $options = []): string
     {
         $method     = $options['method'] ?? 'post';
@@ -113,6 +120,9 @@ class AppTwigExtension extends AbstractExtension
         return $prefix . '/assets/' . ltrim($path, '/') . '?v=' . $version;
     }
 
+    /**
+    * @param array<mixed> $params
+    */
     public function generateRoute(string $name, array $params = []): string
     {
         // TODO: 与你的路由系统集成

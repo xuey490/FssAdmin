@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 class CookieConsentMiddleware implements MiddlewareInterface
 {
     // API 路径通常不需要处理，静态资源也应跳过
+    /** @var array<mixed> */
     private array $excludedPaths = ['/api/*']; 
 
     public function handle(Request $request, callable $next): Response

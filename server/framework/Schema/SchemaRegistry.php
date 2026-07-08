@@ -26,6 +26,7 @@ final class SchemaRegistry
      *   ]
      * ]
      */
+    /** @var array<mixed> */
     private static array $schemas = [];
 
     /** 是否冻结，冻结后禁止注册新表 */
@@ -35,9 +36,9 @@ final class SchemaRegistry
      * 注册表结构
      *
      * @param string $table      表名（逻辑表名，不带前缀）
-     * @param array  $columns    字段列表
-     * @param array  $indexes    索引信息
-     * @param array  $auditColumns 审计字段
+     * @param array<mixed> $columns    字段列表
+     * @param array<mixed> $indexes    索引信息
+     * @param array<mixed> $auditColumns 审计字段
      */
     public static function register(
         string $table,
@@ -63,6 +64,9 @@ final class SchemaRegistry
         return isset(self::$schemas[$table]);
     }
 
+    /**
+    * @return array<mixed>
+    */
     public static function getColumns(string $table): array
     {
         self::assertExists($table);
@@ -75,6 +79,9 @@ final class SchemaRegistry
         return in_array($column, self::$schemas[$table]['columns'], true);
     }
 
+    /**
+    * @return array<mixed>
+    */
     public static function getAuditColumns(string $table): array
     {
         self::assertExists($table);
@@ -84,8 +91,7 @@ final class SchemaRegistry
     /**
      * 返回所有已注册 schema
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function all(): array
     {
         return self::$schemas;

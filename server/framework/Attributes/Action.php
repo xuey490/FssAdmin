@@ -37,7 +37,7 @@ class Action
     /**
      * 构造函数
      *
-     * @param array $methods 允许的 HTTP 方法列表，空数组表示不限制
+     * @param array<mixed> $methods 允许的 HTTP 方法列表，空数组表示不限制
      * @param bool $expose 是否对外暴露该动作，默认 true
      */
     public function __construct(

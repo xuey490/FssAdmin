@@ -33,6 +33,7 @@ use Illuminate\Support\Carbon;
  * ];
  *
  * @package Framework\Basic\Casts
+ * @implements \Illuminate\Contracts\Database\Eloquent\CastsAttributes<mixed, mixed>
  */
 class TimestampCast implements CastsAttributes
 {
@@ -45,7 +46,7 @@ class TimestampCast implements CastsAttributes
      * @param \Illuminate\Database\Eloquent\Model $model 模型实例
      * @param string $key 字段名称
      * @param mixed $value 数据库中的原始值（整数时间戳）
-     * @param array $attributes 模型所有属性的数组
+     * @param array<mixed> $attributes 模型所有属性的数组
      * @return Carbon|mixed 返回 Carbon 时间对象，如果值无效则返回原始值
      */
     public function get($model, string $key, $value, array $attributes)
@@ -68,7 +69,7 @@ class TimestampCast implements CastsAttributes
      * @param \Illuminate\Database\Eloquent\Model $model 模型实例
      * @param string $key 字段名称
      * @param mixed $value 要存储的值（可以是时间字符串、时间戳、DateTime 对象等）
-     * @param array $attributes 模型所有属性的数组
+     * @param array<mixed> $attributes 模型所有属性的数组
      * @return string|null 返回 datetime 格式字符串，如果无法转换则返回 null
      */
     public function set($model, string $key, $value, array $attributes)

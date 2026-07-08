@@ -36,7 +36,7 @@ class ORMAdapterFactory
      * 
      * @param  string              $mode  ORM模式，可选值：thinkORM / laravelORM
      * @param  mixed               $model 模型类名或实例，用于初始化ORM工厂
-     * @return ORMAdapterInterface 返回对应ORM的适配器实例
+     * @return \Framework\ORM\Factories\LaravelORMFactory|\Framework\ORM\Factories\ThinkphpORMFactory 返回对应ORM的适配器实例
      * @throws Exception           当传入无效的ORM类型时抛出异常
      */
     public static function createAdapter(string $mode, mixed $model = null): mixed

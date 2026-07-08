@@ -53,7 +53,7 @@ class CasbinRbac
      * 根据配置初始化 Casbin 模型、MySQL 适配器和缓存机制。
      * 通过框架容器复用数据库连接和缓存服务。
      *
-     * @param array $config Casbin 配置数组，包含以下键：
+     * @param array<mixed> $config Casbin 配置数组，包含以下键：
      *                      - model.config_text: RBAC 模型规则文本
      *                      - adapter.table_name: 策略存储表名
      *                      - adapter.connection: 数据库连接名（可选）
@@ -197,7 +197,7 @@ class CasbinRbac
      * @param string|int $userId   用户ID
      * @param string|int $tenantId 租户ID，默认为 'default'
      *
-     * @return array 角色ID数组，包含用户所拥有的所有角色
+     * @return array<mixed> 角色ID数组，包含用户所拥有的所有角色
      */
     public function getUserRoles($userId, $tenantId = 'default'): array
     {
@@ -219,7 +219,7 @@ class CasbinRbac
      * @param string|int $roleId   角色ID
      * @param string|int $tenantId 租户ID，默认为 'default'
      *
-     * @return array 权限策略数组，每个元素包含资源路径和操作方法
+     * @return array<mixed> 权限策略数组，每个元素包含资源路径和操作方法
      */
     public function getRolePolicies($roleId, $tenantId = 'default'): array
     {
@@ -235,7 +235,8 @@ class CasbinRbac
 
     /**
      * 初始化模型参数维度（自动适配是否启用租户域）.
-     */
+     * @param array<mixed> $config
+ */
     protected function initModelArity(array $config): void
     {
         $modelText = $this->resolveModelText($config);
@@ -250,7 +251,8 @@ class CasbinRbac
 
     /**
      * 解析模型文本（支持 file/content）。
-     */
+     * @param array<mixed> $config
+ */
     protected function resolveModelText(array $config): string
     {
         if (!empty($config['model']['content']) && is_string($config['model']['content'])) {

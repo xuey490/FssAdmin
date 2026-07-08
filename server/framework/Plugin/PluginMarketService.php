@@ -31,16 +31,8 @@ class PluginMarketService
     /**
      * 市场配置
      *
-     * @var array
-     */
+     * @var array<mixed> */
     private array $config;
-
-    /**
-     * cURL 句柄
-     *
-     * @var resource|null
-     */
-    private $curl = null;
 
     /**
      * 构造函数
@@ -72,8 +64,7 @@ class PluginMarketService
      * @param int $page 页码
      * @param int $limit 每页数量
      * @param string|null $market 市场地址（null 使用官方市场）
-     * @return array
-     */
+     * @return array<mixed> */
     public function search(string $keyword, int $page = 1, int $limit = 20, ?string $market = null): array
     {
         $baseUrl = $market ?? $this->config['official_url'];
@@ -94,8 +85,7 @@ class PluginMarketService
      *
      * @param string $name 插件名称
      * @param string|null $market 市场地址
-     * @return array
-     */
+     * @return array<mixed> */
     public function detail(string $name, ?string $market = null): array
     {
         $baseUrl = $market ?? $this->config['official_url'];
@@ -110,8 +100,7 @@ class PluginMarketService
      *
      * @param string $name 插件名称
      * @param string|null $market 市场地址
-     * @return array
-     */
+     * @return array<mixed> */
     public function versions(string $name, ?string $market = null): array
     {
         $baseUrl = $market ?? $this->config['official_url'];
@@ -151,8 +140,7 @@ class PluginMarketService
      * @param string $name 插件名称
      * @param string $version 版本号（默认最新版本）
      * @param string|null $market 市场地址
-     * @return array
-     */
+     * @return array<mixed> */
     public function install(string $name, string $version = 'latest', ?string $market = null): array
     {
         try {
@@ -193,9 +181,8 @@ class PluginMarketService
     /**
      * 检查插件更新
      *
-     * @param array $plugins 插件列表 [['name' => 'blog', 'version' => '1.0.0'], ...]
-     * @return array
-     */
+     * @param array<mixed> $plugins 插件列表 [['name' => 'blog', 'version' => '1.0.0'], ...]
+     * @return array<mixed> */
     public function checkUpdates(array $plugins): array
     {
         $baseUrl = $this->config['official_url'];
@@ -210,8 +197,7 @@ class PluginMarketService
     /**
      * 获取所有市场列表
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public function getMarkets(): array
     {
         $markets = [
@@ -240,9 +226,8 @@ class PluginMarketService
      *
      * @param string $method
      * @param string $url
-     * @param array $options
-     * @return array
-     */
+     * @param array<mixed> $options
+     * @return array<mixed> */
     private function request(string $method, string $url, array $options = []): array
     {
         $ch = curl_init();

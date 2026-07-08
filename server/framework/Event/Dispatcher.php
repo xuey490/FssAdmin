@@ -24,7 +24,7 @@ class Dispatcher implements EventDispatcherInterface
 {
     /**
      * 存储监听器：[事件类][优先级][] = 监听器.
-     * @var array<string, array<int, array<array|callable|string>>>
+     * @var array<string, array<int, array<array<mixed>|callable|string>>>
      */
     private array $listeners = [];
 
@@ -34,7 +34,7 @@ class Dispatcher implements EventDispatcherInterface
      * 添加监听器.
      *
      * @param string                $eventClass 事件类名
-     * @param array|callable|string $listener   回调、[对象, 方法]、类名
+     * @param array<mixed>|callable|string $listener   回调、[对象, 方法]、类名
      * @param int                   $priority   优先级，数值越大越先执行
      */
     public function addListener(string $eventClass, array|callable|string $listener, int $priority = 0): void
@@ -103,6 +103,10 @@ class Dispatcher implements EventDispatcherInterface
 
     /**
      * 获取某个事件的所有监听器（按优先级合并后返回）.
+
+     * @return iterable<mixed>
+    
+
      */
     public function getListenersForEvent(object $event): iterable
     {
@@ -133,7 +137,7 @@ class Dispatcher implements EventDispatcherInterface
     /**
      * 将不同格式的订阅配置标准化为统一结构.
      *
-     * @param  array                                            $config 原始配置
+     * @param array<mixed> $config 原始配置
      * @return array<int, array{method: string, priority: int}>
      */
     private function normalizeSubscriptions(array $config): array
@@ -152,7 +156,7 @@ class Dispatcher implements EventDispatcherInterface
             foreach ($config as $item) {
                 if (is_string($item)) {
                     $result[] = [
-                        'method'   => (string) $item ?? 'handle',
+                        'method'   => (string) $item,
                         'priority' => 0,
                     ];
                     // continue;
@@ -160,12 +164,10 @@ class Dispatcher implements EventDispatcherInterface
                 if (! is_array($item)) {
                     continue;
                 }
-                if (is_array($item)) {
-                    $result[] = [
-                        'method'   => $item['method']   ?? ($item[0] ?? 'handle'),  // $item['method'] ?? 'handle',
-                        'priority' => $item['priority'] ?? ($item[1] ?? 0),
-                    ];
-                }
+                $result[] = [
+                    'method'   => $item['method']   ?? ($item[0] ?? 'handle'),  // $item['method'] ?? 'handle',
+                    'priority' => $item['priority'] ?? ($item[1] ?? 0),
+                ];
             }
         }
         // 简写形式：['handleLogin', 100]
@@ -179,38 +181,15 @@ class Dispatcher implements EventDispatcherInterface
         return $result;
     }
 
-    private function normalizeSubscriptions1(array $config): array
-    {
-        $result = [];
-
-        foreach ($config as $item) {
-            if (is_string($item)) {
-                $result[] = ['method' => $item, 'priority' => 0];
-            } elseif (is_array($item)) {
-                if (isset($item['method'])) {
-                    $result[] = [
-                        'method'   => $item['method'],
-                        'priority' => $item['priority'] ?? 0,
-                    ];
-                } else {
-                    // 假设是 [method, priority]
-                    $result[] = [
-                        'method'   => $item[0] ?? 'handle',
-                        'priority' => $item[1] ?? 0,
-                    ];
-                }
-            }
-        }
-
-        return $result;
-    }
-
     /**
      * 解析监听器，支持：
      *  - [obj, 'method']
      *  - 'ClassName::method'
      *  - 'ServiceName'（自动从容器获取）
      *  - 闭包/匿名函数.
+
+     * @param array<mixed>|callable|string  $listener
+
      */
     private function resolveListener(array|callable|string $listener): ?callable
     {
@@ -227,7 +206,7 @@ class Dispatcher implements EventDispatcherInterface
             return $this->container->get($listener); // 返回对象（需实现 __invoke）
         }
 
-        if (is_array($listener) && isset($listener[0], $listener[1])) {
+        if (isset($listener[0], $listener[1])) {
             $target = $listener[0];
             $method = $listener[1];
 

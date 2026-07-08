@@ -73,7 +73,7 @@ class TpTenantScope
         }
 
         $fields = $model->getFields();
-        if (!is_array($fields) || !array_key_exists('tenant_id', $fields)) {
+        if (!array_key_exists('tenant_id', $fields)) {
             return;
         }
 

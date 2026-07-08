@@ -24,6 +24,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CsrfProtectionMiddleware
 {
+    /**
+    * @param array<mixed> $except
+    */
     public function __construct(
         private CsrfTokenManager $tokenManager,
 
@@ -109,12 +112,10 @@ class CsrfProtectionMiddleware
              */
 
             if ($this->isAjaxRequest($request)) {
-				if ($this->isAjaxRequest($request)) {
-					return BaseJsonResponse::fail(
-						$this->errorMessage ?: 'CSRF token mismatch.',
-						419
-					);
-				}
+				return BaseJsonResponse::fail(
+					$this->errorMessage ?: 'CSRF token mismatch.',
+					419
+				);
             }
 
 			return new Response(

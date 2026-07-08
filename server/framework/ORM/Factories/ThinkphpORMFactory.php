@@ -20,7 +20,7 @@ use Framework\Core\App;
 use Framework\ORM\Exception\Exception;
 use Framework\Utils\Arr;
 use think\Collection;
-use think\db\Query;
+use think\db\BaseQuery as Query;
 use think\facade\Db;
 use think\Model;
 use think\Paginator;
@@ -95,9 +95,9 @@ class ThinkphpORMFactory
      * 
      * 根据条件数组构建查询构建器，支持普通条件和搜索器。
      * 
-     * @param array      $where         查询条件数组
+     * @param array<mixed> $where         查询条件数组
      * @param bool       $search        是否启用搜索器模式，默认false
-     * @param array|null $withoutScopes 需要移除的作用域列表
+     * @param array<mixed>|null $withoutScopes 需要移除的作用域列表
      * @return Query 返回ThinkPHP查询构建器实例
      */
     private function buildQuery(array $where, bool $search = false, ?array $withoutScopes = null): Query
@@ -120,8 +120,8 @@ class ThinkphpORMFactory
      * 
      * 将IN和NOT IN条件从普通条件中分离出来单独处理。
      * 
-     * @param array $where 原始查询条件数组
-     * @return array 返回[普通条件, 特殊条件]数组
+     * @param array<mixed> $where 原始查询条件数组
+     * @return array<mixed> 返回[普通条件, 特殊条件]数组
      */
     private function splitWhere(array $where): array
     {
@@ -144,7 +144,7 @@ class ThinkphpORMFactory
      * 将条件数组应用到查询构建器，处理普通条件和IN/NOT IN特殊条件。
      * 
      * @param Query $query 查询构建器实例
-     * @param array $where 查询条件数组
+     * @param array<mixed> $where 查询条件数组
      * @return void
      */
     private function applyConditions(Query $query, array $where): void
@@ -173,7 +173,7 @@ class ThinkphpORMFactory
      * 设置查询返回的字段列表。
      * 
      * @param Query        $query 查询构建器实例
-     * @param array|string $field 字段列表，支持数组或逗号分隔的字符串
+     * @param array<mixed>|string $field 字段列表，支持数组或逗号分隔的字符串
      * @return void
      */
     private function applyFields(Query $query, array|string $field): void
@@ -194,7 +194,7 @@ class ThinkphpORMFactory
     /**
      * 获取符合条件的记录数
      * 
-     * @param array $where  查询条件数组
+     * @param array<mixed> $where  查询条件数组
      * @param bool  $search 是否启用搜索器模式，默认false
      * @return int 返回符合条件的记录总数
      */
@@ -208,15 +208,15 @@ class ThinkphpORMFactory
      * 
      * 根据条件查询数据列表，支持分页、排序、关联预加载。
      * 
-     * @param array       $where         查询条件数组
-     * @param array|string $field        返回字段列表，默认为所有字段
+     * @param array<mixed> $where         查询条件数组
+     * @param array<mixed>|string $field        返回字段列表，默认为所有字段
      * @param int         $page          页码，大于0时启用分页
      * @param int         $limit         每页记录数
      * @param string      $order         排序条件
-     * @param array       $with          关联预加载配置
+     * @param array<mixed> $with          关联预加载配置
      * @param bool        $search        是否启用搜索器模式
-     * @param array|null  $withoutScopes 需要移除的作用域列表
-     * @return Collection|null 返回数据集合，分页时返回当前页数据
+     * @param array<mixed>|null  $withoutScopes 需要移除的作用域列表
+     * @return \think\Collection<int|string, mixed>|null 返回数据集合，分页时返回当前页数据
      */
     public function selectList(array $where, array|string $field = '*', int $page = 0, int $limit = 0, string $order = '', array $with = [], bool $search = false, ?array $withoutScopes = null): ?Collection
     {
@@ -235,15 +235,15 @@ class ThinkphpORMFactory
      * 
      * 构建查询并返回构建器实例或分页对象。
      * 
-     * @param array       $where         查询条件数组
-     * @param array|string $field        返回字段列表
+     * @param array<mixed> $where         查询条件数组
+     * @param array<mixed>|string $field        返回字段列表
      * @param int         $page          页码
      * @param int         $limit         每页记录数
      * @param string      $order         排序条件
-     * @param array       $with          关联预加载配置
+     * @param array<mixed> $with          关联预加载配置
      * @param bool        $search        是否启用搜索器模式
-     * @param array|null  $withoutScopes 需要移除的作用域列表
-     * @return Query|Paginator 返回查询构建器或分页对象
+     * @param array<mixed>|null  $withoutScopes 需要移除的作用域列表
+     * @return Query|\think\Paginator<mixed> 返回查询构建器或分页对象
      */
     public function selectModel(array $where, array|string $field = '*', int $page = 0, int $limit = 0, string $order = '', array $with = [], bool $search = false, ?array $withoutScopes = null): Query|Paginator
     {
@@ -273,7 +273,7 @@ class ThinkphpORMFactory
     /**
      * 获取符合条件的记录数（别名方法）
      * 
-     * @param array $where 查询条件数组
+     * @param array<mixed> $where 查询条件数组
      * @return int 返回记录总数
      */
     public function getCount(array $where): int
@@ -286,7 +286,7 @@ class ThinkphpORMFactory
      * 
      * 计算指定字段去重后的记录数量。
      * 
-     * @param array  $where  查询条件数组
+     * @param array<mixed> $where  查询条件数组
      * @param string $field  需要去重的字段名
      * @param bool   $search 是否启用搜索器模式
      * @return int 返回去重后的记录数
@@ -322,11 +322,11 @@ class ThinkphpORMFactory
      * 
      * 支持通过主键ID或条件数组查询单条记录。
      * 
-     * @param int|string|array     $id           主键值或条件数组
-     * @param array|string|null    $field        返回字段列表
-     * @param array|null           $with         关联预加载配置
+     * @param int|string|array<mixed>     $id           主键值或条件数组
+     * @param array<mixed>|string|null    $field        返回字段列表
+     * @param array<mixed>|null           $with         关联预加载配置
      * @param string               $order        排序条件
-     * @param array|null           $withoutScopes 需要移除的作用域列表
+     * @param array<mixed>|null           $withoutScopes 需要移除的作用域列表
      * @return Model|null 返回模型实例或null
      */
     public function get($id, array|string|null $field = null, ?array $with = [], string $order = '', ?array $withoutScopes = null): ?Model
@@ -371,9 +371,9 @@ class ThinkphpORMFactory
      * 
      * 通过条件数组查询第一条匹配的记录。
      * 
-     * @param array              $where 查询条件数组
-     * @param array|string|null  $field 返回字段列表
-     * @param array              $with  关联预加载配置
+     * @param array<mixed> $where 查询条件数组
+     * @param array<mixed>|string|null  $field 返回字段列表
+     * @param array<mixed> $with  关联预加载配置
      * @return Model|null 返回模型实例或null
      */
     public function getOne(array $where, array|string|null $field = '*', array $with = []): ?Model
@@ -410,10 +410,10 @@ class ThinkphpORMFactory
      * 
      * 获取指定字段的所有值，可指定键名。
      * 
-     * @param array  $where 查询条件数组
+     * @param array<mixed> $where 查询条件数组
      * @param string $field 要获取的字段名
      * @param string $key   作为数组键的字段名
-     * @return array 返回字段值数组
+     * @return array<mixed> 返回字段值数组
      */
     public function getColumn(array $where, string $field, string $key = ''): array
     {
@@ -426,7 +426,7 @@ class ThinkphpORMFactory
      * 
      * 根据主键或条件删除记录。
      * 
-     * @param array|int|string $id  主键值、主键数组或条件数组
+     * @param array<mixed>|int|string $id  主键值、主键数组或条件数组
      * @param string|null      $key 条件字段名
      * @return int 返回影响的行数
      * @throws Exception 删除失败时抛出异常
@@ -472,8 +472,8 @@ class ThinkphpORMFactory
      * 
      * 根据主键或条件更新记录。
      * 
-     * @param string|int|array $id   主键值或条件数组
-     * @param array            $data 要更新的数据
+     * @param string|int|array<mixed> $id   主键值或条件数组
+     * @param array<mixed> $data 要更新的数据
      * @param string|null      $key  条件字段名
      * @return mixed 返回影响的行数
      */
@@ -493,7 +493,7 @@ class ThinkphpORMFactory
      * 
      * @param mixed       $where 条件值或条件数组
      * @param string|null $key   条件字段名
-     * @return array 返回条件数组
+     * @return array<mixed> 返回条件数组
      */
     protected function setWhere($where, ?string $key = null): array
     {
@@ -508,8 +508,8 @@ class ThinkphpORMFactory
      * 
      * 根据主键数组批量更新多条记录。
      * 
-     * @param array       $ids  主键值数组
-     * @param array       $data 要更新的数据
+     * @param array<mixed> $ids  主键值数组
+     * @param array<mixed> $data 要更新的数据
      * @param string|null $key  条件字段名，默认为主键
      * @return bool 更新成功返回true
      */
@@ -525,10 +525,10 @@ class ThinkphpORMFactory
      * 
      * 创建新记录并返回模型实例。
      * 
-     * @param array $data 要保存的数据
-     * @return Model|null 返回创建的模型实例
+     * @param array<mixed> $data 要保存的数据
+     * @return \think\model\contract\Modelable 返回创建的模型实例
      */
-    public function save(array $data): ?Model
+    public function save(array $data): ?\think\model\contract\Modelable
     {
         return $this->getModel()->create($data);
     }
@@ -538,7 +538,7 @@ class ThinkphpORMFactory
      * 
      * 批量创建多条记录。
      * 
-     * @param array $data 要插入的数据数组
+     * @param array<mixed> $data 要插入的数据数组
      * @return bool 插入成功返回true
      */
     public function saveAll(array $data): bool
@@ -560,7 +560,7 @@ class ThinkphpORMFactory
      * @param mixed       $value    条件值
      * @param string      $field    要获取的字段名
      * @param string|null $valueKey 条件字段名
-     * @param array|null  $where    额外的查询条件
+     * @param array<mixed>|null  $where    额外的查询条件
      * @return mixed 返回字段值
      */
     public function getFieldValue($value, string $field, ?string $valueKey = null, ?array $where = []): mixed
@@ -580,7 +580,7 @@ class ThinkphpORMFactory
      * 使用ThinkPHP的withSearch功能应用搜索器。
      * 
      * @param Query $query 查询构建器实例
-     * @param array $where 查询条件数组
+     * @param array<mixed> $where 查询条件数组
      * @return Query 返回处理后的查询构建器
      */
     private function applySearchScopes(Query $query, array $where): Query
@@ -602,8 +602,8 @@ class ThinkphpORMFactory
      * 分离搜索器条件和普通查询条件。
      * 适配ThinkPHP的searchFieldNameAttr搜索器命名规则。
      * 
-     * @param array $where 原始查询条件数组
-     * @return array 返回[搜索字段, 搜索数据, 其他条件]
+     * @param array<mixed> $where 原始查询条件数组
+     * @return array<mixed> 返回[搜索字段, 搜索数据, 其他条件]
      */
     private function getSearchData(array $where): array
     {
@@ -637,7 +637,7 @@ class ThinkphpORMFactory
     /**
      * 根据搜索器获取查询结果（内部方法）
      * 
-     * @param array $where  查询条件数组
+     * @param array<mixed> $where  查询条件数组
      * @param bool  $search 是否启用搜索器
      * @return Query 返回查询构建器
      */
@@ -651,8 +651,8 @@ class ThinkphpORMFactory
      * 
      * 移除数据表中不存在的字段条件。
      * 
-     * @param array $where 查询条件数组
-     * @return array 返回过滤后的条件数组
+     * @param array<mixed> $where 查询条件数组
+     * @return array<mixed> 返回过滤后的条件数组
      */
     protected function filterWhere(array $where = []): array
     {
@@ -682,7 +682,7 @@ class ThinkphpORMFactory
      * 
      * 根据条件执行搜索，支持搜索器模式。
      * 
-     * @param array $where  查询条件数组
+     * @param array<mixed> $where  查询条件数组
      * @param bool  $search 是否启用搜索器模式
      * @return Model|Query 返回模型实例或查询构建器
      */
@@ -699,7 +699,7 @@ class ThinkphpORMFactory
      * 
      * 对指定字段进行求和计算。
      * 
-     * @param array  $where  查询条件数组
+     * @param array<mixed> $where  查询条件数组
      * @param string $field  要求和的字段名
      * @param bool   $search 是否启用搜索器模式
      * @return float 返回求和结果
@@ -786,7 +786,7 @@ class ThinkphpORMFactory
      * 
      * 在一次操作中减少库存并增加销量，保证数据一致性。
      * 
-     * @param array  $where 查询条件数组
+     * @param array<mixed> $where 查询条件数组
      * @param int    $num   操作数量
      * @param string $stock 库存字段名
      * @param string $sales 销量字段名
@@ -812,7 +812,7 @@ class ThinkphpORMFactory
      * 
      * 在一次操作中增加库存并减少销量，用于撤销操作。
      * 
-     * @param array  $where 查询条件数组
+     * @param array<mixed> $where 查询条件数组
      * @param int    $num   操作数量
      * @param string $stock 库存字段名
      * @param string $sales 销量字段名
@@ -835,7 +835,7 @@ class ThinkphpORMFactory
     /**
      * 获取字段最大值
      * 
-     * @param array  $where 查询条件数组
+     * @param array<mixed> $where 查询条件数组
      * @param string $field 字段名
      * @return mixed 返回最大值
      */
@@ -847,7 +847,7 @@ class ThinkphpORMFactory
     /**
      * 获取字段最小值
      * 
-     * @param array  $where 查询条件数组
+     * @param array<mixed> $where 查询条件数组
      * @param string $field 字段名
      * @return mixed 返回最小值
      */
@@ -876,7 +876,7 @@ class ThinkphpORMFactory
      * 移除指定的全局作用域，如软删除作用域。
      * 
      * @param Query       $query  查询构建器实例
-     * @param array|null  $scopes 需要移除的作用域列表
+     * @param array<mixed>|null  $scopes 需要移除的作用域列表
      * @return void
      */
     protected function applyScopeRemoval(Query $query, ?array $scopes): void
@@ -888,9 +888,7 @@ class ThinkphpORMFactory
         foreach ($scopes as $scope) {
             if ($scope === 'soft_delete' || str_contains($scope, 'SoftDelete')) {
                 // 假设是想查询包含已删除的数据
-                if (method_exists($query, 'withTrashed')) {
-                    $query->withTrashed();
-                }
+                $query->withTrashed();
             }
         }
     }

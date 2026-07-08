@@ -31,9 +31,6 @@ class Kernel
     public function __construct(ContainerInterface $container)
     {
         // 确保容器是可编译的（Symfony ContainerBuilder）
-        if (! $container instanceof ContainerInterface) {
-            throw new InvalidArgumentException('容器必须是 ContainerInterface 实例');
-        }
         $this->container = $container;
     }
 
@@ -107,11 +104,11 @@ class Kernel
             $error = error_get_last();
             if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
                 $e = new ErrorException(
-                    $error['message'] ?? '致命错误',
+                    $error['message'],
                     0,
-                    $error['type'] ?? E_ERROR,
-                    $error['file'] ?? '未知文件',
-                    $error['line'] ?? 0
+                    $error['type'],
+                    $error['file'],
+                    $error['line']
                 );
                 $exceptionHandler->report($e);
                 exit(1);

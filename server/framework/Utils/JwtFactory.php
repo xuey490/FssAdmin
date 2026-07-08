@@ -35,6 +35,7 @@ class JwtFactory
 {
     protected Configuration $config;
 
+    /** @var array<mixed> */
     protected array $jwtConfig;
 
     protected \DateTimeZone $timezone;
@@ -53,6 +54,10 @@ class JwtFactory
      * 签发jwt token
      * 返回一个包含 token 字符串和过期时间的数组，便于外部处理（如设置 Cookie）
      */
+    /**
+    * @param array<mixed> $claims
+    * @return array<mixed>
+    */
     public function issue(array $claims = [], ?int $ttl = null): array
     {
         $now       = new \DateTimeImmutable('now', $this->timezone);
@@ -124,6 +129,10 @@ class JwtFactory
 
 		if (! $ok) {
 			throw new \RuntimeException('JWT signature verification failed.');
+		}
+
+		if (! $parsed instanceof Plain) {
+			throw new \RuntimeException('Invalid JWT token type.');
 		}
 
 		return $parsed;
@@ -245,7 +254,7 @@ class JwtFactory
             }
         }
 
-        return $this->issue($claims, $ttl);
+        return $this->issue($claims, $ttl)['token'];
     }
 
     /*
@@ -349,9 +358,6 @@ class JwtFactory
     public function revoke(string $token): void
     {
         $parsed = $this->parse($token);
-        if (! $parsed) {
-            throw new \RuntimeException('Token parse failed, cannot revoke .');
-        }
 
         $jti    = $parsed->claims()->get('jti');
         $userId = $parsed->claims()->get('uid');
@@ -391,6 +397,9 @@ class JwtFactory
         }
     }
 
+    /**
+    * @return array<mixed>
+    */
     public function getPayload(string $token): array
     {
         $parsed = $this->parse($token);
@@ -421,18 +430,15 @@ class JwtFactory
         }
 
         // 非对称签名（RSA）
-        if ($algo === 'RS256') {
-            $privateKeyPath = storage_path('keys/private.key');
-            $publicKeyPath  = storage_path('keys/public.key');
+        $privateKeyPath = storage_path('keys/private.key');
+        $publicKeyPath  = storage_path('keys/public.key');
 
-            $private = InMemory::file($privateKeyPath);
-            $public  = InMemory::file($publicKeyPath);
+        $private = InMemory::file($privateKeyPath);
+        $public  = InMemory::file($publicKeyPath);
 
-            return Configuration::forAsymmetricSigner($signer, $private, $public);
-        }
+        return Configuration::forAsymmetricSigner($signer, $private, $public);
 
-        // 一般不会到这里
-        throw new \InvalidArgumentException("Unsupported algorithm: {$algo}");
+        // 不会到达此处：上方 match 已通过 default 分支覆盖所有未知算法
     }
 
     /**

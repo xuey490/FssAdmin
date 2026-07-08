@@ -24,6 +24,7 @@ interface ListenerInterface
     /**
      * 返回订阅的事件列表
      * 示例: [UserLoginEvent::class => 'handle'].
-     */
+     * @return array<mixed>
+ */
     public function subscribedEvents(): array;
 }

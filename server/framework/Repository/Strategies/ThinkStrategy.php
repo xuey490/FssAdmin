@@ -14,11 +14,17 @@ class ThinkStrategy implements OrmStrategyInterface
         return \think\facade\Db::table($modelClass);
     }
 
+    /**
+    * @param array<mixed> $extra
+    */
     public function increment(mixed $query, string $field, int $amount, array $extra): bool
     {
         return (bool) $query->inc($field, $amount)->update($extra);
     }
 
+    /**
+    * @param array<mixed> $extra
+    */
     public function decrement(mixed $query, string $field, int $amount, array $extra): bool
     {
         return (bool) $query->dec($field, $amount)->update($extra);
@@ -29,11 +35,18 @@ class ThinkStrategy implements OrmStrategyInterface
         return \think\facade\Db::transaction($callback);
     }
 
+    /**
+    * @param array<mixed> $bindings
+    * @return array<mixed>
+    */
     public function query(string $sql, array $bindings): array
     {
         return \think\facade\Db::query($sql, $bindings);
     }
 
+    /**
+    * @param array<mixed> $bindings
+    */
     public function execute(string $sql, array $bindings): int
     {
         return (int) \think\facade\Db::execute($sql, $bindings);

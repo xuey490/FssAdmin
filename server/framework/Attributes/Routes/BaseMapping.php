@@ -16,8 +16,6 @@ declare(strict_types=1);
 
 namespace Framework\Attributes\Routes;
 
-use Attribute;
-
 /**
  * BaseMapping - HTTP 方法映射注解基类
  *
@@ -33,20 +31,19 @@ use Attribute;
  *
  * @package Framework\Attributes\Routes
  */
-#[Attribute(Attribute::TARGET_METHOD)]
 abstract class BaseMapping
 {
     /**
      * 构造函数
      *
      * @param string $path 路由路径
-     * @param array $methods 允许的 HTTP 方法列表
+     * @param array<mixed> $methods 允许的 HTTP 方法列表
      * @param bool|null $auth 是否需要认证，null 表示继承父级设置
-     * @param array $roles 允许访问的角色列表
-     * @param array $middleware 中间件列表
-     * @param array $defaults 路由默认参数
-     * @param array $requirements 路由参数约束
-     * @param array $schemes URL 协议约束
+     * @param array<mixed> $roles 允许访问的角色列表
+     * @param array<mixed> $middleware 中间件列表
+     * @param array<mixed> $defaults 路由默认参数
+     * @param array<mixed> $requirements 路由参数约束
+     * @param array<mixed> $schemes URL 协议约束
      * @param string|null $host 主机名约束
      * @param string|null $name 路由名称
      */

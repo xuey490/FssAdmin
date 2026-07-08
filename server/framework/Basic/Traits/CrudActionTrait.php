@@ -54,7 +54,7 @@ trait CrudActionTrait
      * - table_tree: 表格树形结构
      *
      * @param Request $request HTTP 请求对象
-     * @return \Illuminate\Http\JsonResponse 返回 JSON 格式的列表数据
+     * @return \Framework\Basic\BaseJsonResponse 返回 JSON 格式的列表数据
      */
     public function index(Request $request)
     {
@@ -84,7 +84,7 @@ trait CrudActionTrait
      * 根据 ID 获取数据详情，如果数据不存在则返回错误信息。
      *
      * @param Request $request HTTP 请求对象，需包含 id 参数
-     * @return \Illuminate\Http\JsonResponse 返回 JSON 格式的详情数据
+     * @return \Framework\Basic\BaseJsonResponse 返回 JSON 格式的详情数据
      */
     public function show(Request $request)
     {
@@ -109,7 +109,7 @@ trait CrudActionTrait
      * 验证场景为 'store'。
      *
      * @param Request $request HTTP 请求对象，包含新增数据
-     * @return \Illuminate\Http\JsonResponse 返回 JSON 格式的操作结果，成功时包含新创建的数据
+     * @return \Framework\Basic\BaseJsonResponse 返回 JSON 格式的操作结果，成功时包含新创建的数据
      */
     public function store(Request $request)
     {
@@ -134,7 +134,7 @@ trait CrudActionTrait
      * 验证场景为 'update'。
      *
      * @param Request $request HTTP 请求对象，需在 attributes 中包含 id，以及更新数据
-     * @return \Illuminate\Http\JsonResponse 返回 JSON 格式的操作结果
+     * @return \Framework\Basic\BaseJsonResponse 返回 JSON 格式的操作结果
      */
     public function update(Request $request)
     {
@@ -159,7 +159,7 @@ trait CrudActionTrait
      * 根据 ID 删除数据记录。
      *
      * @param Request $request HTTP 请求对象，需在 attributes 中包含 id
-     * @return \Illuminate\Http\JsonResponse 返回 JSON 格式的操作结果
+     * @return \Framework\Basic\BaseJsonResponse 返回 JSON 格式的操作结果
      */
     public function destroy(Request $request)
     {

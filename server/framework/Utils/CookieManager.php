@@ -53,8 +53,7 @@ class CookieManager
     /**
      * Cookie 配置数组
      *
-     * @var array
-     */
+     * @var array<mixed> */
     protected array $config;
 
     /**
@@ -123,8 +122,7 @@ class CookieManager
     /**
      * 待发送的 Cookie 队列
      *
-     * @var array
-     */
+     * @var array<mixed> */
     protected array $queuedCookies = [];
 
     /**

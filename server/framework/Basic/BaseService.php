@@ -18,7 +18,7 @@ namespace Framework\Basic;
 
 use Framework\ORM\Trait\ServicesTrait;
 use Illuminate\Support\Facades\DB as LaravelDb;
-use think\facade\DB as ThinkDb;
+use think\facade\Db as ThinkDb;
 use Framework\DI\Injectable;
 use Closure;
 use Throwable;
@@ -180,6 +180,7 @@ abstract class BaseService
             match ($framework) {
                 'thinkORM'   => ThinkDb::startTrans(),
                 'laravelORM' => \Illuminate\Database\Capsule\Manager::connection()->beginTransaction(),
+                default      => throw new \InvalidArgumentException("Unsupported framework: {$framework}"),
             };
         }
 
@@ -204,6 +205,7 @@ abstract class BaseService
             match ($framework) {
                 'thinkORM'   => ThinkDb::commit(),
                 'laravelORM' => \Illuminate\Database\Capsule\Manager::connection()->commit(),
+                default      => throw new \InvalidArgumentException("Unsupported framework: {$framework}"),
             };
         }
     }
@@ -226,6 +228,7 @@ abstract class BaseService
             match ($framework) {
                 'thinkORM'   => ThinkDb::rollback(),
                 'laravelORM' => \Illuminate\Database\Capsule\Manager::connection()->rollBack(),
+                default      => throw new \InvalidArgumentException("Unsupported framework: {$framework}"),
             };
         }
     }
@@ -291,7 +294,7 @@ abstract class BaseService
      * 当调用不存在的方法时，自动转发给 DAO 处理。
      *
      * @param string $name 方法名
-     * @param array $arguments 方法参数
+     * @param array<mixed> $arguments 方法参数
      * @return mixed 方法返回值
      * @throws \RuntimeException DAO 未初始化时抛出
      * @throws \BadMethodCallException 方法不存在时抛出
@@ -308,7 +311,7 @@ abstract class BaseService
         } catch (\BadMethodCallException $e) {
             // DAO 及其适配器都不支持该方法
             throw new \BadMethodCallException(
-                "BaseService: Method {$name} not found in DAO adapter (" . get_class($this->dao) . " / adapter: " . get_class($this->dao->instance) . "): " . $e->getMessage()
+                "BaseService: Method {$name} not found in DAO adapter (" . get_class($this->dao) . " / adapter: " . get_class($this->dao->getAdapter()) . "): " . $e->getMessage()
             );
         } catch (\Throwable $e) {
             // 其它异常（例如 ORM 内部抛出的），直接向上抛或包装
@@ -325,12 +328,12 @@ abstract class BaseService
      *
      * 从数组或请求中获取分页参数，支持多种输入格式。
      *
-     * @param array|null $params 分页参数，支持以下格式：
+     * @param array<mixed>|null $params 分页参数，支持以下格式：
      *                           - null: 使用默认值
      *                           - 关联数组: ['page' => 1, 'limit' => 10] 或 ['p' => 1, 'per_page' => 10]
      *                           - 索引数组: [0 => page, 1 => limit]
      * @param int $defaultLimit 默认每页条数
-     * @return array [page, limit, offset]
+     * @return array<mixed> [page, limit, offset]
      *
      * @example
      * // 无参数
@@ -383,11 +386,11 @@ abstract class BaseService
     /**
      * 构建分页结果
      *
-     * @param array $items 数据列表
+     * @param array<mixed> $items 数据列表
      * @param int $total 总记录数
      * @param int $page 当前页码
      * @param int $limit 每页条数
-     * @return array 分页结果
+     * @return array<mixed> 分页结果
      */
     protected function buildPaginateResult(array $items, int $total, int $page, int $limit): array
     {

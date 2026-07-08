@@ -111,9 +111,9 @@ abstract class BaseController
     /**
      * 返回成功 JSON.
      */
-    protected function success(mixed $data = [], string $msg = 'success'): BaseJsonResponse
+    protected function success(mixed $data = [], string $msg = 'success', int $code = 200): BaseJsonResponse
     {
-        return BaseJsonResponse::success($data, $msg);
+        return BaseJsonResponse::success($data, $msg, $code);
     }
 
     /**
@@ -134,9 +134,15 @@ abstract class BaseController
 
     /**
      * 缓存解析后的 JSON body
-     * @var array|null
+     * @var array<mixed>|null
      */
-    protected ?array $jsonBodyCache = null;
+    /** @var array<mixed> */
+    /** @var array<mixed> */
+    /** @var array<mixed> */
+    /** @var array<mixed>  */
+    /** @var array<mixed>  */
+    protected ?array /** @var array<mixed>  */
+$jsonBodyCache = null;
 
     /**
      * 获取当前请求对象
@@ -200,8 +206,7 @@ abstract class BaseController
      * 获取所有请求参数（合并 GET、POST、JSON Body）
      *
      * @param Request|null $request 请求对象（可选）
-     * @return array
-     */
+     * @return array<mixed> */
     protected function inputAll(?Request $request = null): array
     {
         $req = $this->getCurrentRequest($request);
@@ -216,8 +221,7 @@ abstract class BaseController
      * 获取并缓存 JSON Body
      *
      * @param Request|null $request 请求对象（可选）
-     * @return array
-     */
+     * @return array<mixed> */
     protected function getJsonBody(?Request $request = null): array
     {
         $req = $this->getCurrentRequest($request);

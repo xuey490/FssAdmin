@@ -33,8 +33,7 @@ class RSAService
      *
      * @param int $bits
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public static function generateKeys(int $bits = 2048): array
     {
         $privateKey = RSA::createKey($bits);

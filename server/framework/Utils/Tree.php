@@ -34,14 +34,12 @@ class Tree
 
     /**
      * 数据
-     * @var array
-     */
+     * @var array<mixed> */
     protected array $data = [];
 
     /**
      * 哈希树
-     * @var array
-     */
+     * @var array<mixed> */
     protected array $hashTree = [];
 
     /**
@@ -52,10 +50,10 @@ class Tree
     protected string $pidName = 'pid';
 
     /**
-     * @param                                          $data
-     * @param \madong\helper\int|\madong\helper\string $pid_name
+     * @param                  mixed $data
+     * @param string           $pid_name
      */
-    public function __construct($data,  $pid_name = 'pid')
+    public function __construct($data, string $pid_name = 'pid')
     {
         $this->pidName = $pid_name;
         if (is_object($data) && method_exists($data, 'toArray')) {
@@ -74,10 +72,9 @@ class Tree
 
     /**
      * 获取子孙节点
-     * @param array $include
+     * @param array<mixed> $include
      * @param bool  $with_self
-     * @return array
-     */
+     * @return array<mixed> */
     public function getDescendant(array $include, bool $with_self = false): array
     {
         $items = [];
@@ -103,9 +100,8 @@ class Tree
 
     /**
      * 获取哈希树
-     * @param array $data
-     * @return array
-     */
+     * @param array<mixed> $data
+     * @return array<mixed> */
     protected function getHashTree(array $data = []): array
     {
         $data = $data ?: $this->data;
@@ -123,9 +119,9 @@ class Tree
 
     /**
      * 获取树
-     * @param array $include
+     * @param array<mixed> $include
      * @param int $type
-     * @return array|null
+     * @return array<mixed>|null
      */
     public function getTree(array $include = [], int $type = 1): ?array
     {
@@ -182,9 +178,8 @@ class Tree
 
     /**
      * 递归重建数组下标
-     * @param $array
-     * @return array
-     */
+     * @param mixed $array
+     * @return array<mixed> */
     public static function arrayValues($array): array
     {
         if (!$array) {

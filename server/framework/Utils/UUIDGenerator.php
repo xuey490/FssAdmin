@@ -59,7 +59,7 @@ class UUIDGenerator
     /**
      * 自定义UUID
      *
-     * @param $length
+     * @param mixed $length
      *
      * @return string|null
      * @throws \Exception

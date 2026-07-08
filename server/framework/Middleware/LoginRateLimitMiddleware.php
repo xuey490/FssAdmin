@@ -29,11 +29,15 @@ use Symfony\Component\HttpFoundation\Response;
 class LoginRateLimitMiddleware implements MiddlewareInterface
 {
     private bool $enabled;
+    /** @var array<mixed> */
     private array $paths;
     private int $ipMaxAttempts;
     private int $identityMaxAttempts;
     private int $period;
 
+    /**
+    * @param array<mixed> $config
+    */
     public function __construct(private object $redis, array $config = [])
     {
         $this->enabled             = (bool) ($config['enabled'] ?? true);

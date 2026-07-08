@@ -31,7 +31,6 @@ namespace Framework\Session;
  * - Session 垃圾回收机制
  *
  * @package Framework\Session
- * @implements \SessionHandlerInterface
  */
 class FileSessionHandler implements \SessionHandlerInterface
 {

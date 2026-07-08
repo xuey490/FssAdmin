@@ -96,7 +96,7 @@ final class SessionTenantContext
      *
      * @param int $tenantId 租户ID
      * @param int $userId 用户ID
-     * @param array $tenants 用户可访问的租户列表（可选）
+     * @param array<mixed> $tenants 用户可访问的租户列表（可选）
      * @return void
      */
     public static function setTenantSession(int $tenantId, int $userId, array $tenants = []): void
@@ -165,7 +165,7 @@ final class SessionTenantContext
     /**
      * 获取用户可访问的租户列表
      *
-     * @return array 租户列表，未设置返回空数组
+     * @return array<mixed> 租户列表，未设置返回空数组
      */
     public static function getUserTenants(): array
     {
@@ -222,7 +222,7 @@ final class SessionTenantContext
     /**
      * 更新租户列表
      *
-     * @param array $tenants 租户列表
+     * @param array<mixed> $tenants 租户列表
      * @return void
      */
     public static function updateTenants(array $tenants): void
@@ -300,7 +300,7 @@ final class SessionTenantContext
     /**
      * 获取完整的租户 Session 数据
      *
-     * @return array Session 数据，无 Session 返回空数组
+     * @return array<mixed> Session 数据，无 Session 返回空数组
      */
     public static function getAllSessionData(): array
     {

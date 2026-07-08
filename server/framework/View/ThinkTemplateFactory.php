@@ -24,8 +24,12 @@ use think\Template;
 
 class ThinkTemplateFactory
 {
+    /** @var array<mixed> */
     private array $config;
 
+    /**
+    * @param array<mixed> $config
+    */
     public function __construct(array $config = [])
     {
         $this->config = $config;

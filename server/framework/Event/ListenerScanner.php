@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Framework\Event;
 
-use Framework\Cache\CacheFactory;
 use Framework\Event\Attribute\EventListener;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -27,21 +26,19 @@ class ListenerScanner
 {
     private string $listenerDir;
 
-    private CacheFactory $cache;
-
     private int $cacheTtl = 3600; // 1小时
 
     private string $cacheKey = 'event.subscribers';
 
-    public function __construct(CacheFactory $cache, ?string $listenerDir = null)
+    public function __construct(?string $listenerDir = null)
     {
-        $this->cache       = $cache;
         $this->listenerDir = $listenerDir ?? BASE_PATH . '/app/Listeners';
     }
 
     /**
      * 获取监听器（自动缓存 + 自动刷新）.
-     */
+     * @return array<mixed>
+ */
     public function getSubscribers(): array
     {
         // 开发环境建议禁用缓存（可选）
@@ -78,7 +75,8 @@ class ListenerScanner
 
     /**
      * 核心扫描逻辑：支持 Interface 和 Attributes
-     */
+     * @return array<mixed>
+ */
     private function scanAndBuild(): array
     {
         if (! is_dir($this->listenerDir)) {

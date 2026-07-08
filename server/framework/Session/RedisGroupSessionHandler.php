@@ -35,7 +35,6 @@ use Symfony\Component\HttpFoundation\Session\Storage\Handler\RedisSessionHandler
  * - group_prefix (string)   : 自定义分组前缀，会拼接到 prefix 前面
  *
  * @package Framework\Session
- * @extends RedisSessionHandler
  */
 class RedisGroupSessionHandler extends RedisSessionHandler
 {
@@ -95,7 +94,7 @@ class RedisGroupSessionHandler extends RedisSessionHandler
      * 然后调用父类构造函数完成基础初始化。
      *
      * @param object $redis   Redis 客户端实例（支持 setex、set、get、del、eval 等方法）
-     * @param array  $options 配置选项数组
+     * @param array<mixed> $options 配置选项数组
      */
     public function __construct(object $redis, array $options = [])
     {

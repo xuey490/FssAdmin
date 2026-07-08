@@ -142,10 +142,10 @@ class ThinkAdapter extends AbstractCache implements CacheInterface
      * 根据给定的键列表批量获取缓存值，返回键值对数组。
      * 对于不存在的键，使用默认值填充。
      *
-     * @param iterable $keys    缓存键名列表
+     * @param array<mixed> $keys    缓存键名列表
      * @param mixed    $default 当键不存在时返回的默认值，默认为 null
      * 
-     * @return iterable 键值对数组，键为缓存键名，值为对应的缓存值
+     * @return array<mixed> 键值对数组，键为缓存键名，值为对应的缓存值
      */
     public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
@@ -161,7 +161,7 @@ class ThinkAdapter extends AbstractCache implements CacheInterface
      * 
      * 批量设置多个缓存项的值，可统一指定过期时间。
      *
-     * @param iterable                $values 键值对数组，键为缓存键名，值为要缓存的数据
+     * @param array<mixed> $values 键值对数组，键为缓存键名，值为要缓存的数据
      * @param \DateInterval|int|null $ttl    过期时间，支持秒数或 DateInterval 对象，null 表示使用默认值
      * 
      * @return bool 成功返回 true，失败返回 false
@@ -179,7 +179,7 @@ class ThinkAdapter extends AbstractCache implements CacheInterface
      * 
      * 根据给定的键列表批量删除缓存项。
      *
-     * @param iterable $keys 缓存键名列表
+     * @param array<mixed> $keys 缓存键名列表
      * 
      * @return bool 成功返回 true，失败返回 false
      */

@@ -30,6 +30,7 @@ trait Injectable
      * 反射元数据缓存，避免重复反射同一个类
      * 格式: [ ClassName => [ [property_name, attribute_instance, type_name], ...  ] ]
      */
+    /** @var array<mixed> */
     protected static array $injectionMetaCache = [];
 
     /**
@@ -66,7 +67,8 @@ trait Injectable
 
     /**
      * 解析类的属性元数据
-     */
+     * @return array<mixed>
+ */
     protected function parseInjectionMeta(string $className): array
     {
         $metaList = [];

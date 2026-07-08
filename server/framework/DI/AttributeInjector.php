@@ -61,7 +61,7 @@ class AttributeInjector
      *     ...
      * ]
      *
-     * @var array<string, array<array{reflection: ReflectionProperty, property: string, attr: object, type: string|null}>>
+     * @var array<string, array{array{reflection: ReflectionProperty, property: string, attr: object, type: string|null}}>
      */
     protected static array $metadataCache = [];
 
@@ -95,7 +95,7 @@ class AttributeInjector
 
         // 2. Iterate through metadata and perform injection for each property
         foreach (self::$metadataCache[$className] as $meta) {
-            /** @var ReflectionProperty $reflectionProperty The reflection object of the target property */
+            
             $reflectionProperty = $meta['reflection'];
             $propertyName = $meta['property']; // Name of the target property
 			
@@ -126,7 +126,7 @@ class AttributeInjector
      * 4. Make private/protected properties accessible for injection
      *
      * @param string $className Fully qualified class name to parse
-     * @return array Array of injection metadata for the class's properties
+     * @return array<mixed> Array of injection metadata for the class's properties
      * @throws RuntimeException If reflection fails (e.g., class does not exist)
      */
     protected static function parseMetadata(string $className): array

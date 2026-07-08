@@ -23,34 +23,35 @@ use Throwable;
 use Framework\Database\DatabaseFactory;
 
 /**
- * @method count(array $where = [], bool $search = true)
- * @method selectList(array $where, string $field = '*', int $page = 0, int $limit = 0, string $order = '', array $with = [], bool $search = false)
- * @method selectModel(array $where, string $field = '*', int $page = 0, int $limit = 0, string $order = '', array $with = [], bool $search = false)
- * @method getCount(array $where)
- * @method getDistinctCount(array $where, $field, bool $search = true)
+ * @method count(array<mixed> $where = [], bool $search = true)
+ * @method selectList(array<mixed> $where, string $field = '*', int $page = 0, int $limit = 0, string $order = '', array<mixed> $with = [], bool $search = false)
+ * @method selectModel(array<mixed> $where, string $field = '*', int $page = 0, int $limit = 0, string $order = '', array<mixed> $with = [], bool $search = false)
+ * @method getCount(array<mixed> $where)
+ * @method getDistinctCount(array<mixed> $where, $field, bool $search = true)
  * @method getPk()
  * @method getTableName()
- * @method get($id, ?array $field = [], ?array $with = [], string $order = '')
+ * @method get($id, ?array<mixed> $field = [], ?array<mixed> $with = [], string $order = '')
  * @method be($map, string $field = '')
- * @method getOne(array $where, ?string $field = '*', array $with = [])
+ * @method getOne(array<mixed> $where, ?string $field = '*', array<mixed> $with = [])
  * @method value($where, ?string $field = '')
- * @method getColumn(array $where, string $field, string $key = '')
- * @method delete(array|int|string $id, ?string $key = null)
+ * @method getColumn(array<mixed> $where, string $field, string $key = '')
+ * @method delete(array<mixed>|int|string $id, ?string $key = null)
  * @method destroy(mixed $id, bool $force = false)
- * @method update(string|int|array $id, array $data, ?string $key = null)
+ * @method update(string|int|array<mixed> $id, array<mixed> $data, ?string $key = null)
  * @method setWhere($where, ?string $key = null)
- * @method batchUpdate(array $ids, array $data, ?string $key = null)
- * @method save(array $data)
- * @method saveAll(array $data)
- * @method getFieldValue($value, string $filed, ?string $valueKey = '', ?array $where = [])
- * @method search(array $where = [], bool $search = true)
- * @method sum(array $where, string $field, bool $search = false)
+ * @method batchUpdate(array<mixed> $ids, array<mixed> $data, ?string $key = null)
+ * @method save(array<mixed> $data)
+ * @method saveAll(array<mixed> $data)
+ * @method getFieldValue($value, string $filed, ?string $valueKey = '', ?array<mixed> $where = [])
+ * @method search(array<mixed> $where = [], bool $search = true)
+ * @method sum(array<mixed> $where, string $field, bool $search = false)
  * @method bcInc($key, string $incField, string $inc, string $keyField = null, int $acc = 2)
  * @method bcDec($key, string $decField, string $dec, string $keyField = null, int $acc = 2)
- * @method getMax(array $where = [], string $field = '')
- * @method getMin(array $where = [], string $field = '')
- * @method decStockIncSales(array $where, int $num, string $stock = 'stock', string $sales = 'sales')
- * @method incStockDecSales(array $where, int $num, string $stock = 'stock', string $sales = 'sales')
+ * @method getMax(array<mixed> $where = [], string $field = '')
+ * @method getMin(array<mixed> $where = [], string $field = '')
+ * @method decStockIncSales(array<mixed> $where, int $num, string $stock = 'stock', string $sales = 'sales')
+ * @method incStockDecSales(array<mixed> $where, int $num, string $stock = 'stock', string $sales = 'sales')
+ * @method isCodeExists(string $code, ?int $id = null): bool
  */
 abstract class BaseDao
 {
@@ -62,7 +63,7 @@ abstract class BaseDao
 
     protected ?string $mode = null;
 
-    /** @var mixed Eloquent/ThinkORM 模型类名 */
+    /** @var string Eloquent/ThinkORM 模型类名 */
     protected string $modelClass = '';
 
     public function __construct(?string $mode = null, object|string|null $modelClass = null)
@@ -102,7 +103,8 @@ abstract class BaseDao
      * 动态代理调用 —— 将所有方法转发给 ORM Adapter.
      *
      * @throws RuntimeException
-     */
+     * @param array<mixed> $arguments
+ */
     public function __call(string $name, array $arguments): mixed
     {
         if (! $this->instance) {

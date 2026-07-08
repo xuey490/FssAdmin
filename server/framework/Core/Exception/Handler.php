@@ -40,7 +40,7 @@ class Handler
      */
     public function report(\Throwable $e): void
     {
-        /** @var LoggerInterface $logger */
+        
         $logger = app('log');
         // 你可以根据异常类型选择 error、critical 等级别
         $logger->error('Uncaught Exception', [

@@ -55,8 +55,7 @@ class CacheFactory
      * 
      * 包含 default（默认驱动）、stores（各驱动详细配置）等配置项。
      *
-     * @var array
-     */
+     * @var array<mixed> */
     private array $config;
 
     /**
@@ -64,7 +63,7 @@ class CacheFactory
      * 
      * 初始化缓存工厂实例，接收缓存配置数组。
      *
-     * @param array $config 缓存配置数组，包含 default 和 stores 配置
+     * @param array<mixed> $config 缓存配置数组，包含 default 和 stores 配置
      */
     public function __construct(array $config)
     {
@@ -125,7 +124,7 @@ class CacheFactory
      * 使用 DSN 字符串方式建立 Redis 连接。
      *
      * @param string $prefix 缓存键前缀
-     * @param array  $config Redis 配置数组，包含 host、port、password、database 等字段
+     * @param array<mixed> $config Redis 配置数组，包含 host、port、password、database 等字段
      * 
      * @return AdapterInterface Redis 缓存适配器实例
      */
@@ -157,7 +156,7 @@ class CacheFactory
      * 需要安装并启用 memcached PHP 扩展。
      *
      * @param string $prefix 缓存键前缀
-     * @param array  $config Memcached 配置数组，包含 servers 字段（服务器列表）
+     * @param array<mixed> $config Memcached 配置数组，包含 servers 字段（服务器列表）
      * 
      * @return AdapterInterface Memcached 缓存适配器实例
      * 

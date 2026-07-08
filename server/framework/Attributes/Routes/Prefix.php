@@ -37,9 +37,9 @@ class Prefix
      * 构造函数
      *
      * @param string $prefix 路由前缀
-     * @param array $middleware 中间件列表
+     * @param array<mixed> $middleware 中间件列表
      * @param bool|null $auth 是否需要认证
-     * @param array $roles 允许访问的角色列表
+     * @param array<mixed> $roles 允许访问的角色列表
      */
     public function __construct(
         public string $prefix,

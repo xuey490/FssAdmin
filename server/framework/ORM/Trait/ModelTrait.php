@@ -24,7 +24,11 @@ trait ModelTrait
      * 时间段搜索器.
      *
      * @param Model $query
-     */
+     
+     * @param mixed $value
+
+     * @param mixed $data
+*/
     public function searchTimeAttr($query, $value, $data): void
     {
         if ($value) {
@@ -72,7 +76,7 @@ trait ModelTrait
                                 $query->whereBetween($timeKey, [$startTime, $endTime]);
                             } elseif (! $startTime && $endTime) {
                                 $query->whereTime($timeKey, '<', $endTime + 86400);
-                            } elseif ($startTime && ! $endTime) {
+                            } elseif ($startTime) {
                                 $query->whereTime($timeKey, '>=', $startTime);
                             }
                         }
@@ -85,8 +89,7 @@ trait ModelTrait
     /**
      * 获取本季度 time.
      *
-     * @return array
-     */
+     * @return array<mixed> */
     public function getMonth(int $ceil = 0)
     {
         if ($ceil != 0) {
@@ -94,18 +97,20 @@ trait ModelTrait
         } else {
             $season = ceil(date('n') / 3);
         }
-        $firstday = date('Y-m-01', mktime(0, 0, 0, ($season - 1) * 3 + 1, 1, date('Y')));
-        $lastday  = date('Y-m-t', mktime(0, 0, 0, $season * 3, 1, date('Y')));
+        $firstday = date('Y-m-01', mktime(0, 0, 0, (int) (($season - 1) * 3 + 1), 1, (int) date('Y')));
+        $lastday  = date('Y-m-t', mktime(0, 0, 0, (int) ($season * 3), 1, (int) date('Y')));
         return [$firstday, $lastday];
     }
 
     /**
      * 获取某个字段内的值
      *
-     * @param array|string[] $where
+     * @param array<mixed>|string[] $where
      *
      * @return mixed
-     */
+     
+     * @param mixed $value
+*/
     public function getFieldValue($value, string $filed, ?string $valueKey = '', ?array $where = [])
     {
         $model = $this->where($filed, $value);

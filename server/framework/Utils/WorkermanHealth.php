@@ -11,7 +11,8 @@ final class WorkermanHealth
 {
     /**
      * 采集当前 worker 内存与健康指标.
-     */
+     * @return array<mixed>
+ */
     public static function snapshot(?int $workerId = null, ?string $workerName = null): array
     {
         $startTime = $_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true);
@@ -32,7 +33,8 @@ final class WorkermanHealth
 
     /**
      * 写入 health.json（供 /_health 与外部监控读取）.
-     */
+     * @param array<mixed> $data
+ */
     public static function writeHealthFile(string $healthFile, array $data): void
     {
         $dir = dirname($healthFile);
@@ -48,7 +50,8 @@ final class WorkermanHealth
 
     /**
      * 追加内存历史到 JSONL（便于 soak 对比与告警）.
-     */
+     * @param array<mixed> $data
+ */
     public static function appendMemoryHistory(string $logDir, array $data, ?string $label = null): void
     {
         if ($label !== null) {

@@ -27,6 +27,7 @@ class RateLimitMiddleware
 
     private int $period = 60; // seconds
 
+    /** @var array<mixed> */
     private array $except = [];
 
     /** @var \Redis [MODIFIED] 声明 Redis 属性 */
@@ -34,7 +35,8 @@ class RateLimitMiddleware
 
     /**
      * [MODIFIED] 构造函数现在接收 \Redis 实例，而不是 $cacheDir.
-     */
+     * @param array<mixed> $config
+ */
     public function __construct(private array $config, object $redis)
     {
         $this->maxRequests = $config['maxRequests'] ?? $this->maxRequests;

@@ -44,7 +44,7 @@ trait CrudFilterTrait
      * 这是 insertInput() 的便捷方法，直接使用 Request 对象。
      *
      * @param Request $request HTTP 请求对象
-     * @return array 过滤后的数据数组，仅包含模型允许的字段
+     * @return array<mixed> 过滤后的数据数组，仅包含模型允许的字段
      */
     protected function insertInput(Request $request): array
     {
@@ -58,8 +58,8 @@ trait CrudFilterTrait
      * 通过 BaseController::input() 逐个获取字段，支持 XSS 过滤。
      * 适用于需要精细控制每个字段的场景。
      *
-     * @param array $fields 字段列表 ['field_name' => 'default_value']
-     * @return array 过滤后的数据数组
+     * @param array<mixed> $fields 字段列表 ['field_name' => 'default_value']
+     * @return array<mixed> 过滤后的数据数组
      */
     protected function insertInputByFields(array $fields): array
     {
@@ -76,9 +76,9 @@ trait CrudFilterTrait
      * 根据模型的字段定义过滤输入数据，移除不属于模型字段的数据。
      * 支持跳过指定的键名，用于处理特殊情况。
      *
-     * @param array $data 待过滤的原始数据数组
-     * @param array $skipKeys 需要跳过过滤的键名列表，这些键即使不在模型字段中也会被保留
-     * @return array 过滤后的数据数组
+     * @param array<mixed> $data 待过滤的原始数据数组
+     * @param array<mixed> $skipKeys 需要跳过过滤的键名列表，这些键即使不在模型字段中也会被保留
+     * @return array<mixed> 过滤后的数据数组
      */
     protected function inputFilter(array $data, array $skipKeys = []): array
     {

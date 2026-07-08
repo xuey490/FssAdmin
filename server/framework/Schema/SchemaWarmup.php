@@ -24,7 +24,7 @@ final class SchemaWarmup
     /** @var string 模型根命名空间 */
     private static string $modelBaseNamespace = '';
 
-    /** @var array 忽略的模型类 */
+    /** @var array<mixed> 忽略的模型类 */
     private static array $ignoreModels = [];
 
     /**
@@ -43,7 +43,7 @@ final class SchemaWarmup
     /**
      * 设置忽略的模型类
      *
-     * @param array $classes
+     * @param array<mixed> $classes
      */
     public static function ignore(array $classes): void
     {
@@ -73,8 +73,7 @@ final class SchemaWarmup
      *
      * @param string $path
      * @param string $namespace
-     * @return array
-     */
+     * @return array<mixed> */
     private static function scanModels(string $path, string $namespace): array
     {
         $classes = [];
@@ -99,7 +98,7 @@ final class SchemaWarmup
 
             // 忽略抽象类和非 BaseModel 子类
             if ($ref->isAbstract() ||
-                !$ref->isSubclassOf(\Framework\Utils\BaseModel::class) ||
+                !$ref->isSubclassOf(\Framework\Basic\BaseLaORMModel::class) ||
                 in_array($class, self::$ignoreModels, true)
             ) {
                 continue;
@@ -122,7 +121,7 @@ protected static function warmupModel(string $modelClass): void
 {
     // 支持动态别名 BaseModel
     if (!is_subclass_of($modelClass, Model::class) &&
-        !is_subclass_of($modelClass, \Framework\Utils\BaseModel::class)
+        !is_subclass_of($modelClass, \Framework\Basic\BaseLaORMModel::class)
     ) {
         return;
     }
@@ -183,11 +182,10 @@ protected static function warmupModel(string $modelClass): void
 /**
  * 加载表索引（增加表存在性判断）
  *
- * @param \Illuminate\Database\Connection $conn
+ * @param \Illuminate\Database\ConnectionInterface $conn
  * @param string $table
- * @return array
- */
-protected static function loadIndexes($conn, string $table): array
+ * @return array<mixed> */
+protected static function loadIndexes(\Illuminate\Database\ConnectionInterface $conn, string $table): array
 {
     $fullTableName = $conn->getTablePrefix() . $table;
     // 先查询所有表，判断目标表是否存在
@@ -220,8 +218,7 @@ protected static function loadIndexes($conn, string $table): array
      * 获取审计字段（演示示例，可根据 BaseModel 约定）
      *
      * @param string $modelClass
-     * @return array
-     */
+     * @return array<mixed> */
     protected static function resolveAuditFields(string $modelClass): array
     {
         $fields = [];

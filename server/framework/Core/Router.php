@@ -44,15 +44,16 @@ class Router
 
     // 核心依赖
     private RouteCollection $routes;
-    private ContainerInterface $container;
     private ?CacheInterface $cache = null; // PSR-16 缓存实例
     private string $controllerNamespace;
 
     // 编译后的元数据缓存 (Controller::Method => Metadata Array)
     // 生产环境可通过 loadMetadata 注入，避免运行时反射
+    /** @var array<mixed> */
     private array $compiledMetadata = [];
 
     // 运行时方法存在性缓存 (防止重复反射检查)
+    /** @var array<mixed> */
     private array $methodExistenceCache = [];
 
     // --- 安全策略配置 ---
@@ -61,9 +62,11 @@ class Router
     private bool $requireExplicitAction = false;
 
     // 允许自动路由的控制器命名空间前缀白名单 (为空代表不限制)
+    /** @var array<mixed> */
     private array $whitelist = [];
 
     // 禁止自动路由的控制器命名空间前缀黑名单
+    /** @var array<mixed> */
     private array $blacklist = [];
 
     /**
@@ -92,11 +95,9 @@ class Router
 
     public function __construct(
         RouteCollection $routes,
-        ContainerInterface $container,
         string $controllerNamespace = self::DEFAULT_CONTROLLER_NAMESPACE
     ) {
         $this->routes = $routes;
-        $this->container = $container;
         $this->controllerNamespace = rtrim($controllerNamespace, '\\');
     }
 
@@ -114,8 +115,8 @@ class Router
      * 设置安全策略
      *
      * @param bool $requireExplicitAction 是否开启显式 Action 模式
-     * @param array $whitelist 允许的命名空间前缀，例如 ['App\Controllers\Api']
-     * @param array $blacklist 禁止的命名空间前缀，例如 ['App\Controllers\Internal']
+     * @param array<mixed> $whitelist 允许的命名空间前缀，例如 ['App\Controllers\Api']
+     * @param array<mixed> $blacklist 禁止的命名空间前缀，例如 ['App\Controllers\Internal']
      */
     public function setSecurityPolicy(
         bool $requireExplicitAction = false,
@@ -179,7 +180,8 @@ class Router
     /**
      * 加载预编译的元数据
      * 生产环境应在引导阶段调用此方法，传入由 dumpMetadata 生成的数组
-     */
+     * @param array<mixed> $metadata
+ */
     public function loadMetadata(array $metadata): void
     {
         $this->compiledMetadata = $metadata;
@@ -188,7 +190,8 @@ class Router
     /**
      * 获取当前收集到的所有元数据
      * 用于构建脚本导出并缓存到文件
-     */
+     * @return array<mixed>
+ */
     public function dumpMetadata(): array
     {
         return $this->compiledMetadata;
@@ -196,6 +199,10 @@ class Router
 
     /**
      * 执行路由匹配
+
+     * @return ?array<mixed>
+    
+
      */
     public function match(Request $request): ?array
     {
@@ -244,6 +251,9 @@ class Router
 
     /**
      * 匹配 Symfony 定义的静态路由
+
+     * @return ?array<mixed> 
+
      */
     private function matchDefinedRoutes(
         string $path,
@@ -284,6 +294,10 @@ class Router
 
     /**
      * 匹配自动推断路由 /Controller/Action/Params
+
+     * @return ?array<mixed>
+    
+
      */
     private function matchAutoRoute(string $path, Request $request): ?array
     {
@@ -361,6 +375,10 @@ class Router
      * 匹配插件自动路由（仅在第一段命中插件标识时生效）
      *
      * @param array<int, string> $segments
+
+     * @return ?array<mixed>
+    
+
      */
     private function matchPluginAutoRoute(array $segments, string $httpMethod, Request $request): ?array
     {
@@ -413,6 +431,10 @@ class Router
      * 匹配应用自动路由 /admin/user/list => App\Admin\Controllers\UserController::list
      *
      * @param array<int, string> $segments
+
+     * @return ?array<mixed>
+    
+
      */
     private function matchAppAutoRoute(array $segments, string $httpMethod, Request $request): ?array
     {
@@ -468,6 +490,10 @@ class Router
      * 如 admin.example.com/user/list → App\Admin\Controllers\UserController::list
      *
      * @param array<int, string> $segments URL 路径段（已去除 prefix）
+
+     * @return ?array<mixed>
+    
+
      */
     private function matchDomainAppRoute(string $namespace, array $segments, string $httpMethod, Request $request): ?array
     {
@@ -503,7 +529,9 @@ class Router
 
     /**
      * 最终化路由：提取 Attribute，注入 Request，构建返回数组
-     */
+     * @param array<mixed> $params
+ * @return array<mixed>
+ */
     private function finalizeRoute(
         Request $request,
         string $controller,
@@ -577,7 +605,8 @@ class Router
 
     /**
      * 获取元数据：从预编译数组读取 或 实时扫描
-     */
+     * @return array<mixed>
+ */
     private function getMetadata(string $controller, string $method): array
     {
         $key = "{$controller}::{$method}";
@@ -592,7 +621,8 @@ class Router
 
     /**
      * 扫描 Attributes (Reflection)
-     */
+     * @return array<mixed>
+ */
     private function scanAttributes(string $controller, string $method): array
     {
         $middleware = [];
@@ -651,7 +681,9 @@ class Router
 
     /**
      * 从缓存恢复请求状态
-     */
+     * @param array<mixed> $cachedRoute
+ * @return array<mixed>
+ */
     private function restoreFromCache(Request $request, array $cachedRoute): array
     {
         // 恢复基本的 Request Attributes
@@ -691,7 +723,8 @@ class Router
 
     /**
      * 写入缓存
-     */
+     * @param array<mixed> $route
+ */
     private function saveToCache(string $key, array $route): void
     {
         if (!$this->cache) {
@@ -709,6 +742,12 @@ class Router
         return self::CACHE_KEY_PREFIX . md5($request->getMethod() . $request->getPathInfo());
     }
 
+    /**
+     * @param array<mixed> $segments
+
+     * @return ?string
+
+     */
     private function buildControllerClass(array $segments): ?string
     {
         $segments = array_map(
@@ -764,6 +803,12 @@ class Router
         return class_exists($fallback) ? $fallback : null;
     }
 
+    /**
+    * @param array<mixed> $segments
+
+    * @return ?array<mixed> 
+
+    */
     private function matchActionAndParams(
         string $controller,
         array $segments,
@@ -812,7 +857,8 @@ class Router
     /**
      * 获取控制器中有效的 public 方法列表
      * 应用 requireExplicitAction 策略
-     */
+     * @return array<mixed>
+ */
     private function getValidControllerMethods(string $class): array
     {
         if (isset($this->methodExistenceCache[$class])) {
@@ -845,12 +891,22 @@ class Router
         }
     }
 
+    /**
+     * @param array<mixed> $segments
+
+     * @return string
+
+     */
     private function buildActionName(array $segments): string
     {
         // convert ['user', 'profile'] to 'userProfile'
         return lcfirst(implode('', array_map('ucfirst', $segments)));
     }
 
+    /**
+    * @param array<mixed> $segments
+    * @return array<mixed>
+    */
     private function extractParams(array $segments): array
     {
         if (empty($segments)) {
@@ -878,6 +934,10 @@ class Router
         };
     }
 
+    /**
+    * @return ?array<mixed>
+    
+    */
     private function tryHomeController(Request $request): ?array
     {
         // 域名绑定应用优先：尝试域名对应应用的 HomeController
