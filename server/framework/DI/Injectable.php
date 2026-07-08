@@ -20,6 +20,7 @@ use Framework\DI\Attribute\Inject;
 use Framework\DI\Attribute\Autowire;
 use Framework\DI\Attribute\Context;
 use Framework\Core\App;
+use Framework\Utils\ReflectionTypes;
 use ReflectionClass;
 use ReflectionProperty;
 use RuntimeException;
@@ -89,7 +90,7 @@ trait Injectable
                         'reflection_property' => $property,
                         'property' => $property->getName(),
                         'attr'     => $inst,
-                        'type'     => $property->getType()?->getName(), // 获取属性类型声明
+                        'type'     => ReflectionTypes::asNamed($property->getType())?->getName(),
                     ];
                     // 一个属性只处理一个注入注解，处理完即跳出内层循环
                     break;

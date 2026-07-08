@@ -136,6 +136,7 @@ protected static function warmupModel(string $modelClass): void
 
     // 获取连接
     $connection = $model->getConnectionName() ?? $resolver->getDefaultConnection();
+    /** @var Connection $conn */
     $conn = $resolver->connection($connection);
     $schema = $conn->getSchemaBuilder();
 
@@ -182,10 +183,10 @@ protected static function warmupModel(string $modelClass): void
 /**
  * 加载表索引（增加表存在性判断）
  *
- * @param \Illuminate\Database\ConnectionInterface $conn
+ * @param Connection $conn
  * @param string $table
  * @return array<mixed> */
-protected static function loadIndexes(\Illuminate\Database\ConnectionInterface $conn, string $table): array
+protected static function loadIndexes(Connection $conn, string $table): array
 {
     $fullTableName = $conn->getTablePrefix() . $table;
     // 先查询所有表，判断目标表是否存在

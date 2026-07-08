@@ -24,6 +24,7 @@ use Framework\DI\Attribute\Inject;
 use Framework\DI\Attribute\Context;
 use ReflectionClass;
 use ReflectionException;
+use Framework\Utils\ReflectionTypes;
 use ReflectionProperty;
 use RuntimeException;
 
@@ -157,7 +158,7 @@ class AttributeInjector
                             'reflection' => $property,          // ReflectionProperty instance
                             'property'   => $property->getName(), // Property name as string
                             'attr'       => $inst,              // Attribute instance (Inject/Autowire/Context)
-                            'type'       => $property->getType()?->getName(), // Property type hint (nullable)
+                            'type'       => ReflectionTypes::asNamed($property->getType())?->getName(),
                         ];
                         // Only process the first injection attribute per property
                         // This prevents conflicts if multiple injection attributes are applied

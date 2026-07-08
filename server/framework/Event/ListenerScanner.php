@@ -19,6 +19,7 @@ namespace Framework\Event;
 use Framework\Event\Attribute\EventListener;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Framework\Utils\ReflectionTypes;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -126,9 +127,9 @@ class ListenerScanner
                         // 从方法参数获取: handle(UserLogin $event)
                         $params = $method->getParameters();
                         if (isset($params[0])) {
-                            $type = $params[0]->getType();
-                            if ($type && !$type->isBuiltin()) {
-                                $eventClass = $type->getName();
+                            $namedType = ReflectionTypes::asNamed($params[0]->getType());
+                            if ($namedType !== null && !$namedType->isBuiltin()) {
+                                $eventClass = $namedType->getName();
                             }
                         }
                     }

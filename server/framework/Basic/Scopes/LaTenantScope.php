@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Framework\Basic\Scopes;
 
+use Framework\Basic\BaseLaORMModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
@@ -161,8 +162,11 @@ class LaTenantScope implements Scope
 
         // fillable 中有 tenant_id，再通过 getFields 确认表结构
         try {
-            $fields = $model->getFields();
-            return in_array('tenant_id', $fields, true);
+            if ($model instanceof BaseLaORMModel) {
+                $fields = $model->getFields();
+                return in_array('tenant_id', $fields, true);
+            }
+            return true;
         } catch (\Throwable $e) {
             // 获取字段失败时，以 fillable 声明为准，返回 true
             return true;

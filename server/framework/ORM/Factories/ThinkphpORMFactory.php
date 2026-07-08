@@ -20,7 +20,7 @@ use Framework\Core\App;
 use Framework\ORM\Exception\Exception;
 use Framework\Utils\Arr;
 use think\Collection;
-use think\db\BaseQuery as Query;
+use think\db\Query;
 use think\facade\Db;
 use think\Model;
 use think\Paginator;
@@ -102,6 +102,7 @@ class ThinkphpORMFactory
      */
     private function buildQuery(array $where, bool $search = false, ?array $withoutScopes = null): Query
     {
+        /** @var Query $query */
         $query = $this->getModel()->db();
         if (!empty($withoutScopes)) {
             $this->applyScopeRemoval($query, $withoutScopes);
@@ -247,6 +248,7 @@ class ThinkphpORMFactory
      */
     public function selectModel(array $where, array|string $field = '*', int $page = 0, int $limit = 0, string $order = '', array $with = [], bool $search = false, ?array $withoutScopes = null): Query|Paginator
     {
+        /** @var Query $query */
         $query = $this->buildQuery($where, $search, $withoutScopes);
 
         $this->applyFields($query, $field);
@@ -332,6 +334,7 @@ class ThinkphpORMFactory
     public function get($id, array|string|null $field = null, ?array $with = [], string $order = '', ?array $withoutScopes = null): ?Model
     {
         $where = is_array($id) ? $id : [$this->getPk() => $id];
+        /** @var Query $query */
         $query = $this->buildQuery($where, false, $withoutScopes);
 
         if (!empty($with)) {
@@ -794,6 +797,7 @@ class ThinkphpORMFactory
      */
     public function decStockIncSales(array $where, int $num, string $stock = 'stock', string $sales = 'sales'): bool
     {
+        /** @var Query $query */
         $query = $this->buildQuery($where);
 
         // ThinkPHP 链式操作: where(...)->dec(字段, 值)->inc(字段, 值)->update()
@@ -820,6 +824,7 @@ class ThinkphpORMFactory
      */
     public function incStockDecSales(array $where, int $num, string $stock = 'stock', string $sales = 'sales'): bool
     {
+        /** @var Query $query */
         $query = $this->buildQuery($where);
 
         // 可选：检查销量是否足够减

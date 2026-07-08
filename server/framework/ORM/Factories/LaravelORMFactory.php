@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Framework\ORM\Factories;
 
+use Framework\Basic\BaseLaORMModel;
 use Framework\Core\App;
 use Framework\ORM\Exception\Exception;
 use Framework\Utils\Arr;
@@ -49,11 +50,15 @@ class LaravelORMFactory
 
     /**
      * 获取模型实例 (懒加载).
+     *
+     * @return BaseLaORMModel
      */
     public function getModel(): Model
     {
         if ($this->modelInstance) {
-            return $this->modelInstance;
+            /** @var BaseLaORMModel $instance */
+            $instance = $this->modelInstance;
+            return $instance;
         }
 
         try {
@@ -61,8 +66,10 @@ class LaravelORMFactory
             if (!class_exists($class)) {
                 throw new Exception($class . ' 不是一个有效的模型类');
             }
-            $this->modelInstance = App::make($class);
-            return $this->modelInstance;
+            /** @var BaseLaORMModel $instance */
+            $instance = App::make($class);
+            $this->modelInstance = $instance;
+            return $instance;
         } catch (Throwable $e) {
             throw new Exception('模型加载失败: ' . $e->getMessage());
         }
@@ -88,7 +95,7 @@ class LaravelORMFactory
     }
 
     /**
-    * @param \Illuminate\Database\Eloquent\Builder<\Illuminate\Database\Eloquent\Model> $query
+    * @param \Illuminate\Database\Eloquent\Builder<BaseLaORMModel> $query
     * @param array<mixed> $where
     */
     private function applyConditions(Builder $query, array $where): void
@@ -114,7 +121,7 @@ class LaravelORMFactory
 
     /**
     * @param array<mixed> $where
-    * @return \Illuminate\Database\Eloquent\Builder<\Illuminate\Database\Eloquent\Model>
+    * @return \Illuminate\Database\Eloquent\Builder<BaseLaORMModel>
     */
     private function buildQuery(array $where = []): Builder
     {
@@ -127,7 +134,7 @@ class LaravelORMFactory
     }
 
     /**
-    * @param \Illuminate\Database\Eloquent\Builder<\Illuminate\Database\Eloquent\Model> $query
+    * @param \Illuminate\Database\Eloquent\Builder<BaseLaORMModel> $query
     * @param  array<mixed>|string  $field
     */
     private function applyFields(Builder $query, array|string $field): void
@@ -204,7 +211,7 @@ class LaravelORMFactory
      * @param bool $search
      * @param array<mixed>|null $withoutScopes
      *
-     * @return \Illuminate\Database\Eloquent\Builder<\Illuminate\Database\Eloquent\Model>|\Illuminate\Database\Query\Builder|\Illuminate\Pagination\LengthAwarePaginator<(int|string), mixed>|null
+     * @return \Illuminate\Database\Eloquent\Builder<BaseLaORMModel>|\Illuminate\Database\Query\Builder|\Illuminate\Pagination\LengthAwarePaginator<(int|string), mixed>|null
      * @throws Exception
      */
     public function selectModel(array $where, array|string $field = '*', int $page = 0, int $limit = 0, string $order = '', array $with = [], bool $search = false, ?array $withoutScopes = null): Builder|\Illuminate\Database\Query\Builder|LengthAwarePaginator|null
@@ -544,7 +551,7 @@ class LaravelORMFactory
      */
     public function batchUpdate(array $ids, array $data, ?string $key = null): bool
     {
-        return $this->getModel()->whereIn(is_null($key) ? $this->getPk() : $key, $ids)->update($data);
+        return $this->getModel()->newQuery()->whereIn(is_null($key) ? $this->getPk() : $key, $ids)->update($data) > 0;
     }
 
     /**
@@ -690,7 +697,7 @@ class LaravelORMFactory
      * @param array<mixed> $where
      * @param bool  $search
      *
-     * @return \Illuminate\Database\Eloquent\Builder<\Illuminate\Database\Eloquent\Model>
+     * @return \Illuminate\Database\Eloquent\Builder<BaseLaORMModel>
      * @throws Exception
      */
     protected function withSearchSelect(array $where, bool $search): mixed
@@ -826,7 +833,8 @@ class LaravelORMFactory
     {
         // 获取模型实例
         $model = $this->getModel();
-        $query = $keyField ? $model->where($keyField, $key) : $model->where('id', $key);
+        $query = $model->newQuery();
+        $query = $keyField ? $query->where($keyField, $key) : $query->where('id', $key);
         return $query->update([$incField => DB::raw("COALESCE($incField, 0) + CAST($inc AS DECIMAL(10, $acc))")]) > 0;
     }
 
@@ -1014,6 +1022,6 @@ class LaravelORMFactory
      */
     public function tableExists($table): bool
     {
-        return DB::schema()->hasTable($table);
+        return DB::connection()->getSchemaBuilder()->hasTable((string) $table);
     }
 }

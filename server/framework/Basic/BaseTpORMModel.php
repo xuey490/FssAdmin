@@ -39,6 +39,8 @@ use Framework\Tenant\TenantContext;
  * - $updateTime: 更新时间字段名（默认 'update_time'，设为 null 则不使用）
  * - $deleteTime: 软删除时间字段名（默认 'delete_time'，设为 null 则不使用）
  *
+ * @method static \think\db\BaseQuery onlyTrashed()
+ *
  * @package Framework\Basic
  */
 class BaseTpORMModel extends TpModel

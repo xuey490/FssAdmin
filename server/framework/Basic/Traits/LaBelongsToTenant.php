@@ -86,7 +86,7 @@ trait LaBelongsToTenant
      * 用法示例：
      *   User::withoutTenancy()->get(); // 获取所有租户的用户
      *
-     * @return \Illuminate\Database\Eloquent\Builder<\Illuminate\Database\Eloquent\Model>
+     * @return \Illuminate\Database\Eloquent\Builder<static>
      */
     public static function withoutTenancy()
     {

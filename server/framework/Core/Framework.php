@@ -24,6 +24,7 @@ use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Framework\Utils\ReflectionTypes;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
@@ -757,8 +758,9 @@ final class Framework
             }
 
             // 内置类型转换
-            if ($value !== null && $type !== null && $type->isBuiltin()) {
-                $typedName = $type->getName();
+            $namedType = ReflectionTypes::asNamed($type);
+            if ($value !== null && $namedType !== null && $namedType->isBuiltin()) {
+                $typedName = $namedType->getName();
                 $value     = $this->castValueToType($value, $typedName);
                 $this->request->attributes->set($paramName, $value);
             }

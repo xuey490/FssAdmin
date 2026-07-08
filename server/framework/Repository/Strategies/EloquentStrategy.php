@@ -32,25 +32,25 @@ class EloquentStrategy implements OrmStrategyInterface
 
     public function transaction(\Closure $callback): mixed
     {
-        return \Illuminate\Database\Capsule\Manager::transaction($callback);
+        return \Illuminate\Support\Facades\DB::transaction($callback);
     }
 
     /**
-    * @param array<mixed> $bindings
-    * @return array<mixed>
+    * @param array<int|string, mixed> $bindings
+    * @return array<int, mixed>
     */
     public function query(string $sql, array $bindings): array
     {
-        $result = \Illuminate\Database\Capsule\Manager::select($sql, $bindings);
+        $result = \Illuminate\Support\Facades\DB::select($sql, $bindings);
         return array_map(fn($item) => (array) $item, $result);
     }
 
     /**
-    * @param array<mixed> $bindings
+    * @param array<int|string, mixed> $bindings
     */
     public function execute(string $sql, array $bindings): int
     {
-        return \Illuminate\Database\Capsule\Manager::affectingStatement($sql, $bindings);
+        return \Illuminate\Support\Facades\DB::affectingStatement($sql, $bindings);
     }
 }
 

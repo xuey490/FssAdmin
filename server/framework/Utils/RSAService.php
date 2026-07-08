@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Framework\Utils;
 
 use phpseclib3\Crypt\RSA;
+use phpseclib3\Crypt\RSA\PrivateKey;
+use phpseclib3\Crypt\RSA\PublicKey;
 use phpseclib3\Crypt\PublicKeyLoader;
 
 /**
@@ -57,7 +59,9 @@ class RSAService
      */
     public static function sign(string $data, string $privatePem): string
     {
-        $privateKey = PublicKeyLoader::loadPrivateKey($privatePem)
+        /** @var PrivateKey $privateKey */
+        $privateKey = PublicKeyLoader::loadPrivateKey($privatePem);
+        $privateKey = $privateKey
             ->withHash('sha256')
             ->withPadding(RSA::SIGNATURE_PKCS1);
 
@@ -75,7 +79,9 @@ class RSAService
      */
     public static function verify(string $data, string $signature, string $publicPem): bool
     {
-        $publicKey = PublicKeyLoader::load($publicPem)
+        /** @var PublicKey $publicKey */
+        $publicKey = PublicKeyLoader::load($publicPem);
+        $publicKey = $publicKey
             ->withHash('sha256')
             ->withPadding(RSA::SIGNATURE_PKCS1);
 
@@ -92,7 +98,9 @@ class RSAService
      */
     public static function encrypt(string $data, string $publicPem): string
     {
-        $publicKey = PublicKeyLoader::load($publicPem)->withPadding(RSA::ENCRYPTION_PKCS1);
+        /** @var PublicKey $publicKey */
+        $publicKey = PublicKeyLoader::load($publicPem);
+        $publicKey = $publicKey->withPadding(RSA::ENCRYPTION_PKCS1);
         return base64_encode($publicKey->encrypt($data));
     }
 
@@ -106,8 +114,9 @@ class RSAService
      */
     public static function decrypt(string $cipherBase64, string $privatePem): string
     {
-        $privateKey = PublicKeyLoader::loadPrivateKey($privatePem)
-            ->withPadding(RSA::ENCRYPTION_PKCS1);
+        /** @var PrivateKey $privateKey */
+        $privateKey = PublicKeyLoader::loadPrivateKey($privatePem);
+        $privateKey = $privateKey->withPadding(RSA::ENCRYPTION_PKCS1);
 
         $cipher = base64_decode($cipherBase64);
         return $privateKey->decrypt($cipher);
