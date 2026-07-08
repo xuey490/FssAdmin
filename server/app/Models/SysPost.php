@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-19
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -34,7 +35,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property \DateTime   $updated_at  更新时间
  *
  * @property-read SysUser[]  $users   岗位下的用户
- */
+ 
+ * @property string $create_time
+ * @property string $update_time
+ * @property string $delete_time
+ * @property mixed $deleted_at
+ * @property mixed $enabled
+*/
 class SysPost extends BaseLaORMModel
 {
     use SoftDeletes;
@@ -42,12 +49,14 @@ class SysPost extends BaseLaORMModel
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected $table = 'sa_system_post';
 
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
     /**
@@ -59,7 +68,8 @@ class SysPost extends BaseLaORMModel
 
     /**
      * 可填充字段
-     * @var array
+     * @var array<int, string>
+     * @return mixed
      */
     protected $fillable = [
         'name',
@@ -74,7 +84,8 @@ class SysPost extends BaseLaORMModel
 
     /**
      * 类型转换
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected $casts = [
         'id' => 'integer',
@@ -101,7 +112,7 @@ class SysPost extends BaseLaORMModel
     /**
      * 岗位下的用户 (多对多)
      *
-     * @return BelongsToMany
+     * @return BelongsToMany<SysUser, $this>
      */
     public function users(): BelongsToMany
     {
@@ -166,7 +177,7 @@ class SysPost extends BaseLaORMModel
     /**
      * 获取岗位下的用户ID列表
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getUserIds(): array
     {

@@ -12,21 +12,26 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use Framework\Basic\BaseDao;
 use Framework\Basic\BaseService;
 
 /**
  * RedisMonitorService Redis监控服务
+ *
+ * @extends BaseService<BaseDao>
  */
 class RedisMonitorService extends BaseService
 {
     /**
      * Redis客户端
      * @var mixed
+     * @return mixed
      */
-    protected $redis = null;
+    public $redis = null;
 
     /**
      * 构造函数
+     * @return mixed
      */
     public function __construct()
     {
@@ -71,7 +76,7 @@ class RedisMonitorService extends BaseService
     /**
      * 获取Redis服务器信息
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getServerInfo(): array
     {
@@ -129,7 +134,7 @@ class RedisMonitorService extends BaseService
         }
 
         try {
-            return (int)$this->redis->info('server')['uptime_in_seconds'] ?? 0;
+            return (int)$this->redis->info('server')['uptime_in_seconds'];
         } catch (\Exception $e) {
             return 0;
         }
@@ -147,7 +152,7 @@ class RedisMonitorService extends BaseService
         }
 
         try {
-            return (int)$this->redis->info('clients')['connected_clients'] ?? 0;
+            return (int)$this->redis->info('clients')['connected_clients'];
         } catch (\Exception $e) {
             return 0;
         }
@@ -156,7 +161,7 @@ class RedisMonitorService extends BaseService
     /**
      * 获取内存信息
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getMemoryInfo(): array
     {
@@ -182,7 +187,7 @@ class RedisMonitorService extends BaseService
     /**
      * 获取持久化信息
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getPersistenceInfo(): array
     {
@@ -206,7 +211,7 @@ class RedisMonitorService extends BaseService
     /**
      * 获取统计信息
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getStatsInfo(): array
     {
@@ -234,6 +239,9 @@ class RedisMonitorService extends BaseService
      *
      * @return array
      */
+    /**
+     * @return array<array-key, mixed>
+     */
     public function getCpuInfo(): array
     {
         if (!$this->isConnected()) {
@@ -256,7 +264,7 @@ class RedisMonitorService extends BaseService
     /**
      * 获取命令统计
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getCommandStats(): array
     {
@@ -275,7 +283,7 @@ class RedisMonitorService extends BaseService
     /**
      * 获取数据库大小
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getDbSize(): array
     {
@@ -304,7 +312,7 @@ class RedisMonitorService extends BaseService
     /**
      * 获取完整监控信息
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getFullInfo(): array
     {
@@ -444,6 +452,8 @@ class RedisMonitorService extends BaseService
      * @param int $bytes 字节数
      * @return string
      */
+    /**
+     */
     protected function formatBytes(int $bytes): string
     {
         if ($bytes < 1024) {
@@ -463,7 +473,7 @@ class RedisMonitorService extends BaseService
      * 解析Redis INFO命令响应
      *
      * @param string $infoRaw Redis INFO命令的原始响应
-     * @return array 解析后的键值对数组
+     * @return array<array-key, mixed> 解析后的键值对数组
      */
     protected function parseRedisInfo(string $infoRaw): array
     {
@@ -524,6 +534,8 @@ class RedisMonitorService extends BaseService
      *
      * @return int
      */
+    /**
+     */
     public function getDbSizeInfo(): int
     {
         if (!$this->isConnected()) {
@@ -542,7 +554,7 @@ class RedisMonitorService extends BaseService
      *
      * @param string $pattern 匹配模式，默认 *
      * @param int $count 每次扫描数量
-     * @return array 分组后的键列表
+     * @return array<array-key, mixed> 分组后的键列表
      */
     public function scanKeys(string $pattern = '*', int $count = 1000): array
     {
@@ -568,7 +580,7 @@ class RedisMonitorService extends BaseService
      * 获取键的层级结构（第一级）
      *
      * @param string $pattern 匹配模式
-     * @return array 第一级键前缀列表
+     * @return array<array-key, mixed> 第一级键前缀列表
      */
     public function getFirstLevelKeys(string $pattern = '*'): array
     {
@@ -598,7 +610,7 @@ class RedisMonitorService extends BaseService
      * 获取指定前缀的第二级键
      *
      * @param string $prefix 第一级前缀
-     * @return array 第二级键列表
+     * @return array<array-key, mixed> 第二级键列表
      */
     public function getSecondLevelKeys(string $prefix): array
     {
@@ -629,7 +641,7 @@ class RedisMonitorService extends BaseService
      * 获取指定前缀的第三级键
      *
      * @param string $prefix 第二级前缀
-     * @return array 第三级键列表
+     * @return array<array-key, mixed> 第三级键列表
      */
     public function getThirdLevelKeys(string $prefix): array
     {
@@ -706,7 +718,7 @@ class RedisMonitorService extends BaseService
      * 获取键的详细信息
      *
      * @param string $key
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getKeyInfo(string $key): array
     {
@@ -778,6 +790,8 @@ class RedisMonitorService extends BaseService
      * @param string $pattern
      * @return int 删除的键数量
      */
+                /**
+                 */
     public function deleteKeysByPattern(string $pattern): int
     {
         if (!$this->isConnected()) {
@@ -795,5 +809,54 @@ class RedisMonitorService extends BaseService
             return 0;
         }
     }
-}
 
+    /**
+     * 获取 Redis 完整监控信息（供 SystemController.redisInfo 使用）
+     *
+     * @return array<array-key, mixed>
+     */
+    public function getRedisInfo(): array
+    {
+        return $this->getFullInfo();
+    }
+
+    /**
+     * 获取 Redis 命令/操作统计（供 SystemController.redisOperations 使用）
+     *
+     * @return array<array-key, mixed>
+     */
+    public function getOperations(): array
+    {
+        return $this->getCommandStats();
+    }
+
+    /**
+     * 获取匹配模式的键列表（供 SystemController.redisKeys 使用）
+     *
+     * @param string $pattern
+     * @return array<int, string>
+     */
+    public function getKeys(string $pattern = '*'): array
+    {
+        return $this->scanKeys($pattern);
+    }
+
+    /**
+     * 批量删除指定键（供 SystemController.deleteRedisKeys 使用）
+     *
+     * @param array<int, string> $keys
+     * @return int 删除的键数量
+     */
+    public function deleteKeys(array $keys): int
+    {
+        if (!$this->isConnected() || empty($keys)) {
+            return 0;
+        }
+
+        try {
+            return (int) $this->redis->del($keys);
+        } catch (\Exception $e) {
+            return 0;
+        }
+    }
+}

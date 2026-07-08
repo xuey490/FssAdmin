@@ -48,7 +48,7 @@ class SysMenuDao extends BaseDao
      *
      * @param int $page  页码
      * @param int $limit 每页数量
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getEnabledList(int $page = 1, int $limit = 20): array
     {
@@ -58,7 +58,7 @@ class SysMenuDao extends BaseDao
     /**
      * 获取所有启用的菜单
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getAllEnabled(): array
     {
@@ -69,7 +69,7 @@ class SysMenuDao extends BaseDao
      * 获取子菜单列表
      *
      * @param int $parentId 父菜单ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getChildrenByParentId(int $parentId): array
     {
@@ -80,7 +80,7 @@ class SysMenuDao extends BaseDao
      * 根据菜单类型获取菜单列表
      *
      * @param int $menuType 菜单类型
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getListByMenuType(int $menuType): array
     {
@@ -90,7 +90,7 @@ class SysMenuDao extends BaseDao
     /**
      * 获取目录和菜单类型列表 (用于分配权限)
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getDirectoryAndMenuList(): array
     {
@@ -110,7 +110,7 @@ class SysMenuDao extends BaseDao
      * 获取按钮类型列表 (用于按钮权限)
      *
      * @param int $parentId 父菜单ID (可选)
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getButtonList(int $parentId = 0): array
     {
@@ -136,7 +136,7 @@ class SysMenuDao extends BaseDao
     /**
      * 获取菜单总数
      *
-     * @param array $where 条件
+     * @param array<array-key, mixed> $where 条件
      * @return int
      */
     public function getMenuCount(array $where = []): int
@@ -147,8 +147,8 @@ class SysMenuDao extends BaseDao
     /**
      * 获取菜单ID列表
      *
-     * @param array $where 条件
-     * @return array
+     * @param array<array-key, mixed> $where 条件
+     * @return array<array-key, mixed>
      */
     public function getMenuIds(array $where = []): array
     {
@@ -169,8 +169,8 @@ class SysMenuDao extends BaseDao
     /**
      * 根据菜单ID列表获取菜单
      *
-     * @param array $menuIds 菜单ID数组
-     * @return array
+     * @param array<array-key, mixed> $menuIds 菜单ID数组
+     * @return array<array-key, mixed>
      */
     public function getByIds(array $menuIds): array
     {
@@ -183,8 +183,8 @@ class SysMenuDao extends BaseDao
     /**
      * 获取用户可见菜单
      *
-     * @param array $menuIds 菜单ID数组
-     * @return array
+     * @param array<array-key, mixed> $menuIds 菜单ID数组
+     * @return array<array-key, mixed>
      */
     public function getVisibleMenus(array $menuIds): array
     {

@@ -13,6 +13,9 @@ use App\Models\Users;
 class UserDao extends BaseDao
 {
     // 自定义租户字段（可选，默认 tenant_id）
+    /**
+     * @return mixed
+     */
     protected string $tenantField = 'tenant_id';
 	
     /**
@@ -29,8 +32,8 @@ class UserDao extends BaseDao
      * 【扩展方法】根据租户ID查询用户列表
      * 演示：在基础 CURD 外封装业务查询逻辑
      * @param int $tenantId
-     * @param array $where
-     * @return array
+     * @param array<array-key, mixed> $where
+     * @return array<array-key, mixed>
      */
     public function getListByTenantId(int $tenantId, array $where = []): array
     {

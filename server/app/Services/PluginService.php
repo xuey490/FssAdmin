@@ -14,6 +14,7 @@ class PluginService
 {
     /**
      * 插件诊断信息
+     * @return array<array-key, mixed>
      */
     public function doctor(?string $pluginName = null): array
     {
@@ -81,6 +82,7 @@ class PluginService
 
     /**
      * 获取插件列表（已发现 + 已安装状态）
+     * @return array<array-key, mixed>
      */
     public function getList(): array
     {
@@ -114,6 +116,9 @@ class PluginService
     /**
      * 获取插件详情
      */
+    /**
+     * @return array<array-key, mixed>
+     */
     public function getDetail(string $name): array
     {
         $manager = $this->createManager();
@@ -136,6 +141,8 @@ class PluginService
 
     /**
      * 创建本地插件骨架
+     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $payload
      */
     public function createPlugin(array $payload): array
     {
@@ -212,6 +219,8 @@ use Symfony\\Component\\HttpFoundation\\Request;
 class IndexController extends BaseController
 {
     #[Route(path: '/api/{$name}', methods: ['GET'], name: '{$name}.index')]
+    /**
+     */
     public function index(Request \$request): BaseJsonResponse
     {
         return \$this->success([
@@ -242,6 +251,9 @@ PHP;
     /**
      * 安装插件（可自动安装依赖）
      */
+        /**
+     * @return array<array-key, mixed>
+         */
     public function install(string $name, bool $autoInstallDependencies = true, bool $force = false): array
     {
         $manager = $this->createManager();
@@ -268,6 +280,9 @@ PHP;
     /**
      * 卸载插件
      */
+        /**
+     * @return array<array-key, mixed>
+         */
     public function uninstall(string $name, bool $force = false): array
     {
         $manager = $this->createManager();
@@ -277,6 +292,9 @@ PHP;
     /**
      * 启用插件
      */
+    /**
+     * @return array<array-key, mixed>
+     */
     public function enable(string $name): array
     {
         $manager = $this->createManager();
@@ -285,6 +303,7 @@ PHP;
 
     /**
      * 禁用插件
+     * @return array<array-key, mixed>
      */
     public function disable(string $name): array
     {
@@ -295,6 +314,9 @@ PHP;
     /**
      * 获取插件配置
      */
+        /**
+     * @return array<array-key, mixed>
+         */
     public function getConfig(string $name): array
     {
         $manager = $this->createManager();
@@ -308,6 +330,10 @@ PHP;
     /**
      * 更新插件配置
      */
+        /**
+     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $config
+         */
     public function updateConfig(string $name, array $config): array
     {
         $manager = $this->createManager();
@@ -330,6 +356,10 @@ PHP;
      *
      * @param array{name:string,tmp_name:string} $file
      */
+/**
+     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $file
+ */
     public function uploadAndInstall(array $file): array
     {
         $tmpPath = (string)($file['tmp_name'] ?? '');
@@ -386,6 +416,11 @@ PHP;
      * @param array<string, bool> $resolved
      * @param array<string, bool> $stack
      */
+            /**
+     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $resolved
+     * @param array<array-key, mixed> $stack
+             */
     private function installWithDependencies(PluginManager $manager, string $name, array &$resolved, array $stack): array
     {
         if (isset($resolved[$name])) {
@@ -457,6 +492,9 @@ PHP;
         return $manager;
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     private function loadPluginConfig(): array
     {
         $file = BASE_PATH . '/config/plugin/plugins.php';

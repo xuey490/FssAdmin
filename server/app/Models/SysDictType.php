@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-12
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -31,7 +32,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property \DateTime   $deleted_at 删除时间
  *
  * @property-read SysDictData[] $dictData 字典数据列表
- */
+ 
+ * @property mixed $name
+ * @property mixed $code
+ * @property string $create_time
+ * @property string $update_time
+ * @property string $delete_time
+ * @property mixed $tenant_id
+*/
 class SysDictType extends BaseLaORMModel
 {
     use SoftDeletes;
@@ -39,12 +47,14 @@ class SysDictType extends BaseLaORMModel
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected $table = 'sa_system_dict_type';
 
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
     /**
@@ -56,7 +66,8 @@ class SysDictType extends BaseLaORMModel
 
     /**
      * 可填充字段
-     * @var array
+     * @var array<int, string>
+     * @return mixed
      */
     protected $fillable = [
         'name',
@@ -69,7 +80,8 @@ class SysDictType extends BaseLaORMModel
 
     /**
      * 类型转换
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected $casts = [
         'id' => 'integer',
@@ -94,7 +106,7 @@ class SysDictType extends BaseLaORMModel
     /**
      * 字典数据列表
      *
-     * @return HasMany
+     * @return HasMany<SysDictData, $this>
      */
     public function dictData(): HasMany
     {
@@ -117,7 +129,7 @@ class SysDictType extends BaseLaORMModel
      * 根据字典编码获取字典数据
      *
      * @param string $dictCode 字典编码
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getDataByCode(string $dictCode): array
     {

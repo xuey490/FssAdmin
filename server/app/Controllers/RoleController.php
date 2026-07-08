@@ -32,6 +32,7 @@ class RoleController extends BaseController
     /**
      * 角色服务
      * @var SysRoleService
+     * @return mixed
      */
     protected SysRoleService $roleService;
 

@@ -69,10 +69,10 @@ class SysUserDao extends BaseDao
      * 根据部门ID获取用户列表
      *
      * @param int   $deptId 部门ID
-     * @param array $where  额外条件
+     * @param array<array-key, mixed> $where  额外条件
      * @param int   $page   页码
      * @param int   $limit  每页数量
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getListByDeptId(int $deptId, array $where = [], int $page = 1, int $limit = 20): array
     {
@@ -85,7 +85,7 @@ class SysUserDao extends BaseDao
      *
      * @param int $page  页码
      * @param int $limit 每页数量
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getEnabledList(int $page = 1, int $limit = 20): array
     {
@@ -166,7 +166,7 @@ class SysUserDao extends BaseDao
     /**
      * 获取用户总数
      *
-     * @param array $where 条件
+     * @param array<array-key, mixed> $where 条件
      * @return int
      */
     public function getUserCount(array $where = []): int
@@ -178,7 +178,7 @@ class SysUserDao extends BaseDao
      * 获取部门下的用户ID列表
      *
      * @param int $deptId 部门ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getUserIdsByDeptId(int $deptId): array
     {

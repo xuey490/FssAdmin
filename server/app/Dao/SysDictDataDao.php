@@ -34,7 +34,7 @@ class SysDictDataDao extends BaseDao
      * 根据字典类型ID获取数据列表
      *
      * @param int $dictTypeId 字典类型ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getListByDictTypeId(int $dictTypeId): array
     {
@@ -51,7 +51,7 @@ class SysDictDataDao extends BaseDao
      * 根据字典编码获取数据列表
      *
      * @param string $dictCode 字典编码
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getListByDictCode(string $dictCode): array
     {

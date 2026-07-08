@@ -12,22 +12,27 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use Framework\Basic\BaseDao;
 use Framework\Basic\BaseService;
 
 /**
  * IpLocationService IP地理位置服务
+ *
+ * @extends BaseService<BaseDao>
  */
 class IpLocationService extends BaseService
 {
     /**
      * 缓存前缀
      * @var string
+     * @return mixed
      */
     protected string $cachePrefix = 'ip_location:';
 
     /**
      * 缓存时间(秒)
      * @var int
+     * @return mixed
      */
     protected int $cacheTtl = 86400;
 
@@ -202,7 +207,7 @@ class IpLocationService extends BaseService
     }
 
     /**
-     * @return array{0:string,1:int,2:int,3:string}
+     * @return array{0: string, 1: int, 2: int, 3: string}
      */
     protected function httpGet(string $url): array
     {
@@ -230,8 +235,8 @@ class IpLocationService extends BaseService
     /**
      * 批量获取IP地理位置
      *
-     * @param array $ips IP数组
-     * @return array
+     * @param array<array-key, mixed> $ips IP数组
+     * @return array<array-key, mixed>
      */
     public function getLocations(array $ips): array
     {

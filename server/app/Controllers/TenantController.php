@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /**
  * 租户管理控制器
- *
+ * Date: 2026-5-29
  * @package App\Controllers
  */
 
@@ -20,6 +20,9 @@ use Symfony\Component\HttpFoundation\Request;
 
 class TenantController extends BaseController
 {
+    /**
+     * @return mixed
+     */
     protected SysTenantService $tenantService;
 
     /**
@@ -114,7 +117,7 @@ class TenantController extends BaseController
 
         try {
             $tenant = $this->tenantService->create($data, $this->getOperatorId($request));
-            return $this->success(['id' => $tenant?->id ?? 0], '创建成功');
+            return $this->success(['id' => $tenant->id ?? 0], '创建成功');
         } catch (\Throwable $e) {
             return $this->fail($e->getMessage());
         }

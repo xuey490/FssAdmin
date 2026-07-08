@@ -17,9 +17,8 @@ class ValidateMiddleware
     {
         // 1. 获取注解配置
         // (假设 MiddlewareDispatcher 已经将注解实例注入到了 request attributes)
-        /** @var Validate|null $attr */
         //$attr = $request->attributes->get(Validate::class);
-		
+
         $attributes = $request->attributes->get('_attributes', []);
 
         $attr = $attributes[Validate::class] ?? null;
@@ -64,6 +63,7 @@ class ValidateMiddleware
 
     /**
      * 获取请求数据 (兼容 GET/POST/JSON)
+     * @return array<array-key, mixed>
      */
     private function getRequestData(Request $request): array
     {

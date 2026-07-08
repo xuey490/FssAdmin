@@ -25,8 +25,8 @@ class ToolGenerateTableDao extends BaseDao
     /**
      * 分页获取代码生成表列表
      *
-     * @param array $params 查询参数（table_name/source/page/limit）
-     * @return array [list, total]
+     * @param array<array-key, mixed> $params 查询参数（table_name/source/page/limit）
+     * @return array<array-key, mixed> [list, total]
      */
     public function getPageList(array $params = []): array
     {
@@ -67,7 +67,7 @@ class ToolGenerateTableDao extends BaseDao
     /**
      * 批量删除（软删除）
      *
-     * @param array $ids
+     * @param array<array-key, mixed> $ids
      * @return int 删除数量
      */
     public function batchDeleteByIds(array $ids): int

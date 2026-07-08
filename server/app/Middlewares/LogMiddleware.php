@@ -46,7 +46,6 @@ class LogMiddleware
         $startTime = microtime(true);
 
         // 2. 执行后续业务逻辑，获取响应对象
-        /** @var Response $response */
         $response = $next($request);
 
         // 3. 计算耗时 (毫秒)
@@ -84,6 +83,7 @@ class LogMiddleware
 
     /**
      * 获取并过滤请求参数 (支持 Query, Post, Json)
+     * @return array<array-key, mixed>
      */
     private function getFilteredParams(Request $request): array
     {

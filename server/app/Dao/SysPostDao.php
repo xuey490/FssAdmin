@@ -48,7 +48,7 @@ class SysPostDao extends BaseDao
      *
      * @param int $page  页码
      * @param int $limit 每页数量
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getEnabledList(int $page = 1, int $limit = 20): array
     {
@@ -58,7 +58,7 @@ class SysPostDao extends BaseDao
     /**
      * 获取所有启用的岗位
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getAllEnabled(): array
     {
@@ -96,7 +96,7 @@ class SysPostDao extends BaseDao
     /**
      * 获取岗位总数
      *
-     * @param array $where 条件
+     * @param array<array-key, mixed> $where 条件
      * @return int
      */
     public function getPostCount(array $where = []): int
@@ -107,8 +107,8 @@ class SysPostDao extends BaseDao
     /**
      * 获取岗位ID列表
      *
-     * @param array $where 条件
-     * @return array
+     * @param array<array-key, mixed> $where 条件
+     * @return array<array-key, mixed>
      */
     public function getPostIds(array $where = []): array
     {

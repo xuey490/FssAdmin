@@ -22,17 +22,20 @@ use Symfony\Component\HttpFoundation\Request;
  * SysDeptService 部门服务
  *
  * 处理部门相关的业务逻辑
+  * @extends BaseService<SysDeptDao>
  */
 class SysDeptService extends BaseService
 {
     /**
      * DAO 实例
      * @var SysDeptDao
+     * @return mixed
      */
     protected SysDeptDao $deptDao;
 
     /**
      * 构造函数
+     * @return mixed
      */
     public function __construct()
     {
@@ -86,7 +89,7 @@ class SysDeptService extends BaseService
     /**
      * 获取所有启用的部门（扁平列表，用于下拉选择）
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getAllEnabled(): array
     {
@@ -109,8 +112,8 @@ class SysDeptService extends BaseService
     /**
      * 获取部门列表
      *
-     * @param array $params 查询参数
-     * @return array
+     * @param array<array-key, mixed> $params 查询参数
+     * @return array<array-key, mixed>
      */
     public function getList(array $params): array
     {
@@ -147,11 +150,11 @@ class SysDeptService extends BaseService
     /**
      * 从树中递归过滤，保留匹配节点及其所有子节点
      *
-     * @param array  $tree      树形数据
+     * @param array<array-key, mixed>  $tree      树形数据
      * @param string $deptName  部门名称关键词
      * @param string $deptCode  部门编码关键词
      * @param string $status    状态
-     * @return array
+     * @return array<array-key, mixed>
      */
     protected function filterTree(array $tree, string $deptName, string $deptCode, mixed $status): array
     {
@@ -212,6 +215,10 @@ class SysDeptService extends BaseService
      * @param int   $parentId 父级ID
      * @return array
      */
+    /**
+     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $list
+     */
     protected function buildTree(array $list, int $parentId = 0): array
     {
         $tree = [];
@@ -233,6 +240,9 @@ class SysDeptService extends BaseService
      *
      * @return array
      */
+    /**
+     * @return array<array-key, mixed>
+     */
     public function getDeptTree(): array
     {
         // 如果是超级管理员，查询所有部门（不过滤租户）
@@ -250,6 +260,9 @@ class SysDeptService extends BaseService
      * 获取部门选择树（带 label 字段，适配前端 ElTreeSelect）
      *
      * @return array
+     */
+    /**
+     * @return array<array-key, mixed>
      */
     public function getSelectTree(): array
     {
@@ -276,6 +289,10 @@ class SysDeptService extends BaseService
      * @param int   $parentId 父ID
      * @return array
      */
+            /**
+     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $list
+             */
     protected function buildSelectTree(array $list, int $parentId = 0): array
     {
         $tree = [];
@@ -304,6 +321,9 @@ class SysDeptService extends BaseService
      * @param int $parentId 父部门ID
      * @return array
      */
+            /**
+     * @return array<array-key, mixed>
+             */
     public function getAccessDeptTree(int $parentId = 0): array
     {
         $query = SysDept::where('parent_id', $parentId)
@@ -343,6 +363,9 @@ class SysDeptService extends BaseService
      * @param int $deptId 部门ID
      * @return array|null
      */
+        /**
+     * @return array<array-key, mixed>|null
+         */
     public function getDetail(int $deptId): ?array
     {
         $dept = SysDept::find($deptId);
@@ -370,6 +393,9 @@ class SysDeptService extends BaseService
      * @param int   $operator 操作人ID
      * @return SysDept|null
      */
+        /**
+     * @param array<array-key, mixed> $data
+         */
     public function create(array $data, int $operator = 0): ?SysDept
     {
         // 检查部门编码是否存在
@@ -401,7 +427,7 @@ class SysDeptService extends BaseService
      * 更新部门
      *
      * @param int   $deptId   部门ID
-     * @param array $data     部门数据
+     * @param array<array-key, mixed> $data     部门数据
      * @param int   $operator 操作人ID
      * @return bool
      */
@@ -496,7 +522,7 @@ class SysDeptService extends BaseService
      * 获取所有子部门ID (包含自己)
      *
      * @param int $deptId 部门ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getAllChildIds(int $deptId): array
     {
@@ -508,8 +534,8 @@ class SysDeptService extends BaseService
     /**
      * 格式化部门数据
      *
-     * @param SysDept|array $dept 部门
-     * @return array
+     * @param SysDept|array<string, mixed> $dept 部门
+     * @return array<array-key, mixed>
      */
     protected function formatDept(SysDept|array $dept): array
     {
@@ -523,13 +549,13 @@ class SysDeptService extends BaseService
         if (isset($data['created_at'])) {
             $data['created_at'] = is_string($data['created_at'])
                 ? $data['created_at']
-                : $data['created_at']?->format('Y-m-d H:i:s');
+                : $data['created_at']->format('Y-m-d H:i:s');
         }
 
         if (isset($data['updated_at'])) {
             $data['updated_at'] = is_string($data['updated_at'])
                 ? $data['updated_at']
-                : $data['updated_at']?->format('Y-m-d H:i:s');
+                : $data['updated_at']->format('Y-m-d H:i:s');
         }
 
         // 状态文本

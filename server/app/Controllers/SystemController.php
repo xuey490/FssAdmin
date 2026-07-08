@@ -36,42 +36,49 @@ class SystemController extends BaseController
     /**
      * 用户服务
      * @var SysUserService
+     * @return mixed
      */
     protected SysUserService $userService;
 
     /**
      * 登录日志服务
      * @var LoginLogService
+     * @return mixed
      */
     protected LoginLogService $loginLogService;
 
     /**
      * 操作日志服务
      * @var OperationLogService
+     * @return mixed
      */
     protected OperationLogService $operationLogService;
 
     /**
      * 附件服务
      * @var SysAttachmentService
+     * @return mixed
      */
     protected SysAttachmentService $attachmentService;
 
     /**
      * 字典服务
      * @var SysDictService
+     * @return mixed
      */
     protected SysDictService $dictService;
 
     /**
      * 服务器监控服务
      * @var ServerMonitorService
+     * @return mixed
      */
     protected ServerMonitorService $serverMonitorService;
 
     /**
      * Redis 监控服务
      * @var RedisMonitorService
+     * @return mixed
      */
     protected RedisMonitorService $redisMonitorService;
 
@@ -137,7 +144,7 @@ class SystemController extends BaseController
     /**
      * 生成验证码
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     protected function generateCaptcha(): array
     {

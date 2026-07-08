@@ -28,6 +28,7 @@ class DictController extends BaseController
     /**
      * 字典服务
      * @var SysDictService
+     * @return mixed
      */
     protected SysDictService $dictService;
 
@@ -455,7 +456,7 @@ class DictController extends BaseController
      * 支持 { ids: [1,2] } 或 { id: 1 } 两种格式
      *
      * @param Request $request
-     * @return array
+     * @return array<array-key, mixed>
      */
     private function parseIds(Request $request): array
     {

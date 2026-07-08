@@ -15,7 +15,13 @@ use Framework\Attributes\Permission;
 
 class ServerController extends BaseController
 {
+    /**
+     * @return mixed
+     */
     protected ServerMonitorService $serverMonitorService;
+    /**
+     * @return mixed
+     */
     protected RedisMonitorService $redisMonitorService;
 
     protected function initialize(): void
@@ -250,6 +256,8 @@ class ServerController extends BaseController
 
     #[Route(path: '/api/core/server/redis/clear', methods: ['POST'], name: 'server.redis.clear')]
     #[Auth(required: true, roles: ['admin', 'super_admin'])]
+    /**
+     */
     public function clearRedis(Request $request): BaseJsonResponse
     {
         if (!extension_loaded('redis') && !class_exists('\Predis\Client')) {
@@ -268,6 +276,9 @@ class ServerController extends BaseController
 
     // ==================== 辅助方法 ====================
 
+    /**
+     * @return array<array-key, mixed>
+     */
     private function parseBody(Request $request): array
     {
         $body = [];

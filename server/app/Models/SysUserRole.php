@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-19
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -32,18 +33,27 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read SysUser   $user        关联用户
  * @property-read SysRole   $role        关联角色
  * @property-read SysTenant $tenant      关联租户
- */
+ 
+ * @property string $create_time
+ * @property string $update_time
+ * @property mixed $status
+ * @property mixed $remark
+ * @property mixed $delete_time
+ * @property mixed $deleted_at
+*/
 class SysUserRole extends BaseLaORMModel
 {
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected $table = 'sa_system_user_role';
 
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
     /**
@@ -55,7 +65,8 @@ class SysUserRole extends BaseLaORMModel
 
     /**
      * 可填充字段
-     * @var array
+     * @var array<int, string>
+     * @return mixed
      */
     protected $fillable = [
         'user_id',
@@ -67,7 +78,8 @@ class SysUserRole extends BaseLaORMModel
 
     /**
      * 类型转换
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected $casts = [
         'id' => 'integer',
@@ -83,6 +95,7 @@ class SysUserRole extends BaseLaORMModel
     /**
      * 是否自动维护时间戳
      * @var bool
+     * @return mixed
      */
     public $timestamps = true;
 
@@ -91,7 +104,7 @@ class SysUserRole extends BaseLaORMModel
     /**
      * 关联用户
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysUser, $this>
      */
     public function user(): BelongsTo
     {
@@ -101,7 +114,7 @@ class SysUserRole extends BaseLaORMModel
     /**
      * 关联角色
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysRole, $this>
      */
     public function role(): BelongsTo
     {
@@ -111,7 +124,7 @@ class SysUserRole extends BaseLaORMModel
     /**
      * 关联租户
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysTenant, $this>
      */
     public function tenant(): BelongsTo
     {
@@ -125,7 +138,7 @@ class SysUserRole extends BaseLaORMModel
      *
      * @param int $userId 用户ID
      * @param int $tenantId 租户ID
-     * @return array 角色ID列表
+     * @return array<array-key, mixed> 角色ID列表
      */
     public static function getRoleIdsByTenant(int $userId, int $tenantId): array
     {
@@ -139,7 +152,7 @@ class SysUserRole extends BaseLaORMModel
      * 获取指定租户下的所有用户角色关联
      *
      * @param int $tenantId 租户ID
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, static>
      */
     public static function getByTenant(int $tenantId)
     {
@@ -152,7 +165,7 @@ class SysUserRole extends BaseLaORMModel
      * 获取用户的所有角色关联（跨租户）
      *
      * @param int $userId 用户ID
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, static>
      */
     public static function getByUserId(int $userId)
     {
@@ -165,7 +178,7 @@ class SysUserRole extends BaseLaORMModel
      * 获取角色的所有用户关联（跨租户）
      *
      * @param int $roleId 角色ID
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, static>
      */
     public static function getByRoleId(int $roleId)
     {
@@ -213,7 +226,7 @@ class SysUserRole extends BaseLaORMModel
      *
      * @param int $userId 用户ID
      * @param int $tenantId 租户ID
-     * @return array 角色编码数组
+     * @return array<array-key, mixed> 角色编码数组
      */
     public static function getRoleCodesByTenant(int $userId, int $tenantId): array
     {
@@ -233,7 +246,7 @@ class SysUserRole extends BaseLaORMModel
      *
      * @param int $userId 用户ID
      * @param int $tenantId 租户ID
-     * @param array $roleIds 角色ID数组
+     * @param array<array-key, mixed> $roleIds 角色ID数组
      * @param int $createdBy 创建人ID
      * @return bool
      */
@@ -262,7 +275,7 @@ class SysUserRole extends BaseLaORMModel
             ];
         }
 
-        return self::insert($data);
+        return (bool) self::insert($data);
     }
 
     /**
@@ -272,7 +285,7 @@ class SysUserRole extends BaseLaORMModel
      *
      * @param int $userId 用户ID
      * @param int $tenantId 租户ID
-     * @param array $roleIds 角色ID数组
+     * @param array<array-key, mixed> $roleIds 角色ID数组
      * @param int $createdBy 创建人ID
      * @return void
      */
@@ -431,7 +444,7 @@ class SysUserRole extends BaseLaORMModel
      * 获取租户下的角色统计
      *
      * @param int $tenantId 租户ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getStatistics(int $tenantId): array
     {

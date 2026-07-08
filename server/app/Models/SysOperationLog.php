@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-12
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -38,7 +39,23 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string      $os               操作系统
  * @property string      $user_agent       用户代理
  * @property \DateTime   $created_at       创建时间
- */
+ 
+ * @property mixed $app
+ * @property mixed $router
+ * @property mixed $service_name
+ * @property mixed $ip
+ * @property mixed $ip_location
+ * @property mixed $request_data
+ * @property mixed $remark
+ * @property int $created_by
+ * @property int $updated_by
+ * @property string $create_time
+ * @property string $update_time
+ * @property string $delete_time
+ * @property mixed $tenant_id
+ * @property mixed $updated_at
+ * @property mixed $deleted_at
+*/
 class SysOperationLog extends BaseLaORMModel
 {
     use SoftDeletes;
@@ -46,12 +63,14 @@ class SysOperationLog extends BaseLaORMModel
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected $table = 'sa_system_oper_log';
 
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
     /**
@@ -63,12 +82,14 @@ class SysOperationLog extends BaseLaORMModel
     /**
      * 是否自增主键
      * @var bool
+     * @return mixed
      */
     public $incrementing = true;
 
     /**
      * 可填充字段
-     * @var array
+     * @var array<int, string>
+     * @return mixed
      */
     protected $fillable = [
         'username',
@@ -87,7 +108,8 @@ class SysOperationLog extends BaseLaORMModel
 
     /**
      * 类型转换
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected $casts = [
         'id' => 'integer',
@@ -101,6 +123,7 @@ class SysOperationLog extends BaseLaORMModel
     /**
      * 是否自动维护时间戳
      * @var bool
+     * @return mixed
      */
     public $timestamps = true;
 
@@ -156,7 +179,7 @@ class SysOperationLog extends BaseLaORMModel
     /**
      * 记录操作日志
      *
-     * @param array $data 日志数据
+     * @param array<array-key, mixed> $data 日志数据
      * @return static
      */
     public static function record(array $data): static
@@ -198,7 +221,7 @@ class SysOperationLog extends BaseLaORMModel
      *
      * @param int $userId 用户ID
      * @param int $limit  数量
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getRecentByUserId(int $userId, int $limit = 10): array
     {

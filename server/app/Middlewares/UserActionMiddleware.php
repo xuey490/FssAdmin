@@ -66,23 +66,20 @@ class UserActionMiddleware
 		$type = $authAttr->type;
 
         // --- 核心：尝试获取用户ID ---
-        $userId = 111;
+        $userId = 0;
 
         // 策略1：尝试从 Auth 系统获取（适用于 Login 成功后，Session 已建立）
         // if (app('auth')->check()) { $userId = app('auth')->id(); }
-        
+
         // 策略2：如果没登录（比如注册接口），尝试从 Response JSON 中解析
         // 假设你的接口返回格式是: { "code": 200, "data": { "user_id": 123, ... } }
-        if (!$userId && $response->headers->contains('Content-Type', 'application/json')) {
+        if ($response->headers->contains('Content-Type', 'application/json')) {
             $content = json_decode($response->getContent(), true);
-            $userId = $content['data']['user_id'] 
-                   ?? $content['data']['id'] 
-                   ?? $content['user_id'] 
-                   ?? null;
+            $userId = $content['data']['user_id']
+                   ?? $content['data']['id']
+                   ?? $content['user_id']
+                   ?? 0;
         }
-
-        // 如果最终没找到 ID（可能是匿名操作），设为 0 或 null
-        $userId = $userId ?? 0;
 		
 		/*
         // --- 写入数据库 ---

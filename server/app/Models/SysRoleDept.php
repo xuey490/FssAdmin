@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-19
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -26,18 +27,43 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @property-read SysRole   $role    关联角色
  * @property-read SysDept   $dept    关联部门
- */
+ 
+ * @property mixed $tenant_id
+ * @property mixed $created_by
+ * @property mixed $updated_by
+ * @property mixed $status
+ * @property mixed $remark
+ * @property mixed $create_time
+ * @property mixed $update_time
+ * @property mixed $delete_time
+ * @property mixed $created_at
+ * @property mixed $updated_at
+ * @property mixed $deleted_at
+*/
 class SysRoleDept extends BaseLaORMModel
 {
+    /**
+     * @return mixed
+     */
     protected $table = 'sa_system_role_dept';
+    /**
+     * @return mixed
+     */
     protected $primaryKey = 'id';
+    /**
+     * @return mixed
+     */
     public $timestamps = false;
 
+    /**
+     * @return mixed
+     */
     protected $fillable = [
         'role_id',
         'dept_id',
     ];
 
+    /** @var array<string, string> */
     protected $casts = [
         'id' => 'integer',
         'role_id' => 'integer',
@@ -49,7 +75,7 @@ class SysRoleDept extends BaseLaORMModel
     /**
      * 关联角色
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysRole, $this>
      */
     public function role(): BelongsTo
     {
@@ -59,7 +85,7 @@ class SysRoleDept extends BaseLaORMModel
     /**
      * 关联部门
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysDept, $this>
      */
     public function dept(): BelongsTo
     {
@@ -72,7 +98,7 @@ class SysRoleDept extends BaseLaORMModel
      * 获取角色的自定义部门ID列表
      *
      * @param int $roleId 角色ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getDeptIdsByRole(int|string $roleId): array
     {
@@ -82,8 +108,8 @@ class SysRoleDept extends BaseLaORMModel
     /**
      * 获取多个角色的自定义部门ID列表（合并去重）
      *
-     * @param array $roleIds 角色ID数组
-     * @return array
+     * @param array<array-key, mixed> $roleIds 角色ID数组
+     * @return array<array-key, mixed>
      */
     public static function getDeptIdsByRoles(array $roleIds): array
     {
@@ -116,7 +142,7 @@ class SysRoleDept extends BaseLaORMModel
      * 同步角色的自定义部门
      *
      * @param int   $roleId  角色ID
-     * @param array $deptIds 部门ID数组
+     * @param array<array-key, mixed> $deptIds 部门ID数组
      * @return void
      */
     public static function syncRoleDepts(int $roleId, array $deptIds): void

@@ -8,11 +8,12 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-12
- */
+ 
+*/
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Framework\Basic\BaseLaORMModel;
 
 /**
  * SysRoleMenu 角色菜单关联模型
@@ -26,18 +27,28 @@ use Illuminate\Database\Eloquent\Model;
  * @property int         $updated_by 更新人ID
  * @property \DateTime   $created_at 创建时间
  * @property \DateTime   $updated_at 更新时间
- */
-class SysRoleMenu extends Model
+ 
+ * @property int $tenant_id
+ * @property string $create_time
+ * @property string $update_time
+ * @property string $delete_time
+ * @property mixed $status
+ * @property mixed $remark
+ * @property mixed $deleted_at
+*/
+class SysRoleMenu extends BaseLaORMModel
 {
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected $table = 'sa_system_role_menu';
 
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
     /**
@@ -49,7 +60,8 @@ class SysRoleMenu extends Model
 
     /**
      * 可填充字段
-     * @var array
+     * @var array<int, string>
+     * @return mixed
      */
     protected $fillable = [
         'role_id',
@@ -61,7 +73,8 @@ class SysRoleMenu extends Model
 
     /**
      * 类型转换
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected $casts = [
         'id' => 'integer',
@@ -78,6 +91,7 @@ class SysRoleMenu extends Model
     /**
      * 是否自动维护时间戳
      * @var bool
+     * @return mixed
      */
     public $timestamps = true;
 
@@ -87,7 +101,7 @@ class SysRoleMenu extends Model
      * 批量插入角色菜单关联
      *
      * @param int   $roleId    角色ID
-     * @param array $menuIds   菜单ID数组
+     * @param array<array-key, mixed> $menuIds   菜单ID数组
      * @param int   $tenantId  租户ID
      * @param int   $createdBy 创建人ID
      * @return bool
@@ -113,7 +127,7 @@ class SysRoleMenu extends Model
             ];
         }
 
-        return self::insert($data);
+        return (bool) self::insert($data);
     }
 
     /**
@@ -151,7 +165,7 @@ class SysRoleMenu extends Model
      * 同步角色菜单
      *
      * @param int   $roleId    角色ID
-     * @param array $menuIds   菜单ID数组
+     * @param array<array-key, mixed> $menuIds   菜单ID数组
      * @param int   $tenantId  租户ID
      * @param int   $createdBy 创建人ID
      * @return void
@@ -172,7 +186,7 @@ class SysRoleMenu extends Model
      *
      * @param int      $roleId   角色ID
      * @param int|null $tenantId 租户ID（可选）
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getMenuIdsByRoleId(int $roleId, ?int $tenantId = null): array
     {
@@ -188,9 +202,9 @@ class SysRoleMenu extends Model
     /**
      * 批量获取角色菜单ID列表
      *
-     * @param array    $roleIds  角色ID数组
+     * @param array<array-key, mixed>    $roleIds  角色ID数组
      * @param int|null $tenantId 租户ID（可选）
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getMenuIdsByRoleIds(array $roleIds, ?int $tenantId = null): array
     {

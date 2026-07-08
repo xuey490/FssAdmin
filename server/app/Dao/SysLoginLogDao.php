@@ -36,7 +36,7 @@ class SysLoginLogDao extends BaseDao
      * @param int $userId 用户ID
      * @param int $page   页码
      * @param int $limit  每页数量
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getListByUserId(int $userId, int $page = 1, int $limit = 20): array
     {
@@ -48,7 +48,7 @@ class SysLoginLogDao extends BaseDao
      *
      * @param string $startDate 开始日期
      * @param string $endDate   结束日期
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getLoginStats(string $startDate, string $endDate): array
     {

@@ -14,6 +14,9 @@ use Symfony\Component\HttpFoundation\Request;
 
 class EmailController extends BaseController
 {
+    /**
+     * @return mixed
+     */
     protected MailLogService $mailLogService;
 
     protected function initialize(): void
@@ -38,6 +41,8 @@ class EmailController extends BaseController
     #[Route(path: '/api/core/email/destroy', methods: ['DELETE'], name: 'core.email.destroy')]
     #[Auth(required: true, roles: ['admin', 'super_admin'])]
     #[Permission('core:email:destroy')]
+    /**
+     */
     public function destroy(Request $request): BaseJsonResponse
     {
         $ids = $this->parseIds($request);
@@ -53,6 +58,9 @@ class EmailController extends BaseController
         }
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     private function parseIds(Request $request): array
     {
         $body = [];

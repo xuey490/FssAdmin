@@ -13,6 +13,9 @@ use Symfony\Component\HttpFoundation\Request;
 
 class PluginController extends BaseController
 {
+    /**
+     * @return mixed
+     */
     protected PluginService $pluginService;
 
     protected function initialize(): void

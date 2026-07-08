@@ -14,6 +14,9 @@ use Framework\Attributes\Permission;
 
 class CrontabController extends BaseController
 {
+    /**
+     * @return mixed
+     */
     protected ToolCrontabService $crontabService;
 
     protected function initialize(): void
@@ -151,12 +154,19 @@ class CrontabController extends BaseController
 
     // ==================== 辅助方法 ====================
 
+    /**
+     */
     protected function getOperatorId(Request $request): int
     {
         $user = $request->attributes->get('user');
         return $user['id'] ?? 0;
     }
 
+    /**
+     */
+        /**
+     * @return array<array-key, mixed>
+         */
     private function parseBody(Request $request): array
     {
         $body = [];
@@ -170,6 +180,9 @@ class CrontabController extends BaseController
         return array_merge($request->request->all(), $body);
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     private function parseIds(Request $request): array
     {
         $body = $this->parseBody($request);

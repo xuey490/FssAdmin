@@ -30,8 +30,10 @@ class UserController extends BaseController
     /**
      * 用户服务
      * @var SysUserService
+     * @return mixed
      */
     protected SysUserService $userService;
+    protected const SYSTEM_PROTECTED_USER_ID = 1;
 
     /**
      * 初始化
@@ -90,6 +92,9 @@ class UserController extends BaseController
     public function detail(Request $request): BaseJsonResponse
     {
         $id = (int)$request->attributes->get('id');
+        if ($id === self::SYSTEM_PROTECTED_USER_ID) {
+            return $this->fail('系统内置用户不允许编辑');
+        }
         $result = $this->userService->getDetail($id);
 
         if (!$result) {
@@ -154,7 +159,7 @@ class UserController extends BaseController
             $user = $this->userService->create($data, $operator);
             return $this->success(['id' => $user->id], '创建成功');
         } catch (\Exception $e) {
-            dump('创建用户失败: ' . $e->getMessage());
+            //dump('创建用户失败: ' . $e->getMessage());
             return $this->fail($e->getMessage());
         }
     }
@@ -245,6 +250,9 @@ class UserController extends BaseController
         
         // 不能删除自己
         $operatorId = $this->getOperatorId($request);
+        if ($id === self::SYSTEM_PROTECTED_USER_ID) {
+            return $this->fail('系统内置用户不允许删除');
+        }
         if ($id === $operatorId) {
             return $this->fail('不能删除自己');
         }
@@ -276,6 +284,9 @@ class UserController extends BaseController
 
         // 不能禁用自己
         $operatorId = $this->getOperatorId($request);
+        if ($id === self::SYSTEM_PROTECTED_USER_ID) {
+            return $this->fail('系统内置用户状态不允许修改');
+        }
         if ($id === $operatorId) {
             return $this->fail('不能禁用自己');
         }
@@ -459,7 +470,7 @@ class UserController extends BaseController
      * 支持 { ids: [1,2] } 或 { id: 1 } 两种格式
      *
      * @param Request $request
-     * @return array
+     * @return array<array-key, mixed>
      */
     protected function parseIds(Request $request): array
     {

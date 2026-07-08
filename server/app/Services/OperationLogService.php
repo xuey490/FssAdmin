@@ -5,13 +5,19 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\SysOperationLog;
+use App\Dao\SysOperationLogDao;
 use Framework\Basic\BaseService;
 
+/**
+ * @extends BaseService<SysOperationLogDao>
+ */
 class OperationLogService extends BaseService
 {
     /**
      * 分页查询操作日志
      * 前端参数：username, ip, service_name, router, create_time(数组[start,end]), orderField, orderType, page, pageSize
+     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $params
      */
     public function getPageList(array $params): array
     {
@@ -68,6 +74,9 @@ class OperationLogService extends BaseService
     /**
      * 批量删除
      */
+    /**
+     * @param array<array-key, mixed> $ids
+     */
     public function delete(array $ids): int
     {
         return SysOperationLog::whereIn('id', $ids)->delete();
@@ -75,6 +84,7 @@ class OperationLogService extends BaseService
 
     /**
      * 记录操作日志
+     * @param array<array-key, mixed> $data
      */
     public function record(array $data): SysOperationLog
     {

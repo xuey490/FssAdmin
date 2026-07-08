@@ -30,6 +30,7 @@ class MenuController extends BaseController
     /**
      * 菜单服务
      * @var SysMenuService
+     * @return mixed
      */
     protected SysMenuService $menuService;
 
@@ -192,6 +193,8 @@ class MenuController extends BaseController
 
     /**
      * 从请求体构建菜单字段（仅包含客户端显式提交的键，避免把未传字段写成 null）
+     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $body
      */
     protected function buildMenuPayload(array $body, bool $isCreate = false): array
     {

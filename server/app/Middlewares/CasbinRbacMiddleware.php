@@ -16,17 +16,20 @@ class CasbinRbacMiddleware
     /**
      * Casbin 权限核心服务
      * @var CasbinRbac
+     * @return mixed
      */
     protected $casbinRbac;
     /**
      * Casbin 权限服务
      * @var CasbinService
+     * @return mixed
      */
     protected $casbinService;
 
     /**
      * 无需校验的路由白名单
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected $whiteRoutes = [
         '/api/core/login',
@@ -36,6 +39,9 @@ class CasbinRbacMiddleware
         '/api/core/tenants-by-username',
     ];
 
+    /**
+     * @return mixed
+     */
     public function __construct()
     {
         // 从自研框架容器获取 Casbin 服务实例
@@ -46,7 +52,7 @@ class CasbinRbacMiddleware
 
     /**
      * 中间件处理逻辑
-     * @param mixed $request 自研框架请求对象
+     * @param Request $request 自研框架请求对象
      * @param Closure $next 下一个中间件/控制器
      * @return mixed
      */
@@ -104,7 +110,7 @@ class CasbinRbacMiddleware
 
     /**
      * 获取当前登录用户 ID（需适配自研框架的用户认证）
-     * @param mixed $request
+     * @param Request $request
      * @return string|int|null
      */
     protected function getCurrentUserId(Request $request)
@@ -144,7 +150,7 @@ class CasbinRbacMiddleware
 
     /**
      * 获取当前租户 ID（适配 SaaS 多租户场景）
-     * @param mixed $request
+     * @param Request $request
      * @return string
      */
     protected function getCurrentTenantId(Request $request)

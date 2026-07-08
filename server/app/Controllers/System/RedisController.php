@@ -27,6 +27,7 @@ class RedisController extends BaseController
     /**
      * Redis监控服务
      * @var RedisMonitorService
+     * @return mixed
      */
     protected RedisMonitorService $redisService;
 

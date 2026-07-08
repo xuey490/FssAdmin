@@ -60,7 +60,7 @@ class SysDictTypeDao extends BaseDao
     /**
      * 获取启用的字典类型列表
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getAllEnabled(): array
     {

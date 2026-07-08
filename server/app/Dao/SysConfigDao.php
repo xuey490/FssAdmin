@@ -54,6 +54,7 @@ class SysConfigDao extends BaseDao
      *
      * @param int $groupId 分组ID
      * @return Collection
+      * @return Collection<int, SysConfig>
      */
     public function getByGroupId(int $groupId): Collection
     {

@@ -21,12 +21,27 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \DateTime   $login_time    登录时间
  * @property string      $remark        备注
  * @property \DateTime   $create_time   创建时间
- */
+ 
+ * @property mixed $created_by
+ * @property mixed $updated_by
+ * @property string $update_time
+ * @property string $delete_time
+ * @property mixed $tenant_id
+ * @property mixed $created_at
+ * @property mixed $updated_at
+ * @property mixed $deleted_at
+*/
 class SysLoginLog extends BaseLaORMModel
 {
     use SoftDeletes;
 
+    /**
+     * @return mixed
+     */
     protected $table = 'sa_system_login_log';
+    /**
+     * @return mixed
+     */
     protected $primaryKey = 'id';
     /**
      * 自定义时间戳字段名
@@ -34,7 +49,13 @@ class SysLoginLog extends BaseLaORMModel
     const CREATED_AT = 'create_time';
     const UPDATED_AT = 'update_time';
     const DELETED_AT = 'delete_time';
+    /**
+     * @return mixed
+     */
     public $incrementing = true;
+    /**
+     * @return mixed
+     */
     public $timestamps = true;
 
     /** 登录成功 */
@@ -42,6 +63,9 @@ class SysLoginLog extends BaseLaORMModel
     /** 登录失败 */
     public const STATUS_FAIL = 2;
 
+    /**
+     * @return mixed
+     */
     protected $fillable = [
         'username',
         'ip',
@@ -59,6 +83,7 @@ class SysLoginLog extends BaseLaORMModel
         'delete_time',
     ];
 
+    /** @var array<string, string> */
     protected $casts = [
         'id'         => 'integer',
         'status'     => 'integer',
@@ -69,7 +94,10 @@ class SysLoginLog extends BaseLaORMModel
     ];
 
     /**
+     */
+    /**
      * 记录登录日志
+     * @param array<array-key, mixed> $data
      */
     public static function record(array $data): static
     {

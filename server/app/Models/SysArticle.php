@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-19
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -44,7 +45,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \DateTime   $delete_time  删除时间
  *
  * @property-read SysArticleCategory $category 所属分类
- */
+ 
+ * @property mixed $remark
+ * @property mixed $created_at
+ * @property mixed $updated_at
+ * @property mixed $deleted_at
+*/
 class SysArticle extends BaseLaORMModel
 {
     use SoftDeletes, DataScopeTrait;
@@ -52,12 +58,14 @@ class SysArticle extends BaseLaORMModel
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected $table = 'sa_article';
 
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
 
@@ -90,7 +98,8 @@ class SysArticle extends BaseLaORMModel
 
     /**
      * 可填充字段
-     * @var array
+     * @var array<int, string>
+     * @return mixed
      */
     protected $fillable = [
         'category_id',
@@ -113,7 +122,8 @@ class SysArticle extends BaseLaORMModel
 
     /**
      * 类型转换
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected $casts = [
         'id' => 'integer',
@@ -137,7 +147,7 @@ class SysArticle extends BaseLaORMModel
     /**
      * 关联分类
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysArticleCategory, $this>
      */
     public function category(): BelongsTo
     {
@@ -149,9 +159,9 @@ class SysArticle extends BaseLaORMModel
     /**
      * 增加浏览次数
      *
-     * @return bool
+     * @return int
      */
-    public function incrementViewCount(): bool
+    public function incrementViewCount(): int
     {
         return $this->increment('views');
     }

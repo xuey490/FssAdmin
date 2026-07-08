@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-12
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -50,7 +51,19 @@ use Framework\Basic\Scopes\LaTenantScope;
  * @property-read SysMenu    $parent    父菜单
  * @property-read SysMenu[]  $children  子菜单
  * @property-read SysRole[]  $roles     拥有此菜单的角色
- */
+ 
+ * @property mixed $code
+ * @property mixed $link_url
+ * @property int $is_iframe
+ * @property int $is_keep_alive
+ * @property int $is_hidden
+ * @property int $is_fixed_tab
+ * @property int $is_full_page
+ * @property string $create_time
+ * @property string $update_time
+ * @property string $delete_time
+ * @property mixed $tenant_id
+*/
 class SysMenu extends BaseLaORMModel
 {
     use SoftDeletes;
@@ -70,12 +83,14 @@ class SysMenu extends BaseLaORMModel
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected $table = 'sa_system_menu';
 
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
     /**
@@ -87,7 +102,8 @@ class SysMenu extends BaseLaORMModel
 
     /**
      * 可填充字段
-     * @var array
+     * @var array<int, string>
+     * @return mixed
      */
     protected $fillable = [
         'parent_id',
@@ -113,7 +129,8 @@ class SysMenu extends BaseLaORMModel
 
     /**
      * 类型转换
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected $casts = [
         'id' => 'integer',
@@ -166,7 +183,7 @@ class SysMenu extends BaseLaORMModel
     /**
      * 父菜单
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysMenu, $this>
      */
     public function parent(): BelongsTo
     {
@@ -176,7 +193,7 @@ class SysMenu extends BaseLaORMModel
     /**
      * 子菜单
      *
-     * @return HasMany
+     * @return HasMany<SysMenu, $this>
      */
     public function children(): HasMany
     {
@@ -186,7 +203,7 @@ class SysMenu extends BaseLaORMModel
     /**
      * 拥有此菜单的角色 (多对多)
      *
-     * @return BelongsToMany
+     * @return BelongsToMany<SysRole, $this>
      */
     public function roles(): BelongsToMany
     {
@@ -274,7 +291,7 @@ class SysMenu extends BaseLaORMModel
      * 获取菜单树 (递归)
      *
      * @param int $parentId 父ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getMenuTree(int $parentId = 0): array
     {
@@ -295,7 +312,7 @@ class SysMenu extends BaseLaORMModel
      * 获取所有子菜单ID (包含自己)
      *
      * @param int $menuId 菜单ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getAllChildIds(int $menuId): array
     {
@@ -313,7 +330,7 @@ class SysMenu extends BaseLaORMModel
      * 获取指定菜单ID的所有祖先菜单ID（不含自己）
      *
      * @param int $menuId 菜单ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getAllParentIds(int $menuId): array
     {
@@ -329,8 +346,8 @@ class SysMenu extends BaseLaORMModel
     /**
      * 将菜单ID数组补全所有祖先菜单ID，确保父子联动完整性
      *
-     * @param array $menuIds 菜单ID数组
-     * @return array 去重后的完整菜单ID数组
+     * @param array<array-key, mixed> $menuIds 菜单ID数组
+     * @return array<array-key, mixed> 去重后的完整菜单ID数组
      */
     public static function expandWithParentIds(array $menuIds): array
     {
@@ -351,8 +368,7 @@ class SysMenu extends BaseLaORMModel
      * 检查是否有子菜单
      *
      * @return bool
-     */
-    public function hasChildren(): bool
+     */    public function hasChildren(): bool
     {
         return self::where('parent_id', $this->id)->exists();
     }
@@ -360,7 +376,7 @@ class SysMenu extends BaseLaORMModel
     /**
      * 获取菜单层级路径
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getPath(): array
     {

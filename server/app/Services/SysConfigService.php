@@ -5,12 +5,18 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\SysConfig;
+use App\Dao\SysConfigDao;
 use Framework\Basic\BaseService;
 
+/**
+ * @extends BaseService<SysConfigDao>
+ */
 class SysConfigService extends BaseService
 {
     /**
      * 获取配置项列表
+     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $params
      */
     public function getList(array $params): array
     {
@@ -63,6 +69,9 @@ class SysConfigService extends BaseService
     /**
      * 获取配置项详情
      */
+    /**
+     * @return array<array-key, mixed>|null
+     */
     public function getDetail(int $id): ?array
     {
         $config = SysConfig::find($id);
@@ -71,6 +80,13 @@ class SysConfigService extends BaseService
 
     /**
      * 保存配置项
+     */
+    /**
+     * 保存配置项
+     *
+     * @param array<array-key, mixed> $data
+     * @param int $operator
+     * @return mixed
      */
     public function save(array $data, int $operator): mixed
     {
@@ -89,6 +105,11 @@ class SysConfigService extends BaseService
 
     /**
      * 更新配置项
+     *
+     * @param int $id
+     * @param array<array-key, mixed> $data
+     * @param int $operator
+     * @return bool
      */
     public function update(int $id, array $data, int $operator): bool
     {
@@ -112,6 +133,9 @@ class SysConfigService extends BaseService
 
     /**
      * 删除配置项
+     *
+     * @param array<array-key, mixed> $ids
+     * @return int
      */
     public function delete(array $ids): int
     {
@@ -130,6 +154,8 @@ class SysConfigService extends BaseService
     /**
      * 根据配置键获取配置值
      */
+        /**
+         */
     public function getByKey(string $key): mixed
     {
         $cacheKey = "config:{$key}";
@@ -149,6 +175,8 @@ class SysConfigService extends BaseService
 
     /**
      * 批量更新配置值
+     *
+     * @param array<array-key, mixed> $configs
      */
     public function batchUpdate(array $configs, int $operator): bool
     {

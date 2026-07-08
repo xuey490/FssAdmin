@@ -26,7 +26,7 @@ class ToolGenerateColumnDao extends BaseDao
      * 获取某表的所有字段配置
      *
      * @param int $tableId
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getByTableId(int $tableId): array
     {
@@ -41,7 +41,7 @@ class ToolGenerateColumnDao extends BaseDao
     /**
      * 批量插入字段配置
      *
-     * @param array $rows
+     * @param array<array-key, mixed> $rows
      * @return bool
      */
     public function batchInsert(array $rows): bool
@@ -66,7 +66,7 @@ class ToolGenerateColumnDao extends BaseDao
     /**
      * 批量删除（按 table_id 数组）
      *
-     * @param array $tableIds
+     * @param array<array-key, mixed> $tableIds
      * @return int
      */
     public function deleteByTableIds(array $tableIds): int
@@ -80,7 +80,7 @@ class ToolGenerateColumnDao extends BaseDao
      * 同步字段：新增不存在的字段，删除已移除的字段，保留现有配置
      *
      * @param int   $tableId     业务表ID
-     * @param array $dbColumns   从数据库读取的最新列 [{column_name, column_type, column_comment, ...}]
+     * @param array<array-key, mixed> $dbColumns   从数据库读取的最新列 [{column_name, column_type, column_comment, ...}]
      * @param int   $operatorId  操作人ID
      * @return void
      */
@@ -135,10 +135,10 @@ class ToolGenerateColumnDao extends BaseDao
     /**
      * 构建默认字段配置（初始化时使用）
      *
-     * @param array $col       数据库列信息
+     * @param array<array-key, mixed> $col       数据库列信息
      * @param int   $tableId
      * @param int   $sort
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function buildDefaultColumn(array $col, int $tableId, int $sort = 0): array
     {

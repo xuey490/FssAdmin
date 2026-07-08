@@ -18,6 +18,7 @@ class AuthMiddleware
     /**
      * 剩余 < N 秒才尝试 refresh
      * 推荐 300（5 分钟）
+     * @return mixed
      */
     protected int $refreshThreshold = 300;
 
@@ -46,7 +47,6 @@ class AuthMiddleware
         }
 
 
-        /** @var JwtFactory $jwt */
         $jwt = app('jwt');
 
         try {
@@ -92,7 +92,6 @@ class AuthMiddleware
             // 4.角色校验（仅当路由明确声明了角色限制时才校验）
             $attributes = $request->attributes->get('_attributes', []);
 			
-            /** @var Auth|null $auth */
             $auth = $attributes[Auth::class] ?? null;
             $routeInfo = $request->attributes->get('_route');
 
@@ -107,7 +106,7 @@ class AuthMiddleware
             $routeRoles = is_array($routeRoles) ? $routeRoles : [];
 			
             $requiredRoles = [];
-            if (! empty($auth?->roles) && is_array($auth->roles)) {
+            if (! empty($auth->roles) && is_array($auth->roles)) {
                 $requiredRoles = $auth->roles;
             } elseif (! empty($routeRoles)) {
                 $requiredRoles = $routeRoles;
@@ -169,6 +168,7 @@ class AuthMiddleware
 
     /**
      * 尝试刷新 token（只尝试一次，失败即放弃）
+     * @param array<array-key, mixed> $oldClaims
      */
     protected function tryRefresh(Request $request, JwtFactory $jwt, int $uid, array $oldClaims = []): void
     {
@@ -213,7 +213,8 @@ class AuthMiddleware
         
         $isHttps = $request->isSecure();
 
-        $sameSite = $isHttps ? 'Strict' : 'Lax';
+        // 统一使用 SameSite=Lax（与 AuthController::setAuthCookies 保持一致）
+        $sameSite = 'lax';
         
         if ($request->attributes->has('_new_access_token')) {
             $access = $request->attributes->get('_new_access_token');
@@ -258,7 +259,7 @@ class AuthMiddleware
     {
         $header = $request->headers->get('Authorization');
 		//dump($header);
-		if($header !== '' || !empty($header)){
+		if ($header !== '') {
 			if (is_string($header) && str_starts_with($header, 'Bearer ')) {
 				return substr($header, 7);
 			}
@@ -303,6 +304,7 @@ class AuthMiddleware
 
     /**
      * 临时诊断日志（排查401后可删除）
+     * @param array<array-key, mixed> $context
      */
     protected function debugLog(string $message, array $context = []): void
     {

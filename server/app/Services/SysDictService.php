@@ -21,23 +21,27 @@ use Framework\Basic\BaseService;
 
 /**
  * SysDictService 数据字典服务
+  * @extends BaseService<SysDictTypeDao>
  */
 class SysDictService extends BaseService
 {
     /**
      * 字典类型DAO
      * @var SysDictTypeDao
+     * @return mixed
      */
     protected SysDictTypeDao $dictTypeDao;
 
     /**
      * 字典数据DAO
      * @var SysDictDataDao
+     * @return mixed
      */
     protected SysDictDataDao $dictDataDao;
 
     /**
      * 构造函数
+     * @return mixed
      */
     public function __construct()
     {
@@ -51,8 +55,8 @@ class SysDictService extends BaseService
     /**
      * 获取字典类型列表
      *
-     * @param array $params 查询参数
-     * @return array
+     * @param array<array-key, mixed> $params 查询参数
+     * @return array<array-key, mixed>
      */
     public function getTypeList(array $params): array
     {
@@ -95,7 +99,7 @@ class SysDictService extends BaseService
      * 获取字典类型详情
      *
      * @param int $id 字典类型ID
-     * @return array|null
+     * @return array<array-key, mixed>|null
      */
     public function getTypeDetail(int $id): ?array
     {
@@ -106,7 +110,7 @@ class SysDictService extends BaseService
     /**
      * 创建字典类型
      *
-     * @param array $data     数据
+     * @param array<array-key, mixed> $data     数据
      * @param int   $operator 操作人
      * @return SysDictType|null
      */
@@ -130,7 +134,7 @@ class SysDictService extends BaseService
      * 更新字典类型
      *
      * @param int   $id       字典类型ID
-     * @param array $data     数据
+     * @param array<array-key, mixed> $data     数据
      * @param int   $operator 操作人
      * @return bool
      */
@@ -212,6 +216,11 @@ class SysDictService extends BaseService
      *
      * @param array $params 查询参数
      * @return array
+    /**
+     * 获取字典数据列表
+     *
+     * @param array<array-key, mixed> $params
+     * @return array<array-key, mixed>
      */
     public function getDataList(array $params): array
     {
@@ -259,7 +268,7 @@ class SysDictService extends BaseService
      * 获取字典数据详情
      *
      * @param int $id 字典数据ID
-     * @return array|null
+     * @return array<array-key, mixed>|null
      */
     public function getDataDetail(int $id): ?array
     {
@@ -270,7 +279,7 @@ class SysDictService extends BaseService
     /**
      * 创建字典数据
      *
-     * @param array $data     数据
+     * @param array<array-key, mixed> $data
      * @param int   $operator 操作人
      * @return SysDictData|null
      */
@@ -294,7 +303,7 @@ class SysDictService extends BaseService
      * 更新字典数据
      *
      * @param int   $id       字典数据ID
-     * @param array $data     数据
+     * @param array<array-key, mixed> $data
      * @param int   $operator 操作人
      * @return bool
      */
@@ -321,7 +330,7 @@ class SysDictService extends BaseService
     /**
      * 批量删除字典数据
      *
-     * @param array $ids 字典数据ID列表
+     * @param array<array-key, mixed> $ids 字典数据ID列表
      * @return int 删除数量
      */
     public function batchDeleteData(array $ids): int
@@ -392,7 +401,7 @@ class SysDictService extends BaseService
      * 根据字典编码获取字典数据
      *
      * @param string $dictCode 字典编码
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getDictDataByCode(string $dictCode): array
     {
@@ -443,7 +452,7 @@ class SysDictService extends BaseService
     /**
      * 获取所有字典数据
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getAllData(): array
     {

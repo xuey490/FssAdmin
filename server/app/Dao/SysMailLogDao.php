@@ -9,11 +9,19 @@ use Framework\Basic\BaseDao;
 
 class SysMailLogDao extends BaseDao
 {
+    /**
+     */
     protected function setModel(): string
     {
         return SysMailLog::class;
     }
 
+    /**
+     */
+            /**
+     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $params
+             */
     public function getPageList(array $params): array
     {
         $page = max(1, (int)($params['page'] ?? 1));
@@ -27,7 +35,7 @@ class SysMailLogDao extends BaseDao
         if (!empty($params['email'])) {
             $query->where('email', 'like', '%' . $params['email'] . '%');
         }
-        if (isset($params['status']) && $params['status'] !== '' && $params['status'] !== null) {
+        if (isset($params['status']) && $params['status'] !== '') {
             $query->where('status', (string)$params['status']);
         }
         if (!empty($params['create_time']) && is_array($params['create_time'])) {
@@ -61,6 +69,9 @@ class SysMailLogDao extends BaseDao
         ];
     }
 
+    /**
+     * @param array<array-key, mixed> $ids
+     */
     public function deleteByIds(array $ids): int
     {
         if (empty($ids)) {

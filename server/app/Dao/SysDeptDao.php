@@ -48,7 +48,7 @@ class SysDeptDao extends BaseDao
      *
      * @param int $page  页码
      * @param int $limit 每页数量
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getEnabledList(int $page = 1, int $limit = 20): array
     {
@@ -58,7 +58,7 @@ class SysDeptDao extends BaseDao
     /**
      * 获取所有启用的部门
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getAllEnabled(): array
     {
@@ -69,7 +69,7 @@ class SysDeptDao extends BaseDao
      * 获取子部门列表
      *
      * @param int $parentId 父部门ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getChildrenByParentId(int $parentId): array
     {
@@ -107,7 +107,7 @@ class SysDeptDao extends BaseDao
     /**
      * 获取部门总数
      *
-     * @param array $where 条件
+     * @param array<array-key, mixed> $where 条件
      * @return int
      */
     public function getDeptCount(array $where = []): int
@@ -118,8 +118,8 @@ class SysDeptDao extends BaseDao
     /**
      * 获取部门ID列表
      *
-     * @param array $where 条件
-     * @return array
+     * @param array<array-key, mixed> $where 条件
+     * @return array<array-key, mixed>
      */
     public function getDeptIds(array $where = []): array
     {

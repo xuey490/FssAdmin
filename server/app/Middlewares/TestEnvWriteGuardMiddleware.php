@@ -28,6 +28,8 @@ class TestEnvWriteGuardMiddleware
         return BaseJsonResponse::fail('测试环境已禁止写操作', 403);
     }
 
+    /**
+     */
     protected function shouldGuard(Request $request): bool
     {
         $method = strtoupper((string) $request->getMethod());
@@ -55,6 +57,9 @@ class TestEnvWriteGuardMiddleware
         return !$this->isWhitelistedPath((string) $request->getPathInfo(), (array) ($cfg['whitelist'] ?? []));
     }
 
+    /**
+     * @param array<array-key, mixed> $whitelist
+     */
     protected function isWhitelistedPath(string $path, array $whitelist): bool
     {
         foreach ($whitelist as $rule) {

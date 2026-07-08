@@ -33,7 +33,7 @@ class SysAttachmentCategoryDao extends BaseDao
     /**
      * 获取启用的分类列表
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getAllEnabled(): array
     {
@@ -44,7 +44,7 @@ class SysAttachmentCategoryDao extends BaseDao
      * 获取子分类列表
      *
      * @param int $parentId 父分类ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getChildrenByParentId(int $parentId): array
     {

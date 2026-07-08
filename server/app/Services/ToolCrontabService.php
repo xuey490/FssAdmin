@@ -12,12 +12,18 @@ namespace App\Services;
 
 use App\Models\ToolCrontab;
 use App\Models\ToolCrontabLog;
+use App\Dao\ToolCrontabDao;
 use Framework\Basic\BaseService;
 
+/**
+ * @extends BaseService<ToolCrontabDao>
+ */
 class ToolCrontabService extends BaseService
 {
     /**
      * 获取定时任务分页列表
+     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $params
      */
     public function getPageList(array $params): array
     {
@@ -29,10 +35,10 @@ class ToolCrontabService extends BaseService
         if (!empty($params['name'])) {
             $query->where('name', 'like', '%' . $params['name'] . '%');
         }
-        if (isset($params['type']) && $params['type'] !== '' && $params['type'] !== null) {
+        if (isset($params['type']) && $params['type'] !== '') {
             $query->where('type', (int)$params['type']);
         }
-        if (isset($params['status']) && $params['status'] !== '' && $params['status'] !== null) {
+        if (isset($params['status']) && $params['status'] !== '') {
             $query->where('status', (int)$params['status']);
         }
 
@@ -53,6 +59,9 @@ class ToolCrontabService extends BaseService
     /**
      * 获取任务详情
      */
+    /**
+     * @return array<array-key, mixed>|null
+     */
     public function getDetail(int $id): ?array
     {
         $crontab = ToolCrontab::find($id);
@@ -61,6 +70,13 @@ class ToolCrontabService extends BaseService
 
     /**
      * 创建定时任务
+     */
+    /**
+     * 创建定时任务
+     *
+     * @param array<array-key, mixed> $data
+     * @param int $operator
+     * @return ToolCrontab
      */
     public function create(array $data, int $operator = 0): ToolCrontab
     {
@@ -71,6 +87,9 @@ class ToolCrontabService extends BaseService
 
     /**
      * 更新定时任务
+     *
+     * @param array<array-key, mixed> $data
+     * @return bool
      */
     public function update(int $id, array $data, int $operator = 0): bool
     {
@@ -85,6 +104,8 @@ class ToolCrontabService extends BaseService
 
     /**
      * 删除定时任务（支持批量）
+     *
+     * @param array<array-key, mixed> $ids
      */
     public function delete(array $ids): int
     {
@@ -93,6 +114,8 @@ class ToolCrontabService extends BaseService
 
     /**
      * 执行定时任务
+     *
+     * @return array<array-key, mixed>
      */
     public function run(int $id): array
     {
@@ -210,6 +233,8 @@ class ToolCrontabService extends BaseService
     /**
      * 执行类任务
      */
+    /**
+     */
     protected function executeClass(string $target, ?string $parameter): void
     {
         // 将反斜杠路径转为命名空间
@@ -238,6 +263,9 @@ class ToolCrontabService extends BaseService
 
     /**
      * 获取执行日志分页列表
+     *
+     * @param array<array-key, mixed> $params
+     * @return array<array-key, mixed>
      */
     public function getLogPageList(array $params): array
     {
@@ -272,6 +300,8 @@ class ToolCrontabService extends BaseService
 
     /**
      * 删除执行日志（支持批量）
+     *
+     * @param array<array-key, mixed> $ids
      */
     public function deleteLog(array $ids): int
     {

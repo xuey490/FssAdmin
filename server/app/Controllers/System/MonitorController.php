@@ -27,6 +27,7 @@ class MonitorController extends BaseController
     /**
      * 服务器监控服务
      * @var ServerMonitorService
+     * @return mixed
      */
     protected ServerMonitorService $monitorService;
 

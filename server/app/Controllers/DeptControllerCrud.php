@@ -38,20 +38,12 @@ class DeptControllerCrud extends BaseController
      * 业务服务类名
      * 指定后 BaseController 会自动实例化
      * @var string
+     * @return mixed
      */
     protected string $serviceClass = SysDeptService::class;
 
-    /**
-     * 数据访问对象类名（如果没有 Service）
-     * 会自动使用 GenericService 包装
-     * @var string
-     */
     // protected string $daoClass = SysDeptDao::class;
 
-    /**
-     * 验证器类名（可选）
-     * @var string
-     */
     // protected string $validatorClass = DeptValidator::class;
 
     // 注意：$service 属性由基类 BaseController 自动注入
@@ -213,7 +205,7 @@ class DeptControllerCrud extends BaseController
         $status = (int) $this->input('status', 1);
 
         // 从 request 获取数组参数（ids 不在模型字段中，需要特殊处理）
-        $ids = $request->request->get('ids', []);
+        $ids = $request->request->get('ids') ?? [];
 
         if (empty($ids)) {
             return $this->fail('请选择要更新的部门');
@@ -232,7 +224,7 @@ class DeptControllerCrud extends BaseController
      * 如果需要自定义获取数据的逻辑，可以覆盖此方法
      *
      * @param Request $request
-     * @return array
+     * @return array<array-key, mixed>
      */
     protected function insertInput(Request $request): array
     {
@@ -261,7 +253,7 @@ class DeptControllerCrud extends BaseController
      * 自定义列表查询参数获取
      *
      * @param Request $request
-     * @return array
+     * @return array<array-key, mixed>
      */
     protected function selectInput(Request $request): array
     {

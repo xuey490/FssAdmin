@@ -31,6 +31,7 @@ class ArticleController extends BaseController
     /**
      * 文章服务
      * @var SysArticleService
+     * @return mixed
      */
     protected SysArticleService $articleService;
 
@@ -191,7 +192,7 @@ class ArticleController extends BaseController
      * 获取请求数据（支持 JSON 和 form-data）
      *
      * @param Request $request 请求对象
-     * @return array
+     * @return array<array-key, mixed>
      */
     protected function getRequestData(Request $request): array
     {
@@ -231,6 +232,6 @@ class ArticleController extends BaseController
             return 0;
         }
         $user = \App\Models\SysUser::find($userId);
-        return $user?->dept_id ?? 0;
+        return $user->dept_id ?? 0;
     }
 }

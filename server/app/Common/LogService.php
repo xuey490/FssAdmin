@@ -6,7 +6,8 @@ declare(strict_types=1);
 namespace App\Common;
 
 class LogService {
-    public function info(string $msg) {
-        dump( "[LOG]: $msg <br>");
+    public function info(string $msg): mixed {
+        //dump( "[LOG]: $msg <br>");
+        return null;
     }
 }

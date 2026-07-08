@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-19
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -30,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $address        租户地址
  * @property string|null $logo_url       租户Logo URL
  * @property int         $status         状态：0=禁用 1=启用
- * @property \DateTime|null $expire_time 过期时间
+ * @property \Illuminate\Support\Carbon|null $expire_time 过期时间
  * @property int         $max_users      最大用户数，0=无限制
  * @property int         $max_depts      最大部门数，0=无限制
  * @property int         $max_roles      最大角色数，0=无限制
@@ -44,7 +45,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read SysUser[] $users       租户下的用户
  * @property-read SysDept[] $depts       租户下的部门
  * @property-read SysRole[] $roles       租户下的角色
- */
+ 
+ * @property string $create_time
+ * @property string $update_time
+ * @property string $delete_time
+ * @property mixed $tenant_id
+*/
 class SysTenant extends BaseLaORMModel
 {
     use SoftDeletes;
@@ -52,12 +58,14 @@ class SysTenant extends BaseLaORMModel
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected $table = 'sa_system_tenant';
 
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
     /**
@@ -69,7 +77,8 @@ class SysTenant extends BaseLaORMModel
 
     /**
      * 可填充字段
-     * @var array
+     * @var array<int, string>
+     * @return mixed
      */
     protected $fillable = [
         'tenant_name',
@@ -91,7 +100,8 @@ class SysTenant extends BaseLaORMModel
 
     /**
      * 类型转换
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected $casts = [
         'id' => 'integer',
@@ -120,7 +130,7 @@ class SysTenant extends BaseLaORMModel
     /**
      * 租户下的用户（通过 sys_user_tenant 关联）
      *
-     * @return HasMany
+     * @return HasMany<SysUserTenant, $this>
      */
     public function users(): HasMany
     {
@@ -130,7 +140,7 @@ class SysTenant extends BaseLaORMModel
     /**
      * 租户下的部门
      *
-     * @return HasMany
+     * @return HasMany<SysDept, $this>
      */
     public function depts(): HasMany
     {
@@ -140,7 +150,7 @@ class SysTenant extends BaseLaORMModel
     /**
      * 租户下的角色
      *
-     * @return HasMany
+     * @return HasMany<SysRole, $this>
      */
     public function roles(): HasMany
     {
@@ -309,7 +319,7 @@ class SysTenant extends BaseLaORMModel
     /**
      * 获取有效的租户列表
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, static>
      */
     public static function getValidTenants()
     {
@@ -324,7 +334,7 @@ class SysTenant extends BaseLaORMModel
     /**
      * 获取租户统计信息
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getStatistics(): array
     {

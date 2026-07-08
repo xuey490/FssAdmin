@@ -21,17 +21,20 @@ use Framework\Basic\BaseService;
  * SysPostService 岗位服务
  *
  * 处理岗位相关的业务逻辑
+  * @extends BaseService<SysPostDao>
  */
 class SysPostService extends BaseService
 {
     /**
      * DAO 实例
      * @var SysPostDao
+     * @return mixed
      */
     protected SysPostDao $postDao;
 
     /**
      * 构造函数
+     * @return mixed
      */
     public function __construct()
     {
@@ -42,8 +45,8 @@ class SysPostService extends BaseService
     /**
      * 获取岗位列表
      *
-     * @param array $params 查询参数
-     * @return array
+     * @param array<array-key, mixed> $params 查询参数
+     * @return array<array-key, mixed>
      */
     public function getList(array $params): array
     {
@@ -90,7 +93,7 @@ class SysPostService extends BaseService
      * 获取岗位详情
      *
      * @param int $postId 岗位ID
-     * @return array|null
+     * @return array<array-key, mixed>|null
      */
     public function getDetail(int $postId): ?array
     {
@@ -111,7 +114,7 @@ class SysPostService extends BaseService
     /**
      * 创建岗位
      *
-     * @param array $data     岗位数据
+     * @param array<array-key, mixed> $data     岗位数据
      * @param int   $operator 操作人ID
      * @return SysPost|null
      */
@@ -133,7 +136,7 @@ class SysPostService extends BaseService
      * 更新岗位
      *
      * @param int   $postId   岗位ID
-     * @param array $data     岗位数据
+     * @param array<array-key, mixed> $data     岗位数据
      * @param int   $operator 操作人ID
      * @return bool
      */
@@ -187,6 +190,8 @@ class SysPostService extends BaseService
      * @param int $enabled 状态
      * @return bool
      */
+    /**
+     */
     public function updateEnabled(int $postId, int $enabled): bool
     {
         return $this->postDao->updateEnabled($postId, $enabled);
@@ -195,7 +200,7 @@ class SysPostService extends BaseService
     /**
      * 获取所有启用的岗位
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getAllEnabled(): array
     {
@@ -207,7 +212,7 @@ class SysPostService extends BaseService
      *
      * 返回包含 id、name 字段的扁平数组
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getAccessPostList(): array
     {
@@ -228,8 +233,8 @@ class SysPostService extends BaseService
     /**
      * 格式化岗位数据
      *
-     * @param SysPost|array $post 岗位
-     * @return array
+     * @param SysPost|array<string, mixed> $post 岗位
+     * @return array<array-key, mixed>
      */
     protected function formatPost(SysPost|array $post): array
     {
@@ -243,13 +248,13 @@ class SysPostService extends BaseService
         if (isset($data['created_at'])) {
             $data['created_at'] = is_string($data['created_at'])
                 ? $data['created_at']
-                : $data['created_at']?->format('Y-m-d H:i:s');
+                : $data['created_at']->format('Y-m-d H:i:s');
         }
 
         if (isset($data['updated_at'])) {
             $data['updated_at'] = is_string($data['updated_at'])
                 ? $data['updated_at']
-                : $data['updated_at']?->format('Y-m-d H:i:s');
+                : $data['updated_at']->format('Y-m-d H:i:s');
         }
 
         // 状态文本

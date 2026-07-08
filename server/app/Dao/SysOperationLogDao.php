@@ -36,7 +36,7 @@ class SysOperationLogDao extends BaseDao
      * @param int   $userId 用户ID
      * @param int   $page   页码
      * @param int   $limit  每页数量
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getListByUserId(int $userId, int $page = 1, int $limit = 20): array
     {
@@ -49,7 +49,7 @@ class SysOperationLogDao extends BaseDao
      * @param string $module 模块名称
      * @param int    $page   页码
      * @param int    $limit  每页数量
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getListByModule(string $module, int $page = 1, int $limit = 20): array
     {
@@ -86,7 +86,7 @@ class SysOperationLogDao extends BaseDao
      *
      * @param int $page  页码
      * @param int $limit 每页数量
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getTodayList(int $page = 1, int $limit = 20): array
     {

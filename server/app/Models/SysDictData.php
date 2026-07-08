@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-12
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -34,7 +35,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \DateTime   $deleted_at   删除时间
  *
  * @property-read SysDictType $dictType 字典类型
- */
+ 
+ * @property int $type_id
+ * @property mixed $label
+ * @property mixed $value
+ * @property mixed $code
+ * @property int $sort
+ * @property string $create_time
+ * @property string $update_time
+ * @property string $delete_time
+ * @property mixed $tenant_id
+*/
 class SysDictData extends BaseLaORMModel
 {
     use SoftDeletes;
@@ -42,12 +53,14 @@ class SysDictData extends BaseLaORMModel
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected $table = 'sa_system_dict_data';
 
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
     /**
@@ -59,7 +72,8 @@ class SysDictData extends BaseLaORMModel
 
     /**
      * 可填充字段
-     * @var array
+     * @var array<int, string>
+     * @return mixed
      */
     protected $fillable = [
         'type_id',
@@ -76,7 +90,8 @@ class SysDictData extends BaseLaORMModel
 
     /**
      * 类型转换
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected $casts = [
         'id' => 'integer',
@@ -120,7 +135,7 @@ class SysDictData extends BaseLaORMModel
     /**
      * 所属字典类型
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysDictType, $this>
      */
     public function dictType(): BelongsTo
     {
@@ -142,7 +157,7 @@ class SysDictData extends BaseLaORMModel
     /**
      * 获取可用颜色列表
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getAvailableColors(): array
     {

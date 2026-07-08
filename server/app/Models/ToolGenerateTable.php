@@ -8,25 +8,75 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-29
- */
+ 
+ * @property mixed $table_name
+ * @property mixed $table_comment
+ * @property mixed $stub
+ * @property mixed $template
+ * @property mixed $namespace
+ * @property mixed $package_name
+ * @property mixed $business_name
+ * @property mixed $class_name
+ * @property mixed $menu_name
+ * @property int $belong_menu_id
+ * @property mixed $tpl_category
+ * @property int $generate_type
+ * @property mixed $generate_path
+ * @property int $generate_model
+ * @property mixed $generate_menus
+ * @property int $build_menu
+ * @property int $component_type
+ * @property mixed $options
+ * @property int $form_width
+ * @property int $is_full
+ * @property mixed $remark
+ * @property mixed $source
+ * @property int $created_by
+ * @property int $updated_by
+ * @property int $id
+ * @property string $create_time
+ * @property string $update_time
+ * @property string $delete_time
+ * @property mixed $tenant_id
+ * @property mixed $status
+ * @property mixed $created_at
+ * @property mixed $updated_at
+ * @property mixed $deleted_at
+*/
 
 namespace App\Models;
 
 use Framework\Basic\BaseLaORMModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @package App\Models
+ * @property mixed $table_name
+ */
 class ToolGenerateTable extends BaseLaORMModel
 {
     use SoftDeletes;
 
     // ========== 基础配置 ==========
 
+    /**
+     * @return mixed
+     */
     protected $table = 'sa_tool_generate_tables';
 
+    /**
+     * @return mixed
+     */
     public $incrementing = true;
 
+    /**
+     * @return mixed
+     */
     protected $keyType = 'int';
 
+    /**
+     * @return mixed
+     */
     protected $dateFormat = 'Y-m-d H:i:s';
 
     const CREATED_AT = 'create_time';
@@ -35,6 +85,9 @@ class ToolGenerateTable extends BaseLaORMModel
 
     // ========== 可填字段 ==========
 
+    /**
+     * @return mixed
+     */
     protected $fillable = [
         'table_name',
         'table_comment',
@@ -64,6 +117,7 @@ class ToolGenerateTable extends BaseLaORMModel
 
     // ========== 类型转换 ==========
 
+    /** @var array<string, string> */
     protected $casts = [
         'id'             => 'integer',
         'belong_menu_id' => 'integer',
@@ -102,7 +156,7 @@ class ToolGenerateTable extends BaseLaORMModel
     /**
      * 关联字段配置（一对多）
      */
-    public function columns()
+    public function columns(): mixed
     {
         return $this->hasMany(ToolGenerateColumn::class, 'table_id', 'id');
     }

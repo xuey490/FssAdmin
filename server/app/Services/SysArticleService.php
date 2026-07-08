@@ -20,17 +20,20 @@ use Framework\Basic\BaseService;
  * SysArticleService 文章服务
  *
  * 处理文章相关的业务逻辑
+  * @extends BaseService<SysArticleDao>
  */
 class SysArticleService extends BaseService
 {
     /**
      * DAO 实例
      * @var SysArticleDao
+     * @return mixed
      */
     protected SysArticleDao $articleDao;
 
     /**
      * 构造函数
+     * @return mixed
      */
     public function __construct()
     {
@@ -41,10 +44,10 @@ class SysArticleService extends BaseService
     /**
      * 获取文章列表
      *
-     * @param array $params  查询参数
+     * @param array<array-key, mixed> $params  查询参数
      * @param int   $page    页码
      * @param int   $pageSize 每页数量
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getList(array $params, int $page = 1, int $pageSize = 10): array
     {
@@ -105,7 +108,7 @@ class SysArticleService extends BaseService
      * 获取文章详情
      *
      * @param int $articleId 文章ID
-     * @return array|null
+     * @return array<array-key, mixed>|null
      */
     public function getDetail(int $articleId): ?array
     {
@@ -121,7 +124,7 @@ class SysArticleService extends BaseService
     /**
      * 创建文章
      *
-     * @param array $data     文章数据
+     * @param array<array-key, mixed> $data     文章数据
      * @param int   $userId   用户ID
      * @param int   $deptId   部门ID
      * @param int   $tenantId 租户ID
@@ -166,7 +169,7 @@ class SysArticleService extends BaseService
      * 更新文章
      *
      * @param int   $articleId 文章ID
-     * @param array $data      文章数据
+     * @param array<array-key, mixed> $data      文章数据
      * @param int   $userId    用户ID
      * @return bool
      * @throws \Exception
@@ -221,8 +224,8 @@ class SysArticleService extends BaseService
     /**
      * 格式化文章数据
      *
-     * @param SysArticle|array $article 文章
-     * @return array
+     * @param SysArticle|array<string, mixed> $article 文章
+     * @return array<array-key, mixed>
      */
     protected function formatArticle(SysArticle|array $article): array
     {
@@ -236,13 +239,13 @@ class SysArticleService extends BaseService
         if (isset($data['create_time'])) {
             $data['create_time'] = is_string($data['create_time'])
                 ? $data['create_time']
-                : $data['create_time']?->format('Y-m-d H:i:s');
+                : $data['create_time']->format('Y-m-d H:i:s');
         }
 
         if (isset($data['update_time'])) {
             $data['update_time'] = is_string($data['update_time'])
                 ? $data['update_time']
-                : $data['update_time']?->format('Y-m-d H:i:s');
+                : $data['update_time']->format('Y-m-d H:i:s');
         }
 
         // 状态文本

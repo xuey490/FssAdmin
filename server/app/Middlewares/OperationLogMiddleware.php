@@ -21,11 +21,14 @@ class OperationLogMiddleware
     /**
      * IP地理位置服务
      * @var IpLocationService
+     * @return mixed
      */
     protected IpLocationService $ipLocationService;
 	
     /**
      * 白名单路径前缀（不记录操作日志）
+     * @return mixed
+     * @var array<array-key, mixed>
      */
     protected array $whitelist = [
         '/api/core/login',
@@ -40,6 +43,7 @@ class OperationLogMiddleware
 
     /**
      * 构造函数
+     * @return mixed
      */
     public function __construct()
     {
@@ -70,7 +74,7 @@ class OperationLogMiddleware
         return $response;
     }
 
-    protected function writeLog(Request $request, Response $response, $duration): void
+    protected function writeLog(Request $request, Response $response, float $duration): void
     {
         try {
             $user      = $request->attributes->get('user', []);

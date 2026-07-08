@@ -25,12 +25,14 @@ class LoginLogMiddleware
     /**
      * IP地理位置服务
      * @var IpLocationService
+     * @return mixed
      */
     protected IpLocationService $ipLocationService;
 
     /**
      * 需要记录登录日志的路径
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected array $trackedPaths = [
         '/api/core/login',
@@ -38,6 +40,7 @@ class LoginLogMiddleware
 
     /**
      * 构造函数
+     * @return mixed
      */
     public function __construct()
     {
@@ -114,7 +117,7 @@ class LoginLogMiddleware
      * 解析User-Agent
      *
      * @param string $userAgent User-Agent字符串
-     * @return array
+     * @return array<array-key, mixed>
      */
     protected function parseUserAgent(string $userAgent): array
     {
@@ -147,6 +150,12 @@ class LoginLogMiddleware
         ];
     }
 
+    /**
+     * 解析请求中的用户名
+     *
+     * @param array<array-key, mixed> $responseBody 响应体
+     * @return string
+     */
     protected function resolveUsername(Request $request, array $responseBody): string
     {
         $requestBody = $this->extractRequestBody($request);
@@ -159,6 +168,12 @@ class LoginLogMiddleware
         return is_string($user) ? $user : '';
     }
 
+    /**
+     * 提取请求体内容
+     *
+     * @param Request $request 请求对象
+     * @return array<array-key, mixed>
+     */
     protected function extractRequestBody(Request $request): array
     {
         $body = [];

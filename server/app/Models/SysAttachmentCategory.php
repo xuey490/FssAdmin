@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-12
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -29,12 +30,26 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string      $remark        备注
  * @property int         $created_by    创建人ID
  * @property int         $updated_by    更新人ID
- */
+ 
+ * @property string $create_time
+ * @property string $update_time
+ * @property string $delete_time
+ * @property mixed $tenant_id
+ * @property mixed $created_at
+ * @property mixed $updated_at
+ * @property mixed $deleted_at
+*/
 class SysAttachmentCategory extends BaseLaORMModel
 {
     use SoftDeletes;
 
+    /**
+     * @return mixed
+     */
     protected $table = 'sa_system_category';
+    /**
+     * @return mixed
+     */
     protected $primaryKey = 'id';
 
     /**
@@ -44,6 +59,9 @@ class SysAttachmentCategory extends BaseLaORMModel
     const UPDATED_AT = 'update_time';
     const DELETED_AT = 'delete_time';
 
+    /**
+     * @return mixed
+     */
     protected $fillable = [
         'parent_id',
         'level',
@@ -55,6 +73,7 @@ class SysAttachmentCategory extends BaseLaORMModel
         'updated_by',
     ];
 
+    /** @var array<string, string> */
     protected $casts = [
         'id'          => 'integer',
         'parent_id'   => 'integer',
@@ -72,16 +91,25 @@ class SysAttachmentCategory extends BaseLaORMModel
 
     // ==================== 关联关系 ====================
 
+    /**
+     * @return BelongsTo<SysAttachmentCategory, $this>
+     */
     public function parent(): BelongsTo
     {
         return $this->belongsTo(SysAttachmentCategory::class, 'parent_id', 'id');
     }
 
+    /**
+     * @return HasMany<SysAttachmentCategory, $this>
+     */
     public function children(): HasMany
     {
         return $this->hasMany(SysAttachmentCategory::class, 'parent_id', 'id');
     }
 
+    /**
+     * @return HasMany<SysAttachment, $this>
+     */
     public function attachments(): HasMany
     {
         return $this->hasMany(SysAttachment::class, 'category_id', 'id');
@@ -99,6 +127,8 @@ class SysAttachmentCategory extends BaseLaORMModel
         return self::where('parent_id', $this->id)->whereNull('delete_time')->exists();
     }
 
+    /**
+     */
     public function hasAttachments(): bool
     {
         return SysAttachment::where('category_id', $this->id)->whereNull('delete_time')->exists();
@@ -106,9 +136,12 @@ class SysAttachmentCategory extends BaseLaORMModel
 
     /**
      * 构建分类树（带 label 字段供前端 el-tree 使用）
+     *
+     * @return array<int, array<string, mixed>>
      */
     public static function buildTree(int $parentId = 0): array
     {
+        /** @var \Illuminate\Database\Eloquent\Collection<int, static> $items */
         $items = self::where('parent_id', $parentId)
             ->whereNull('delete_time')
             ->orderBy('sort')

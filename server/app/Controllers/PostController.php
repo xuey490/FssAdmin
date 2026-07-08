@@ -31,6 +31,7 @@ class PostController extends BaseController
     /**
      * 岗位服务
      * @var SysPostService
+     * @return mixed
      */
     protected SysPostService $postService;
 

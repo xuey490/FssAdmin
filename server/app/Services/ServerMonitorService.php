@@ -8,6 +8,7 @@ class ServerMonitorService
 {
     /**
      * 获取完整服务器信息
+     * @return array<array-key, mixed>
      */
     public function getServerInfo(): array
     {
@@ -15,11 +16,13 @@ class ServerMonitorService
             'memory' => $this->getMemoryInfo(),
             'phpEnv' => $this->getPhpEnvInfo(),
             'disk'   => $this->getDiskInfo(),
+            'cpu'    => $this->getCpuInfo(),
         ];
     }
 
     /**
      * 获取完整监控信息（内存 + PHP环境 + 磁盘 + 缓存）
+     * @return array<array-key, mixed>
      */
     public function getFullInfo(): array
     {
@@ -30,6 +33,7 @@ class ServerMonitorService
 
     /**
      * 获取缓存信息（OPcache）
+     * @return array<array-key, mixed>
      */
     public function getCacheInfo(): array
     {
@@ -54,11 +58,29 @@ class ServerMonitorService
     }
 
     /**
+     * 获取 PHP 环境信息（供 MonitorController.php 使用）
+     *
+     * @return array
+     */
+    /**
+     * 获取 PHP 信息
+     *
+     * @return array<array-key, mixed>
+     */
+    public function getPhpInfo(): array
+    {
+        return $this->getPhpEnvInfo();
+    }
+
+    /**
      * 清理缓存（OPcache + stat cache）
+     *
+     * @return array<array-key, mixed>
      */
     public function clearCache(): array
     {
         $results = [];
+
         if (function_exists('opcache_reset')) {
             $results['opcache'] = opcache_reset();
         }
@@ -70,6 +92,8 @@ class ServerMonitorService
     /**
      * 内存信息
      * 兼容 Linux / Windows
+     *
+     * @return array<array-key, mixed>
      */
     public function getMemoryInfo(): array
     {
@@ -77,36 +101,15 @@ class ServerMonitorService
         $freeBytes  = 0;
 
         if (PHP_OS_FAMILY === 'Windows') {
-            // 方式1: wmic os get TotalVisibleMemorySize,FreePhysicalMemory (单位 KB)
-            $out = [];
-            exec('wmic os get TotalVisibleMemorySize,FreePhysicalMemory', $out);
-            if (!empty($out[1])) {
-                $line  = preg_replace('/\s+/', ' ', trim($out[1]));
-                $parts = explode(' ', $line);
-                if (count($parts) >= 2) {
-                    $freeBytes  = (int)$parts[0] * 1024;
-                    $totalBytes = (int)$parts[1] * 1024;
-                }
-            }
-
-            // 方式2: COM/WMI 兜底（wmic 失败或返回0时使用）
-            if ($totalBytes === 0 && class_exists('COM')) {
-                try {
-                    $wmi = new \COM('winmgmts://./root/cimv2');
-
-                    $query = $wmi->ExecQuery('SELECT TotalPhysicalMemory FROM Win32_ComputerSystem');
-                    foreach ($query as $item) {
-                        $totalBytes = (int)$item->TotalPhysicalMemory;
-                        break;
-                    }
-
-                    $query = $wmi->ExecQuery('SELECT FreePhysicalMemory FROM Win32_OperatingSystem');
-                    foreach ($query as $item) {
-                        $freeBytes = (int)$item->FreePhysicalMemory * 1024;
-                        break;
-                    }
-                } catch (\Throwable $e) {
-                    // COM 也不可用，保持 0
+            // 使用 PowerShell 获取内存信息（wmic 已在新版 Windows 中移除）
+            $psCommand = 'powershell -Command "Get-CimInstance Win32_OperatingSystem | Select-Object TotalVisibleMemorySize, FreePhysicalMemory | ConvertTo-Json"';
+            $output = shell_exec($psCommand);
+            
+            if ($output) {
+                $memData = json_decode($output, true);
+                if (is_array($memData)) {
+                    $totalBytes = (int)($memData['TotalVisibleMemorySize'] ?? 0) * 1024;
+                    $freeBytes  = (int)($memData['FreePhysicalMemory'] ?? 0) * 1024;
                 }
             }
         } else {
@@ -135,6 +138,8 @@ class ServerMonitorService
 
     /**
      * PHP 及环境信息
+     *
+     * @return array<string, mixed>
      */
     public function getPhpEnvInfo(): array
     {
@@ -159,6 +164,8 @@ class ServerMonitorService
     /**
      * 磁盘分区信息
      * 兼容 Linux / Windows
+     *
+     * @return array<array-key, mixed>
      */
     public function getDiskInfo(): array
     {
@@ -223,6 +230,195 @@ class ServerMonitorService
         }
 
         return $disks;
+    }
+
+
+    /**
+     * 获取 CPU 信息
+     * 兼容 Linux / Windows
+     *
+     * @return array<string, mixed>
+     */
+    public function getCpuInfo(): array
+    {
+        $info = [
+            'architecture'     => 'unknown',
+            'model'           => 'unknown',
+            'physical_cores'  => 0,
+            'logical_cores'   => 0,
+            'max_frequency'   => 'unknown',
+            'current_usage'   => 0,
+        ];
+
+        if (PHP_OS_FAMILY === 'Windows') {
+            // Windows: 使用 PowerShell 获取 CPU 信息（wmic 已在新版 Windows 中移除）
+            $psCommand = 'powershell -Command "Get-CimInstance Win32_Processor | Select-Object Name, NumberOfCores, NumberOfLogicalProcessors, MaxClockSpeed, Architecture | ConvertTo-Json"';
+            $output = shell_exec($psCommand);
+            
+            if ($output) {
+                $cpuData = json_decode($output, true);
+                if (is_array($cpuData) && isset($cpuData['Name'])) {
+                    // 单个 CPU
+                    $cpuData = [$cpuData];
+                }
+                if (!empty($cpuData)) {
+                    $cpu = is_array($cpuData[0]) ? $cpuData[0] : $cpuData;
+                    $info['model'] = $cpu['Name'] ?? 'unknown';
+                    $info['physical_cores'] = (int)($cpu['NumberOfCores'] ?? 0);
+                    $info['logical_cores'] = (int)($cpu['NumberOfLogicalProcessors'] ?? 0);
+                    $maxMhz = $cpu['MaxClockSpeed'] ?? 0;
+                    $info['max_frequency'] = $maxMhz > 0 ? round($maxMhz / 1000, 2) . ' GHz' : 'unknown';
+                    
+                    // 架构映射
+                    $archMap = [
+                        0 => 'x86',
+                        1 => 'MIPS',
+                        2 => 'Alpha',
+                        5 => 'ARM',
+                        6 => 'IA64',
+                        9 => 'x64',
+                        12 => 'ARM64',
+                    ];
+                    $info['architecture'] = $archMap[(int)($cpu['Architecture'] ?? 9)] ?? 'unknown';
+                }
+            }
+            
+            // 获取 CPU 利用率
+            $info['current_usage'] = $this->getWindowsCpuUsage();
+
+        } else {
+            // Linux: 读取 /proc/cpuinfo
+            if (is_readable('/proc/cpuinfo')) {
+                $cpuinfo = file_get_contents('/proc/cpuinfo');
+                
+                // 获取 CPU 型号
+                if (preg_match('/model name\s*:\s*(.+)/i', $cpuinfo, $matches)) {
+                    $info['model'] = trim($matches[1]);
+                }
+                
+                // 获取架构
+                if (preg_match('/architecture\s*:\s*(.+)/i', $cpuinfo, $matches)) {
+                    $info['architecture'] = trim($matches[1]);
+                } elseif (preg_match('/Hardware\s*:\s*(.+)/i', $cpuinfo, $matches)) {
+                    $info['architecture'] = trim($matches[1]);
+                } else {
+                    $info['architecture'] = trim(shell_exec('uname -m') ?? 'unknown');
+                }
+                
+                // 统计物理核心数和逻辑核心数
+                $physicalIds = [];
+                $coreIds = [];
+                $processors = 0;
+                
+                foreach (explode("\n", $cpuinfo) as $line) {
+                    if (preg_match('/^processor\s*:\s*(\d+)/i', $line, $m)) {
+                        $processors = max($processors, (int)$m[1] + 1);
+                    }
+                    if (preg_match('/^physical id\s*:\s*(\d+)/i', $line, $m)) {
+                        $physicalIds[(int)$m[1]] = true;
+                    }
+                    if (preg_match('/^core id\s*:\s*(\d+)/i', $line, $m)) {
+                        $coreIds[(int)$m[1]] = true;
+                    }
+                }
+                
+                $physicalCount = count($physicalIds);
+                $info['physical_cores'] = $physicalCount > 0 ? $physicalCount * count($coreIds) : $processors;
+                $info['logical_cores'] = $processors;
+                
+                // 获取 CPU 最大频率
+                if (preg_match('/cpu MHz\s*:\s*([\d.]+)/i', $cpuinfo, $matches)) {
+                    $info['max_frequency'] = round((float)$matches[1] / 1000, 2) . ' GHz';
+                } elseif (preg_match('/cpu max MHz\s*:\s*([\d.]+)/i', $cpuinfo, $matches)) {
+                    $info['max_frequency'] = round((float)$matches[1] / 1000, 2) . ' GHz';
+                }
+                
+                // 获取 CPU 利用率
+                $info['current_usage'] = $this->getLinuxCpuUsage();
+            }
+        }
+
+        return $info;
+    }
+
+    /**
+     * 获取 Windows CPU 利用率
+     */
+    private function getWindowsCpuUsage(): float
+    {
+        // 使用 PowerShell 获取 CPU 利用率
+        $psCommand = 'powershell -Command "(Get-CimInstance Win32_PerfFormattedData_PerfOS_Processor | Where-Object { $_.Name -eq \'_Total\' }).PercentProcessorTime"';
+        $output = shell_exec($psCommand);
+        
+        if ($output) {
+            $usage = trim($output);
+            if (is_numeric($usage)) {
+                return round((float)$usage, 1);
+            }
+        }
+        
+        return 0;
+    }
+
+    /**
+     * 获取 Linux CPU 利用率
+     */
+            /**
+             */
+    private function getLinuxCpuUsage(): float
+    {
+        // 方法1: 读取 /proc/stat
+        if (is_readable('/proc/stat')) {
+            $stat1 = $this->readCpuStats();
+            usleep(100000); // 等待 100ms
+            $stat2 = $this->readCpuStats();
+            
+            $totalDiff = $stat2['total'] - $stat1['total'];
+            $idleDiff = $stat2['idle'] - $stat1['idle'];
+            
+            if ($totalDiff > 0) {
+                return round(($totalDiff - $idleDiff) / $totalDiff * 100, 1);
+            }
+        }
+        
+        // 方法2: 使用 top 命令
+        $output = shell_exec("top -bn1 2>/dev/null | grep 'Cpu(s)' | awk '{print \$2}'");
+        if ($output) {
+            $usage = trim($output);
+            if (is_numeric($usage)) {
+                return round((float)$usage, 1);
+            }
+        }
+        
+        return 0;
+    }
+
+    /**
+     * 读取 /proc/stat 中的 CPU 统计数据
+     *
+     * @return array<string, mixed>
+     */
+    private function readCpuStats(): array
+    {
+        $stat = file_get_contents('/proc/stat');
+        if (preg_match('/cpu\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/', $stat, $matches)) {
+            $user = (int)$matches[1];
+            $nice = (int)$matches[2];
+            $system = (int)$matches[3];
+            $idle = (int)$matches[4];
+            $iowait = (int)$matches[5];
+            $irq = (int)$matches[6];
+            $softirq = (int)$matches[7];
+            
+            $total = $user + $nice + $system + $idle + $iowait + $irq + $softirq;
+            
+            return [
+                'total' => $total,
+                'idle'  => $idle,
+            ];
+        }
+        
+        return ['total' => 0, 'idle' => 0];
     }
 
     // ==================== helpers ====================

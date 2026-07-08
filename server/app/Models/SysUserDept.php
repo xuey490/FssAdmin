@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-12
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -33,18 +34,27 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read SysUser   $user   关联的用户
  * @property-read SysTenant $tenant 关联的租户
  * @property-read SysDept   $dept   关联的部门
- */
+ 
+ * @property mixed $status
+ * @property mixed $remark
+ * @property mixed $delete_time
+ * @property mixed $created_at
+ * @property mixed $updated_at
+ * @property mixed $deleted_at
+*/
 class SysUserDept extends BaseLaORMModel
 {
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected $table = 'sa_system_user_dept';
 
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
 
@@ -56,7 +66,8 @@ class SysUserDept extends BaseLaORMModel
 
     /**
      * 可填充字段
-     * @var array
+     * @var array<int, string>
+     * @return mixed
      */
     protected $fillable = [
         'user_id',
@@ -68,7 +79,8 @@ class SysUserDept extends BaseLaORMModel
 
     /**
      * 类型转换
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected $casts = [
         'id' => 'integer',
@@ -86,7 +98,7 @@ class SysUserDept extends BaseLaORMModel
     /**
      * 关联的用户
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysUser, $this>
      */
     public function user(): BelongsTo
     {
@@ -96,7 +108,7 @@ class SysUserDept extends BaseLaORMModel
     /**
      * 关联的租户
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysTenant, $this>
      */
     public function tenant(): BelongsTo
     {
@@ -106,7 +118,7 @@ class SysUserDept extends BaseLaORMModel
     /**
      * 关联的部门
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysDept, $this>
      */
     public function dept(): BelongsTo
     {
@@ -170,7 +182,7 @@ class SysUserDept extends BaseLaORMModel
      *
      * @param int $deptId   部门ID
      * @param int $tenantId 租户ID
-     * @return array 用户ID数组
+     * @return array<array-key, mixed> 用户ID数组
      */
     public static function getUsersByDept(int $deptId, int $tenantId): array
     {
@@ -184,7 +196,7 @@ class SysUserDept extends BaseLaORMModel
      * 获取用户在所有租户的部门关联
      *
      * @param int $userId 用户ID
-     * @return array 格式：[['tenant_id' => 1, 'dept_id' => 5], ...]
+     * @return array<array-key, mixed> 格式：[['tenant_id' => 1, 'dept_id' => 5], ...]
      */
     public static function getDeptsByUser(int $userId): array
     {

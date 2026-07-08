@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-19
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -21,7 +22,20 @@ use Framework\Basic\BaseLaORMModel;
  *
  * @property int $user_id 用户ID
  * @property int $post_id 岗位ID
- */
+ 
+ * @property int $tenant_id
+ * @property int $status
+ * @property int $created_by
+ * @property int $updated_by
+ * @property string $create_time
+ * @property string $update_time
+ * @property string $delete_time
+ * @property mixed $id
+ * @property mixed $remark
+ * @property mixed $created_at
+ * @property mixed $updated_at
+ * @property mixed $deleted_at
+*/
 class SysUserPost extends BaseLaORMModel
 {
     const CREATED_AT = 'create_time';
@@ -30,30 +44,35 @@ class SysUserPost extends BaseLaORMModel
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected $table = 'sa_system_user_post';
 
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
 
     /**
      * 是否自增主键
      * @var bool
+     * @return mixed
      */
     public $incrementing = true;
 
     /**
      * 是否包含时间戳
      * @var bool
+     * @return mixed
      */
     public $timestamps = true;
 
     /**
      * 可填充字段
-     * @var array
+     * @var array<int, string>
+     * @return mixed
      */
     protected $fillable = [
         'user_id',
@@ -66,7 +85,8 @@ class SysUserPost extends BaseLaORMModel
 
     /**
      * 类型转换
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected $casts = [
         'user_id' => 'integer',
@@ -86,7 +106,7 @@ class SysUserPost extends BaseLaORMModel
      * 根据用户ID获取岗位ID列表
      *
      * @param int $userId 用户ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getPostIdsByUser(int $userId): array
     {
@@ -97,7 +117,7 @@ class SysUserPost extends BaseLaORMModel
      * 根据岗位ID获取用户ID列表
      *
      * @param int $postId 岗位ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getUserIdsByPost(int $postId): array
     {
@@ -108,7 +128,7 @@ class SysUserPost extends BaseLaORMModel
      * 批量保存用户岗位关联
      *
      * @param int   $userId  用户ID
-     * @param array $postIds 岗位ID列表
+     * @param array<array-key, mixed> $postIds 岗位ID列表
      * @return void
      */
     public static function saveUserPosts(int $userId, array $postIds, int $tenantId, int $operator = 0): void
@@ -136,7 +156,7 @@ class SysUserPost extends BaseLaORMModel
      * 批量保存岗位用户关联
      *
      * @param int   $postId  岗位ID
-     * @param array $userIds 用户ID列表
+     * @param array<array-key, mixed> $userIds 用户ID列表
      * @return void
      */
     public static function savePostUsers(int $postId, array $userIds, int $tenantId, int $operator = 0): void

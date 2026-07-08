@@ -31,6 +31,7 @@ class DeptController extends BaseController
     /**
      * 部门服务
      * @var SysDeptService
+     * @return mixed
      */
     protected SysDeptService $deptService;
 

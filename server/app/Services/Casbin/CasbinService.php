@@ -32,17 +32,20 @@ class CasbinService
     /**
      * Enforcer 实例
      * @var Enforcer|null
+     * @return mixed
      */
     protected ?Enforcer $enforcer = null;
 
     /**
      * 配置
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected array $config;
 
     /**
      * 构造函数
+     * @return mixed
      */
     public function __construct()
     {
@@ -130,10 +133,10 @@ EOT;
      * @param string     $action   操作 (如: GET, POST, *)
      * @return bool
      */
-    public function checkPermission(int|string $user, string $resource, string $action = '*'): bool
+    public function checkPermission(int|string $user, string $resource, string $action = '*', ?string $tenantId = null): bool
     {
         // 检查缓存
-        $cacheKey = $this->getCacheKey('permission', $user, $resource, $action);
+        $cacheKey = $this->getCacheKey('permission', $user, $resource, $action, $tenantId);
         
         if ($this->isCacheEnabled()) {
             $cached = app('cache')->get($cacheKey);
@@ -169,7 +172,7 @@ EOT;
      * 获取用户的所有角色
      *
      * @param int $userId 用户ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getRolesForUser(int $userId): array
     {
@@ -180,7 +183,7 @@ EOT;
      * 获取角色的所有权限
      *
      * @param string $role 角色编码
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getPermissionsForRole(string $role): array
     {
@@ -295,7 +298,7 @@ EOT;
      */
     public function deletePermission(string $role, string $resource, string $action = '*'): bool
     {
-        return $this->getEnforcer()->deletePolicy($role, $resource, $action);
+        return $this->getEnforcer()->removePolicy($role, $resource, $action);
     }
 
     /**
@@ -354,6 +357,7 @@ EOT;
             }
 
             // 获取菜单（含 slug 的按钮/API 类型菜单才写入 Casbin 权限策略）
+            /** @var \Illuminate\Database\Eloquent\Collection<int, SysMenu> $menus */
             $menus = SysMenu::whereIn('id', $menuIds)
                 ->where('status', SysMenu::STATUS_ENABLED)
                 ->whereNotNull('slug')
@@ -426,6 +430,7 @@ EOT;
             }
 
             // 获取菜单（含 slug 的按钮/API 类型菜单才写入 Casbin 权限策略）
+            /** @var \Illuminate\Database\Eloquent\Collection<int, SysMenu> $menus */
             $menus = SysMenu::whereIn('id', $menuIds)
                 ->where('status', SysMenu::STATUS_ENABLED)
                 ->whereNotNull('slug')

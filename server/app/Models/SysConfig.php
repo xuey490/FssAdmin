@@ -24,12 +24,25 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int         $updated_by     更新人ID
  * @property \DateTime   $created_at     创建时间
  * @property \DateTime   $updated_at     更新时间
- */
+ 
+ * @property string $create_time
+ * @property string $update_time
+ * @property string $delete_time
+ * @property mixed $tenant_id
+ * @property mixed $status
+ * @property mixed $deleted_at
+*/
 class SysConfig extends BaseLaORMModel
 {
     use SoftDeletes;
 
+    /**
+     * @return mixed
+     */
     protected $table = 'sa_system_config';
+    /**
+     * @return mixed
+     */
     protected $primaryKey = 'id';
     /**
      * 自定义时间戳字段名
@@ -38,6 +51,9 @@ class SysConfig extends BaseLaORMModel
     const UPDATED_AT = 'update_time';
     const DELETED_AT = 'delete_time';
 
+    /**
+     * @return mixed
+     */
     protected $fillable = [
         'group_id',
         'key',
@@ -51,6 +67,7 @@ class SysConfig extends BaseLaORMModel
         'updated_by',
     ];
 
+    /** @var array<string, string> */
     protected $casts = [
         'id' => 'integer',
         'group_id' => 'integer',
@@ -64,6 +81,8 @@ class SysConfig extends BaseLaORMModel
 
     /**
      * 所属配置组
+     *
+     * @return BelongsTo<SysConfigGroup, $this>
      */
     public function group(): BelongsTo
     {

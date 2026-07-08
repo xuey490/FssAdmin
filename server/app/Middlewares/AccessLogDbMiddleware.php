@@ -14,7 +14,6 @@ class AccessLogDbMiddleware
     {
         $startTime = microtime(true);
 
-        /** @var Response $response */
         $response = $next($request);
 
         $durationMs = (int) round((microtime(true) - $startTime) * 1000);
@@ -26,8 +25,8 @@ class AccessLogDbMiddleware
             $requestBody = empty($params) ? null : json_encode($params, JSON_UNESCAPED_UNICODE);
 
             SysAccessLog::create([
-                'user_id' => $currentUser?->user_id ?? null,
-                'user_name' => $currentUser?->user_name ?? null,
+                'user_id' => $currentUser->user_id ?? null,
+                'user_name' => $currentUser->user_name ?? null,
                 'ip' => (string) ($request->getClientIp() ?? ''),
                 'method' => strtoupper((string) $request->getMethod()),
                 'path' => (string) $request->getPathInfo(),
@@ -45,6 +44,9 @@ class AccessLogDbMiddleware
         return $response;
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     private function getFilteredParams(Request $request): array
     {
         $params = $request->query->all() + $request->request->all();
@@ -67,4 +69,3 @@ class AccessLogDbMiddleware
         return $params;
     }
 }
-

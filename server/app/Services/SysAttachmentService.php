@@ -21,12 +21,22 @@ use Framework\Basic\BaseService;
 
 /**
  * SysAttachmentService 附件管理服务
+  * @extends BaseService<SysAttachmentDao>
  */
 class SysAttachmentService extends BaseService
 {
+    /**
+     * @return mixed
+     */
     protected SysAttachmentDao $attachmentDao;
+    /**
+     * @return mixed
+     */
     protected SysAttachmentCategoryDao $categoryDao;
 
+    /**
+     * @return mixed
+     */
     public function __construct()
     {
         parent::__construct();
@@ -38,6 +48,9 @@ class SysAttachmentService extends BaseService
 
     /**
      * 获取分类列表（带树形结构可选）
+     *
+     * @param array<array-key, mixed> $params
+     * @return array<array-key, mixed>
      */
     public function getCategoryList(array $params): array
     {
@@ -52,7 +65,9 @@ class SysAttachmentService extends BaseService
             $query->where('category_name', 'like', '%' . $params['category_name'] . '%');
         }
 
-        return $query->orderBy('sort')->get()->map(function ($item) {
+        /** @var \Illuminate\Database\Eloquent\Collection<int, SysAttachmentCategory> $categories */
+        $categories = $query->orderBy('sort')->get();
+        return $categories->map(function (SysAttachmentCategory $item) {
             $arr = $item->toArray();
             $arr['label'] = $item->category_name;
             $arr['value'] = $item->id;
@@ -63,6 +78,9 @@ class SysAttachmentService extends BaseService
     /**
      * 获取分类详情
      */
+    /**
+     * @return array<array-key, mixed>|null
+     */
     public function getCategoryDetail(int $id): ?array
     {
         $category = SysAttachmentCategory::find($id);
@@ -71,6 +89,10 @@ class SysAttachmentService extends BaseService
 
     /**
      * 创建分类
+     *
+     * @param array<array-key, mixed> $data
+     * @param int $operator
+     * @return SysAttachmentCategory
      */
     public function createCategory(array $data, int $operator = 0): SysAttachmentCategory
     {
@@ -91,6 +113,11 @@ class SysAttachmentService extends BaseService
 
     /**
      * 更新分类
+     *
+     * @param int $id
+     * @param array<array-key, mixed> $data
+     * @param int $operator
+     * @return bool
      */
     public function updateCategory(int $id, array $data, int $operator = 0): bool
     {
@@ -128,6 +155,9 @@ class SysAttachmentService extends BaseService
 
     /**
      * 删除分类
+     *
+     * @param int|string $id
+     * @return bool
      */
     public function deleteCategory(int|string $id): bool
     {
@@ -151,6 +181,9 @@ class SysAttachmentService extends BaseService
 
     /**
      * 获取附件列表
+     *
+     * @param array<array-key, mixed> $params
+     * @return array<array-key, mixed>
      */
     public function getList(array $params): array
     {
@@ -196,6 +229,8 @@ class SysAttachmentService extends BaseService
 
     /**
      * 获取附件详情
+     *
+     * @return array<array-key, mixed>|null
      */
     public function getDetail(int $id): ?array
     {
@@ -205,6 +240,8 @@ class SysAttachmentService extends BaseService
 
     /**
      * 读取 group_id=2 的上传配置，返回 key=>value 映射
+     *
+     * @return array<array-key, mixed>
      */
     protected function getUploadConfig(): array
     {
@@ -224,6 +261,7 @@ class SysAttachmentService extends BaseService
      * @param int    $categoryId 分类ID
      * @param int    $operator   操作人ID
      * @param string $mode       'image' 仅图片 | 'file' 图片+文件合并
+     * @return array<array-key, mixed>
      */
     public function upload($file, int $categoryId = 0, int $operator = 0, string $mode = 'image'): array
     {
@@ -356,6 +394,8 @@ class SysAttachmentService extends BaseService
     /**
      * 更新附件名称
      */
+        /**
+         */
     public function updateName(int $id, string $originName, int $operator = 0): bool
     {
         $attachment = SysAttachment::find($id);
@@ -370,6 +410,8 @@ class SysAttachmentService extends BaseService
 
     /**
      * 批量移动附件到分类
+     *
+     * @param array<array-key, mixed> $ids
      */
     public function moveToCategory(array $ids, int $categoryId, int $operator = 0): int
     {
@@ -402,6 +444,8 @@ class SysAttachmentService extends BaseService
 
     /**
      * 批量删除附件
+     *
+     * @param array<array-key, mixed> $ids
      */
     public function batchDelete(array $ids): int
     {
@@ -416,6 +460,8 @@ class SysAttachmentService extends BaseService
 
     /**
      * 获取存储统计
+     *
+     * @return array<array-key, mixed>
      */
     public function getStorageStats(): array
     {

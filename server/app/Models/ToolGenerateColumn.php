@@ -8,7 +8,38 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-29
- */
+ 
+ * @property int $table_id
+ * @property mixed $column_name
+ * @property mixed $column_comment
+ * @property mixed $column_type
+ * @property mixed $default_value
+ * @property int $is_pk
+ * @property int $is_required
+ * @property int $is_insert
+ * @property int $is_edit
+ * @property int $is_list
+ * @property int $is_query
+ * @property int $is_sort
+ * @property mixed $query_type
+ * @property mixed $view_type
+ * @property mixed $dict_type
+ * @property mixed $allow_roles
+ * @property mixed $options
+ * @property int $sort
+ * @property mixed $remark
+ * @property int $created_by
+ * @property int $updated_by
+ * @property int $id
+ * @property string $create_time
+ * @property string $update_time
+ * @property string $delete_time
+ * @property mixed $tenant_id
+ * @property mixed $status
+ * @property mixed $created_at
+ * @property mixed $updated_at
+ * @property mixed $deleted_at
+*/
 
 namespace App\Models;
 
@@ -21,12 +52,24 @@ class ToolGenerateColumn extends BaseLaORMModel
 
     // ========== 基础配置 ==========
 
+    /**
+     * @return mixed
+     */
     protected $table = 'sa_tool_generate_columns';
 
+    /**
+     * @return mixed
+     */
     public $incrementing = true;
 
+    /**
+     * @return mixed
+     */
     protected $keyType = 'int';
 
+    /**
+     * @return mixed
+     */
     protected $dateFormat = 'Y-m-d H:i:s';
 
     const CREATED_AT = 'create_time';
@@ -35,6 +78,9 @@ class ToolGenerateColumn extends BaseLaORMModel
 
     // ========== 可填字段 ==========
 
+    /**
+     * @return mixed
+     */
     protected $fillable = [
         'table_id',
         'column_name',
@@ -61,6 +107,7 @@ class ToolGenerateColumn extends BaseLaORMModel
 
     // ========== 类型转换 ==========
 
+    /** @var array<string, string> */
     protected $casts = [
         'id'         => 'integer',
         'table_id'   => 'integer',
@@ -101,7 +148,7 @@ class ToolGenerateColumn extends BaseLaORMModel
     /**
      * 所属业务表
      */
-    public function table()
+    public function table(): mixed
     {
         return $this->belongsTo(ToolGenerateTable::class, 'table_id', 'id');
     }

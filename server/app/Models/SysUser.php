@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-12
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -39,7 +40,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int         $is_super       是否超级管理员
  * @property int         $status         状态 0=禁用 1=启用
  * @property string      $remark         备注
- * @property \DateTime   $login_time     最后登录时间
+ * @property string|null $login_time     最后登录时间
  * @property string      $login_ip       最后登录IP
  * @property int         $created_by     创建人ID
  * @property int         $updated_by     更新人ID
@@ -52,7 +53,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read SysDept     $dept       所属部门（当前租户）
  * @property-read SysTenant[] $tenants    用户所属的所有租户
  * @property-read SysPost[]   $posts      用户拥有的岗位
- */
+ 
+ * @property int $dept_id
+ * @property string $create_time
+ * @property string $update_time
+ * @property string $delete_time
+ * @property mixed $tenant_id
+*/
 class SysUser extends BaseLaORMModel
 {
     use SoftDeletes;
@@ -60,12 +67,14 @@ class SysUser extends BaseLaORMModel
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected $table = 'sa_system_user';
 
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
 
@@ -78,7 +87,8 @@ class SysUser extends BaseLaORMModel
 
     /**
      * 隐藏字段
-     * @var array
+     * @var array<string>
+     * @return mixed
      */
     protected $hidden = [
         'password',
@@ -87,7 +97,8 @@ class SysUser extends BaseLaORMModel
 
     /**
      * 可填充字段
-     * @var array
+     * @var array<int, string>
+     * @return mixed
      */
     protected $fillable = [
         'username',
@@ -110,7 +121,8 @@ class SysUser extends BaseLaORMModel
 
     /**
      * 类型转换
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected $casts = [
         'id' => 'integer',
@@ -138,7 +150,7 @@ class SysUser extends BaseLaORMModel
     /**
      * 用户在各租户的部门关联 (一对多)
      *
-     * @return HasMany
+     * @return HasMany<SysUserDept, $this>
      */
     public function depts(): HasMany
     {
@@ -163,7 +175,7 @@ class SysUser extends BaseLaORMModel
     /**
      * 用户拥有的角色 (多对多) - 当前租户
      *
-     * @return BelongsToMany
+     * @return BelongsToMany<SysRole, $this>
      */
     public function roles(): BelongsToMany
     {
@@ -183,7 +195,7 @@ class SysUser extends BaseLaORMModel
      * 获取指定租户的角色
      *
      * @param int $tenantId 租户ID
-     * @return BelongsToMany
+     * @return BelongsToMany<SysRole, $this>
      */
     public function rolesByTenant(int $tenantId): BelongsToMany
     {
@@ -200,7 +212,7 @@ class SysUser extends BaseLaORMModel
     /**
      * 用户所属的所有租户
      *
-     * @return HasMany
+     * @return HasMany<SysUserTenant, $this>
      */
     public function tenantRelations(): HasMany
     {
@@ -210,7 +222,7 @@ class SysUser extends BaseLaORMModel
     /**
      * 用户所属的所有租户（通过关联表）
      *
-     * @return BelongsToMany
+     * @return BelongsToMany<SysTenant, $this>
      */
     public function tenants(): BelongsToMany
     {
@@ -226,7 +238,7 @@ class SysUser extends BaseLaORMModel
     /**
      * 用户个人菜单 (多对多)
      *
-     * @return BelongsToMany
+     * @return BelongsToMany<SysMenu, $this>
      */
     public function menus(): BelongsToMany
     {
@@ -241,7 +253,7 @@ class SysUser extends BaseLaORMModel
     /**
      * 用户拥有的岗位 (多对多)
      *
-     * @return BelongsToMany
+     * @return BelongsToMany<SysPost, $this>
      */
     public function posts(): BelongsToMany
     {
@@ -328,7 +340,7 @@ class SysUser extends BaseLaORMModel
     /**
      * 获取用户的所有角色编码（当前租户）
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getRoleCodes(): array
     {
@@ -338,7 +350,7 @@ class SysUser extends BaseLaORMModel
     /**
      * 获取用户的所有角色ID（当前租户）
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getRoleIds(): array
     {
@@ -349,7 +361,7 @@ class SysUser extends BaseLaORMModel
      * 获取用户在指定租户的角色编码
      *
      * @param int $tenantId 租户ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getRoleCodesByTenant(int $tenantId): array
     {
@@ -365,6 +377,9 @@ class SysUser extends BaseLaORMModel
      * @param int $tenantId 租户ID
      * @return array
      */
+    /**
+     * @return array<array-key, mixed>
+     */
     public function getRoleIdsByTenant(int $tenantId): array
     {
         return $this->rolesByTenant($tenantId)
@@ -376,7 +391,7 @@ class SysUser extends BaseLaORMModel
     /**
      * 获取用户可访问的所有租户ID
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getTenantIds(): array
     {
@@ -407,7 +422,7 @@ class SysUser extends BaseLaORMModel
     /**
      * 获取用户的合并菜单ID列表 (角色菜单 + 个人菜单) - 当前租户
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getMergedMenuIds(): array
     {
@@ -460,14 +475,14 @@ class SysUser extends BaseLaORMModel
      * 普通用户若只授权到子菜单（例如 manage_user），会自动补全其祖先目录(manage)，
      * 保证树结构完整。
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getMenuTree(): array
     {
         $tenantId = TenantContext::getTenantId();
         $cacheKey = 'user_menu_tree_v' . self::getMenuTreeVersion() . '_' . $this->id . '_tenant_' . ($tenantId ?? '0');
 
-        /** @var CacheInterface $cache */
+        /** @var \Psr\SimpleCache\CacheInterface $cache */
         $cache = app('cache');
 
         $cached = $cache->get($cacheKey);
@@ -507,11 +522,10 @@ class SysUser extends BaseLaORMModel
     /**
      * 构建菜单树
      *
-     * @param array $menus    菜单列表
+     * @param array<array-key, mixed> $menus    菜单列表
      * @param int   $parentId 父ID
-     * @return array
+     * @return array<array-key, mixed>
      */
-
     protected function buildMenuTree(array $menus, int $parentId = 0): array
     {
         $tree = [];
@@ -530,7 +544,7 @@ class SysUser extends BaseLaORMModel
     /**
      * Get user permission slugs
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getPermissions(): array
     {

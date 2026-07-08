@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-19
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -33,18 +34,27 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @property-read SysUser   $user        关联用户
  * @property-read SysTenant $tenant      关联租户
- */
+ 
+ * @property string $create_time
+ * @property string $update_time
+ * @property mixed $status
+ * @property mixed $remark
+ * @property mixed $delete_time
+ * @property mixed $deleted_at
+*/
 class SysUserTenant extends BaseLaORMModel
 {
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected $table = 'sa_system_user_tenant';
 
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
     /**
@@ -56,7 +66,8 @@ class SysUserTenant extends BaseLaORMModel
 
     /**
      * 可填充字段
-     * @var array
+     * @var array<int, string>
+     * @return mixed
      */
     protected $fillable = [
         'user_id',
@@ -70,7 +81,8 @@ class SysUserTenant extends BaseLaORMModel
 
     /**
      * 类型转换
-     * @var array
+     *
+     * @var array<string, string>
      */
     protected $casts = [
         'id' => 'integer',
@@ -90,7 +102,7 @@ class SysUserTenant extends BaseLaORMModel
     /**
      * 关联用户
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysUser, $this>
      */
     public function user(): BelongsTo
     {
@@ -100,7 +112,7 @@ class SysUserTenant extends BaseLaORMModel
     /**
      * 关联租户
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysTenant, $this>
      */
     public function tenant(): BelongsTo
     {
@@ -113,7 +125,7 @@ class SysUserTenant extends BaseLaORMModel
      * 获取用户的所有租户关联
      *
      * @param int $userId 用户ID
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, static>
      */
     public static function getByUserId(int $userId)
     {
@@ -126,7 +138,7 @@ class SysUserTenant extends BaseLaORMModel
      * 获取租户的所有用户关联
      *
      * @param int $tenantId 租户ID
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, static>
      */
     public static function getByTenantId(int $tenantId)
     {
@@ -168,7 +180,7 @@ class SysUserTenant extends BaseLaORMModel
      * 获取用户可访问的所有租户ID列表
      *
      * @param int $userId 用户ID
-     * @return array 租户ID数组
+     * @return array<array-key, mixed> 租户ID数组
      */
     public static function getTenantIdsByUser(int $userId): array
     {
@@ -181,17 +193,19 @@ class SysUserTenant extends BaseLaORMModel
      * 获取用户可访问的租户列表
      *
      * @param int $userId 用户ID
-     * @return array 租户信息数组
+     * @return array<array-key, mixed> 租户信息数组
      */
     public static function getTenantsByUser(int $userId): array
     {
-        return self::withoutTenancy()
+        /** @var \Illuminate\Database\Eloquent\Collection<int, static> $records */
+        $records = self::withoutTenancy()
             ->where('user_id', $userId)
             ->with(['tenant' => function ($query) {
                 $query->withoutTenancy();
             }])
-            ->get()
-            ->map(function ($item) {
+            ->get();
+
+        return $records->map(function ($item) {
                 if (!$item->tenant) {
                     return null;
                 }
@@ -310,6 +324,7 @@ class SysUserTenant extends BaseLaORMModel
      */
     public static function removeUserFromTenant(int $userId, int $tenantId): bool
     {
+        /** @var self|null $record */
         $record = self::withoutTenancy()->where('user_id', $userId)
             ->where('tenant_id', $tenantId)
             ->first();
@@ -359,7 +374,7 @@ class SysUserTenant extends BaseLaORMModel
      * 批量添加用户到租户
      *
      * @param int $tenantId 租户ID
-     * @param array $userIds 用户ID数组
+     * @param array<array-key, mixed> $userIds 用户ID数组
      * @param int $createdBy 创建人ID
      * @return int 成功添加的数量
      */
@@ -394,7 +409,7 @@ class SysUserTenant extends BaseLaORMModel
      * 批量从租户中移除用户
      *
      * @param int $tenantId 租户ID
-     * @param array $userIds 用户ID数组
+     * @param array<array-key, mixed> $userIds 用户ID数组
      * @return int 成功移除的数量
      */
     public static function batchRemoveUsers(int $tenantId, array $userIds): int

@@ -48,7 +48,7 @@ class SysRoleDao extends BaseDao
      *
      * @param int $page  页码
      * @param int $limit 每页数量
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getEnabledList(int $page = 1, int $limit = 20): array
     {
@@ -58,7 +58,7 @@ class SysRoleDao extends BaseDao
     /**
      * 获取所有启用的角色
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getAllEnabled(): array
     {
@@ -69,7 +69,7 @@ class SysRoleDao extends BaseDao
      * 获取子角色列表
      *
      * @param int $parentId 父角色ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getChildrenByParentId(int $parentId): array
     {
@@ -107,7 +107,7 @@ class SysRoleDao extends BaseDao
     /**
      * 获取角色总数
      *
-     * @param array $where 条件
+     * @param array<array-key, mixed> $where 条件
      * @return int
      */
     public function getRoleCount(array $where = []): int
@@ -118,8 +118,8 @@ class SysRoleDao extends BaseDao
     /**
      * 获取角色ID列表
      *
-     * @param array $where 条件
-     * @return array
+     * @param array<array-key, mixed> $where 条件
+     * @return array<array-key, mixed>
      */
     public function getRoleIds(array $where = []): array
     {

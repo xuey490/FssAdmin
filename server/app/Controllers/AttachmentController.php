@@ -25,6 +25,9 @@ use Framework\Attributes\Permission;
  */
 class AttachmentController extends BaseController
 {
+    /**
+     * @return mixed
+     */
     protected SysAttachmentService $attachmentService;
 
     protected function initialize(): void
@@ -190,7 +193,7 @@ class AttachmentController extends BaseController
     #[Route(path: '/api/system/attachment/download/{id}', methods: ['GET'], name: 'attachment.download')]
     #[Auth(required: true)]
     #[Permission('core:attachment:index')]
-    public function download(Request $request)
+    public function download(Request $request): mixed
     {
         $id         = (int)$request->attributes->get('id');
         $attachment = \App\Models\SysAttachment::find($id);
@@ -338,12 +341,19 @@ class AttachmentController extends BaseController
 
     // ==================== 辅助方法 ====================
 
+    /**
+     */
     protected function getOperatorId(Request $request): int
     {
         $user = $request->attributes->get('user');
         return $user['id'] ?? 0;
     }
 
+    /**
+     */
+        /**
+     * @return array<array-key, mixed>
+         */
     private function parseBody(Request $request): array
     {
         $body    = [];
@@ -357,6 +367,9 @@ class AttachmentController extends BaseController
         return array_merge($request->request->all(), $body);
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     private function parseIds(Request $request): array
     {
         $body = $this->parseBody($request);

@@ -48,18 +48,21 @@ class DatabaseAdapter implements Adapter, UpdatableAdapter, BatchAdapter, Filter
      * 标记当前策略是否经过过滤
      *
      * @var bool
+     * @return mixed
      */
     private bool $filtered = false;
 
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected string $tableName;
 
     /**
      * 数据库连接
      * @var string|null
+     * @return mixed
      */
     protected ?string $connection;
 
@@ -68,6 +71,7 @@ class DatabaseAdapter implements Adapter, UpdatableAdapter, BatchAdapter, Filter
      *
      * @param string      $tableName  表名
      * @param string|null $connection 数据库连接
+     * @return mixed
      */
     public function __construct(string $tableName = 'casbin_rule', ?string $connection = null)
     {
@@ -138,7 +142,7 @@ class DatabaseAdapter implements Adapter, UpdatableAdapter, BatchAdapter, Filter
      *
      * @param string $sec  区域
      * @param string $ptype 策略类型
-     * @param array  $rule  规则
+     * @param array<array-key, mixed>  $rule  规则
      * @return void
      */
     public function addPolicy(string $sec, string $ptype, array $rule): void
@@ -151,7 +155,7 @@ class DatabaseAdapter implements Adapter, UpdatableAdapter, BatchAdapter, Filter
      *
      * @param string $sec  区域
      * @param string $ptype 策略类型
-     * @param array  $rule  规则
+     * @param array<array-key, mixed>  $rule  规则
      * @return void
      */
     public function removePolicy(string $sec, string $ptype, array $rule): void
@@ -328,10 +332,10 @@ class DatabaseAdapter implements Adapter, UpdatableAdapter, BatchAdapter, Filter
      *
      * @param string   $sec          策略段（'p' 或 'g'）
      * @param string   $ptype        策略类型
-     * @param array    $newPolicies  新策略规则数组
+     * @param array<array-key, mixed>    $newPolicies  新策略规则数组
      * @param int      $fieldIndex   字段起始索引
      * @param string   ...$fieldValues 字段值列表
-     * @return array 被删除的旧规则数组
+     * @return array<array-key, mixed> 被删除的旧规则数组
      */
     public function updateFilteredPolicies(string $sec, string $ptype, array $newPolicies, int $fieldIndex, string ...$fieldValues): array
     {
@@ -358,8 +362,8 @@ class DatabaseAdapter implements Adapter, UpdatableAdapter, BatchAdapter, Filter
      *
      * @param string $ptype       策略类型
      * @param int    $fieldIndex  字段起始索引（0-5）
-     * @param array  $fieldValues 字段值数组
-     * @return array 匹配的规则数组
+     * @param array<array-key, mixed>  $fieldValues 字段值数组
+     * @return array<array-key, mixed> 匹配的规则数组
      */
     protected function getFilteredPolicies(string $ptype, int $fieldIndex, array $fieldValues): array
     {
@@ -517,7 +521,7 @@ class DatabaseAdapter implements Adapter, UpdatableAdapter, BatchAdapter, Filter
      * 保存策略行
      *
      * @param string $ptype 策略类型
-     * @param array  $rule  规则
+     * @param array<array-key, mixed>  $rule  规则
      * @return void
      */
     protected function savePolicyLine(string $ptype, array $rule): void

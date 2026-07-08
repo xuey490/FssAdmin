@@ -8,11 +8,12 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-12
- */
+ 
+*/
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Framework\Basic\BaseLaORMModel;
 
 /**
  * SysUserMenu 用户菜单关联模型
@@ -26,18 +27,28 @@ use Illuminate\Database\Eloquent\Model;
  * @property int         $updated_by 更新人ID
  * @property \DateTime   $created_at 创建时间
  * @property \DateTime   $updated_at 更新时间
- */
-class SysUserMenu extends Model
+ 
+ * @property int $tenant_id
+ * @property int $status
+ * @property string $create_time
+ * @property string $update_time
+ * @property string $delete_time
+ * @property mixed $remark
+ * @property mixed $deleted_at
+*/
+class SysUserMenu extends BaseLaORMModel
 {
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected $table = 'sa_system_user_menu';
 
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
     /**
@@ -49,7 +60,8 @@ class SysUserMenu extends Model
 
     /**
      * 可填充字段
-     * @var array
+     * @var array<int, string>
+     * @return mixed
      */
     protected $fillable = [
         'user_id',
@@ -62,7 +74,8 @@ class SysUserMenu extends Model
 
     /**
      * 类型转换
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected $casts = [
         'id' => 'integer',
@@ -80,6 +93,7 @@ class SysUserMenu extends Model
     /**
      * 是否自动维护时间戳
      * @var bool
+     * @return mixed
      */
     public $timestamps = true;
 
@@ -89,7 +103,7 @@ class SysUserMenu extends Model
      * 批量插入用户菜单关联
      *
      * @param int   $userId    用户ID
-     * @param array $menuIds   菜单ID数组
+     * @param array<array-key, mixed> $menuIds   菜单ID数组
      * @param int   $tenantId  租户ID
      * @param int   $createdBy 创建人ID
      * @return bool
@@ -115,7 +129,7 @@ class SysUserMenu extends Model
             ];
         }
 
-        return self::insert($data);
+        return (bool) self::insert($data);
     }
 
     /**
@@ -153,7 +167,7 @@ class SysUserMenu extends Model
      * 同步用户菜单
      *
      * @param int   $userId    用户ID
-     * @param array $menuIds   菜单ID数组
+     * @param array<array-key, mixed> $menuIds   菜单ID数组
      * @param int   $tenantId  租户ID
      * @param int   $createdBy 创建人ID
      * @return void
@@ -174,7 +188,7 @@ class SysUserMenu extends Model
      *
      * @param int      $userId   用户ID
      * @param int|null $tenantId 租户ID（可选）
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getMenuIdsByUserId(int $userId, ?int $tenantId = null): array
     {

@@ -27,14 +27,30 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class AuthController extends BaseController
 {
+    /**
+     * @return mixed
+     */
     protected SysUserService $userService;
+    /**
+     */
+    /**
+     * @return mixed
+     * @var array<array-key, mixed>
+     */
     protected array $jwtConfig;
+    /**
+     * @return mixed
+     */
     protected CasbinService $casbinService;
+    /**
+     * @return mixed
+     */
     protected LoginLogService $loginLogService;
     
     /**
      * IP地理位置服务
      * @var IpLocationService
+     * @return mixed
      */
     protected IpLocationService $ipLocationService;
 
@@ -48,6 +64,7 @@ class AuthController extends BaseController
     }
 
     #[Route(path: '/api/core/login', methods: ['POST'], name: 'auth.login')]
+            /** @var \App\Models\SysTenant|null $tenant */
     public function login(Request $request): BaseJsonResponse|JsonResponse
     {
         $username = '';
@@ -102,23 +119,16 @@ class AuthController extends BaseController
                 return $this->fail('账号已被禁用', 403);
             }
 
-            if ($tenantId) {
-                $hasTenant = SysUserTenant::isUserInTenant($user->id, (int)$tenantId);
-                if (!$hasTenant && !$user->isSuperAdmin()) {
-                    $this->recordLoginLog($request, $username, false, '您不属于该租户');
-                    return $this->fail('您不属于该租户', 403);
-                }
-                $tenant = SysTenant::withoutTenancy()->find($tenantId);
-                if (!$tenant || !$tenant->isValid()) {
-                    $this->recordLoginLog($request, $username, false, '租户无效或已过期');
-                    return $this->fail('租户无效或已过期', 403);
-                }
-            } else {
-                $tenantId = SysUserTenant::getDefaultTenantId($user->id);
-                if (!$tenantId && !$user->isSuperAdmin()) {
-                    $this->recordLoginLog($request, $username, false, '请先选择租户');
-                    return $this->fail('请先选择租户', 403);
-                }
+            $hasTenant = SysUserTenant::isUserInTenant($user->id, (int)$tenantId);
+            if (!$hasTenant && !$user->isSuperAdmin()) {
+                $this->recordLoginLog($request, $username, false, '您不属于该租户');
+                return $this->fail('您不属于该租户', 403);
+            }
+            /** @var SysTenant|null $tenant */
+            $tenant = SysTenant::withoutTenancy()->find($tenantId);
+            if (!$tenant || !$tenant->isValid()) {
+                $this->recordLoginLog($request, $username, false, '租户无效或已过期');
+                return $this->fail('租户无效或已过期', 403);
             }
 
             $ttl = $remember ? 604800 : ($this->jwtConfig['ttl'] ?? 3600);
@@ -152,7 +162,7 @@ class AuthController extends BaseController
             
 
             $menus       = $user->getMenuTree();
-            $permissions = $user->getPermissions();
+            $permissions = $user->isSuperAdmin() ? ['*'] : $user->getPermissions();
 
             $response = $this->success([
                 'user' => [
@@ -196,6 +206,7 @@ class AuthController extends BaseController
         $tenants = SysUserTenant::getTenantsByUser($user->id);
 
         $validTenants = array_filter($tenants, function ($tenant) {
+            /** @var SysTenant|null $tenantModel */
             $tenantModel = SysTenant::withoutTenancy()->find($tenant['id']);
             return $tenantModel && $tenantModel->isValid();
         });
@@ -238,18 +249,20 @@ class AuthController extends BaseController
                 return $this->fail('租户ID不能为空', 400);
             }
 
-            if (!SysUserTenant::isUserInTenant($userId, $newTenantId)) {
-                return $this->fail('您不属于该租户', 403);
-            }
-
-            $tenant = SysTenant::withoutTenancy()->find($newTenantId);
-            if (!$tenant || !$tenant->isValid()) {
-                return $this->fail('租户无效或已过期', 403);
-            }
-
+            // 需先加载用户，后续的租户归属/超管判断都依赖它
             $user = SysUser::find($userId);
             if (!$user) {
                 return $this->fail('用户不存在', 404);
+            }
+
+            if (!SysUserTenant::isUserInTenant($userId, $newTenantId) && !$user->isSuperAdmin()) {
+                return $this->fail('您不属于该租户', 403);
+            }
+
+            /** @var SysTenant|null $tenant */
+            $tenant = SysTenant::withoutTenancy()->find($newTenantId);
+            if (!$tenant || !$tenant->isValid()) {
+                return $this->fail('租户无效或已过期', 403);
             }
 
             SysUserTenant::setDefaultTenant($userId, $newTenantId);
@@ -270,7 +283,7 @@ class AuthController extends BaseController
 
             TenantContext::setTenantId($newTenantId);
             $menus       = $user->getMenuTree();
-            $permissions = $user->getPermissions();
+            $permissions = $user->isSuperAdmin() ? ['*'] : $user->getPermissions();
 
             $response = $this->success([
                 'access_token'  => $tokens['token'],
@@ -423,7 +436,7 @@ class AuthController extends BaseController
             'buttons'    => $user->isSuperAdmin() ? ['*'] : $user->getPermissions(),
             'roles'      => $roles,
             'department' => $department,
-            'posts'      => $user->posts->map(fn($p) => [
+            'posts'      => collect($user->posts)->map(fn($p) => [
                 'id'   => $p->id,
                 'name' => $p->name,
             ])->values()->all(),
@@ -567,20 +580,26 @@ class AuthController extends BaseController
         string $refreshToken,
         bool $isSecure
     ): void {
-        $sameSite = $isSecure ? 'Strict' : 'Lax';
+        // 统一使用 SameSite=lax：跨站 POST/PUT/DELETE 不会自动携带该 Cookie（具备 CSRF 防护），
+        // 同时不影响同站导航与正常使用体验。
+        $sameSite = 'lax';
         $response->headers->setCookie(new Cookie('access_token', $accessToken, time() + 3600, '/', null, $isSecure, true, false, $sameSite));
         $response->headers->setCookie(new Cookie('refresh_token', $refreshToken, time() + 86400 * 7, '/', null, $isSecure, true, false, $sameSite));
     }
 
+    /**
+     */
     protected function clearAuthCookies(BaseJsonResponse $response, bool $isSecure): void
     {
-        $sameSite = $isSecure ? 'Strict' : 'Lax';
+        $sameSite = 'lax';
         $response->headers->setCookie(new Cookie('access_token', '', time() - 3600, '/', null, $isSecure, true, false, $sameSite));
         $response->headers->setCookie(new Cookie('refresh_token', '', time() - 3600, '/', null, $isSecure, true, false, $sameSite));
     }
 
     /**
      * 生成写入 token 的角色 claim（按当前租户取角色，空则回退 user）
+     *
+     * @return array<int, string>|string
      */
     protected function resolveTokenRoleClaim(SysUser $user, int $tenantId): array|string
     {

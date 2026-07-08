@@ -15,7 +15,13 @@ use Framework\Attributes\Permission;
 
 class LogController extends BaseController
 {
+    /**
+     * @return mixed
+     */
     protected LoginLogService $loginLogService;
+    /**
+     * @return mixed
+     */
     protected OperationLogService $operationLogService;
 
     protected function initialize(): void
@@ -81,6 +87,8 @@ class LogController extends BaseController
     #[Route(path: '/api/core/logs/deleteOperLog', methods: ['DELETE'], name: 'log.operation.delete')]
     #[Auth(required: true, roles: ['admin', 'super_admin'])]
     #[Permission('core:logs:deleteOper')]
+    /**
+     */
     public function deleteOperLog(Request $request): BaseJsonResponse
     {
         $ids = $this->parseIds($request);
@@ -98,6 +106,9 @@ class LogController extends BaseController
 
     // ==================== 辅助方法 ====================
 
+    /**
+     * @return array<array-key, mixed>
+     */
     private function parseIds(Request $request): array
     {
         $body = [];

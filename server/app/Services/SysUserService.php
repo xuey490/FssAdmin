@@ -29,6 +29,7 @@ use Framework\Tenant\TenantContext;
  * SysUserService 用户服务
  *
  * 处理用户相关的业务逻辑
+  * @extends BaseService<SysUserDao>
  */
 class SysUserService extends BaseService
 {
@@ -36,17 +37,20 @@ class SysUserService extends BaseService
     /**
      * DAO 实例
      * @var SysUserDao
+     * @return mixed
      */
     protected SysUserDao $userDao;
 
     /**
      * Casbin 服务
      * @var CasbinService
+     * @return mixed
      */
     protected CasbinService $casbinService;
 
     /**
      * 构造函数
+     * @return mixed
      */
     public function __construct()
     {
@@ -63,7 +67,7 @@ class SysUserService extends BaseService
      * @param string $username 用户名
      * @param string $password 密码
      * @param string $ip       登录 IP
-     * @return array|null 成功返回用户信息和 token，失败返回 null
+     * @return array<array-key, mixed>|null 成功返回用户信息和 token，失败返回 null
      */
     public function login(string $username, string $password, string $ip = '', int $tenantId = 0): ?array
     {
@@ -133,8 +137,8 @@ class SysUserService extends BaseService
     /**
      * 获取用户列表
      *
-     * @param array $params 查询参数
-     * @return array
+     * @param array<array-key, mixed> $params 查询参数
+     * @return array<array-key, mixed>
      */
     public function getList(array $params): array
     {
@@ -253,8 +257,8 @@ class SysUserService extends BaseService
     /**
      * 获取用户下拉选择列表（专用于选择组件）
      *
-     * @param array $params 查询参数
-     * @return array
+     * @param array<array-key, mixed> $params 查询参数
+     * @return array<array-key, mixed>
      */
     public function getSelectorList(array $params): array
     {
@@ -318,7 +322,7 @@ class SysUserService extends BaseService
      * 获取用户详情
      *
      * @param int $userId 用户 ID
-     * @return array|null
+     * @return array<array-key, mixed>|null
      */
     public function getDetail(int $userId): ?array
 
@@ -383,7 +387,7 @@ class SysUserService extends BaseService
     /**
      * 创建用户
      *
-     * @param array $data     用户数据
+     * @param array<array-key, mixed> $data     用户数据
      * @param int   $operator 操作人 ID
      * @return SysUser|null
      */
@@ -463,7 +467,7 @@ class SysUserService extends BaseService
      * 更新用户
      *
      * @param int   $userId   用户 ID
-     * @param array $data     用户数据
+     * @param array<array-key, mixed> $data     用户数据
      * @param int   $operator 操作人 ID
      * @return bool
      */
@@ -647,6 +651,8 @@ class SysUserService extends BaseService
      * @param int $userId 用户 ID
      * @return bool
      */
+    /**
+     */
     public function clearCache(int $userId): bool
     {
         // 清理用户权限缓存
@@ -664,7 +670,7 @@ class SysUserService extends BaseService
      * 获取用户已分配的菜单ID列表
      *
      * @param int $userId 用户 ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getUserMenuIds(int $userId): array
     {
@@ -676,7 +682,7 @@ class SysUserService extends BaseService
      * 保存用户菜单分配（先清理再写入，并清除用户缓存）
      *
      * @param int   $userId   用户 ID
-     * @param array $menuIds  菜单 ID 数组
+     * @param array<array-key, mixed> $menuIds  菜单 ID 数组
      * @param int   $operator 操作人 ID
      * @return bool
      */
@@ -719,6 +725,8 @@ class SysUserService extends BaseService
      * @return bool
      * @throws \Exception
      */
+    /**
+     */
     public function setHomePage(int $userId, string $dashboard): bool
     {
         $user = SysUser::find($userId);
@@ -735,8 +743,8 @@ class SysUserService extends BaseService
     /**
      * 格式化用户数据
      *
-     * @param SysUser|array $user 用户
-     * @return array
+     * @param SysUser|array<string, mixed> $user 用户
+     * @return array<array-key, mixed>
      */
     protected function formatUser(SysUser|array $user): array
     {
@@ -753,13 +761,13 @@ class SysUserService extends BaseService
         if (isset($data['create_time'])) {
             $data['create_time'] = is_string($data['create_time'])
                 ? $data['create_time']
-                : $data['create_time']?->format('Y-m-d H:i:s');
+                : $data['create_time']->format('Y-m-d H:i:s');
         }
 
         if (isset($data['update_time'])) {
             $data['update_time'] = is_string($data['update_time'])
                 ? $data['update_time']
-                : $data['update_time']?->format('Y-m-d H:i:s');
+                : $data['update_time']->format('Y-m-d H:i:s');
         }
 
         // 状态文本

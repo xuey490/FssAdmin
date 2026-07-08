@@ -24,23 +24,27 @@ use Framework\Basic\BaseService;
  * SysMenuService 菜单服务
  *
  * 处理菜单相关的业务逻辑
+  * @extends BaseService<SysMenuDao>
  */
 class SysMenuService extends BaseService
 {
     /**
      * DAO 实例
      * @var SysMenuDao
+     * @return mixed
      */
     protected SysMenuDao $menuDao;
 
     /**
      * Casbin 服务
      * @var CasbinService
+     * @return mixed
      */
     protected CasbinService $casbinService;
 
     /**
      * 构造函数
+     * @return mixed
      */
     public function __construct()
     {
@@ -52,8 +56,8 @@ class SysMenuService extends BaseService
     /**
      * 获取菜单列表
      *
-     * @param array $params 查询参数
-     * @return array
+     * @param array<array-key, mixed> $params 查询参数
+     * @return array<array-key, mixed>
      */
     public function getList(array $params): array
     {
@@ -85,6 +89,8 @@ class SysMenuService extends BaseService
 
     /**
      * 过滤菜单树，保留匹配项及其祖先/子孙节点
+     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $tree
      */
     protected function filterTree(array $tree, string $name, string $path, mixed $status): array
     {
@@ -114,7 +120,7 @@ class SysMenuService extends BaseService
     /**
      * 获取菜单树
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getMenuTree(): array
     {
@@ -125,7 +131,7 @@ class SysMenuService extends BaseService
      * 获取菜单详情
      *
      * @param int $menuId 菜单ID
-     * @return array|null
+     * @return array<array-key, mixed>|null
      */
     public function getDetail(int $menuId): ?array
     {
@@ -145,7 +151,7 @@ class SysMenuService extends BaseService
     /**
      * 创建菜单
      *
-     * @param array $data     菜单数据
+     * @param array<array-key, mixed> $data     菜单数据
      * @param int   $operator 操作人ID
      * @return SysMenu|null
      */
@@ -165,7 +171,7 @@ class SysMenuService extends BaseService
      * 更新菜单
      *
      * @param int   $menuId   菜单ID
-     * @param array $data     菜单数据
+     * @param array<array-key, mixed> $data     菜单数据
      * @param int   $operator 操作人ID
      * @return bool
      */
@@ -249,6 +255,8 @@ class SysMenuService extends BaseService
      * @param int $status 状态
      * @return bool
      */
+    /**
+     */
     public function updateStatus(int $menuId, int $status): bool
     {
         $result = $this->menuDao->updateStatus($menuId, $status);
@@ -263,6 +271,9 @@ class SysMenuService extends BaseService
      * @param int $userId 用户ID
      * @return array
      */
+        /**
+     * @return array<array-key, mixed>
+         */
     public function getUserMenuTree(int $userId): array
     {
         $user = \App\Models\SysUser::find($userId);
@@ -279,6 +290,9 @@ class SysMenuService extends BaseService
      * @param int $userId 用户ID
      * @return array
      */
+        /**
+     * @return array<array-key, mixed>
+         */
     public function getUserPermissions(int $userId): array
     {
         $user = \App\Models\SysUser::find($userId);
@@ -294,6 +308,9 @@ class SysMenuService extends BaseService
      *
      * @return array
      */
+            /**
+     * @return array<array-key, mixed>
+             */
     public function getDirectoryAndMenuTree(): array
     {
         $menus = SysMenu::where('status', SysMenu::STATUS_ENABLED)
@@ -310,6 +327,9 @@ class SysMenuService extends BaseService
      *
      * @return array
      */
+            /**
+     * @return array<array-key, mixed>
+             */
     public function getAssignableMenuTree(): array
     {
         $menus = SysMenu::where('status', SysMenu::STATUS_ENABLED)
@@ -325,6 +345,9 @@ class SysMenuService extends BaseService
      *
      * @return array
      */
+        /**
+     * @return array<array-key, mixed>
+         */
     public function getAccessMenuTree(): array
     {
         // 菜单为全局共享资源，不按租户过滤；权限隔离由角色-菜单关联（tenant_id）控制
@@ -336,9 +359,9 @@ class SysMenuService extends BaseService
     /**
      * 构建可访问菜单树（带 label 字段）
      *
-     * @param array $items    数据列表
+     * @param array<array-key, mixed> $items    数据列表
      * @param int   $parentId 父ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     protected function buildAccessTree(array $items, int $parentId = 0): array
     {
@@ -367,6 +390,8 @@ class SysMenuService extends BaseService
      * @param int $menuId 菜单ID
      * @return void
      */
+        /**
+         */
     protected function syncMenuPermissions(int $menuId): void
     {
         // 获取拥有该菜单的所有角色
@@ -382,8 +407,8 @@ class SysMenuService extends BaseService
     /**
      * 格式化菜单数据
      *
-     * @param SysMenu|array $menu 菜单
-     * @return array
+     * @param SysMenu|array<string, mixed> $menu 菜单
+     * @return array<array-key, mixed>
      */
     protected function formatMenu(SysMenu|array $menu): array
     {
@@ -397,13 +422,13 @@ class SysMenuService extends BaseService
         if (isset($data['create_time'])) {
             $data['create_time'] = is_string($data['create_time'])
                 ? $data['create_time']
-                : $data['create_time']?->format('Y-m-d H:i:s');
+                : $data['create_time']->format('Y-m-d H:i:s');
         }
 
         if (isset($data['update_time'])) {
             $data['update_time'] = is_string($data['update_time'])
                 ? $data['update_time']
-                : $data['update_time']?->format('Y-m-d H:i:s');
+                : $data['update_time']->format('Y-m-d H:i:s');
         }
 
         // 状态文本
@@ -420,6 +445,8 @@ class SysMenuService extends BaseService
      * @param int $menuType 菜单类型
      * @return string
      */
+    /**
+     */
     protected function getMenuTypeName(int $menuType): string
     {
         return match ($menuType) {
@@ -434,9 +461,9 @@ class SysMenuService extends BaseService
     /**
      * 构建树形结构
      *
-     * @param array $items    数据列表
+     * @param array<array-key, mixed> $items    数据列表
      * @param int   $parentId 父ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     protected function buildTree(array $items, int $parentId = 0): array
     {

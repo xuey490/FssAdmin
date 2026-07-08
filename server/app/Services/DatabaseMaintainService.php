@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use Framework\Basic\BaseDao;
 use Framework\Basic\BaseService;
 
+/**
+ * @extends BaseService<BaseDao>
+ */
 class DatabaseMaintainService extends BaseService
 {
-    protected function db()
+    protected function db(): mixed
     {
         return app('db');
     }
@@ -20,6 +24,8 @@ class DatabaseMaintainService extends BaseService
 
     /**
      * 获取所有数据表（无分页，支持名称搜索）
+     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $params
      */
     public function getTables(array $params = []): array
     {
@@ -57,6 +63,8 @@ class DatabaseMaintainService extends BaseService
 
     /**
      * 获取数据源（所有表名+注释）
+     *
+     * @return array<array-key, mixed>
      */
     public function getDataSource(): array
     {
@@ -68,6 +76,8 @@ class DatabaseMaintainService extends BaseService
 
     /**
      * 获取表字段详情（含注释）
+     *
+     * @return array<array-key, mixed>
      */
     public function getTableDetailed(string $tableName): array
     {
@@ -88,6 +98,8 @@ class DatabaseMaintainService extends BaseService
 
     /**
      * 获取建表语句
+     *
+     * @return array<array-key, mixed>
      */
     public function getCreateTableSql(string $tableName): array
     {
@@ -105,6 +117,9 @@ class DatabaseMaintainService extends BaseService
 
     /**
      * 获取回收站数据（delete_time 不为空的记录）
+     *
+     * @param array<array-key, mixed> $params
+     * @return array<array-key, mixed>
      */
     public function getRecycleData(array $params = []): array
     {
@@ -157,6 +172,10 @@ class DatabaseMaintainService extends BaseService
 
     /**
      * 销毁回收站数据（物理删除）
+     *
+     * @param string $table
+     * @param array<array-key, mixed> $ids
+     * @return bool
      */
     public function destroyRecycleData(string $table, array $ids): bool
     {
@@ -168,6 +187,10 @@ class DatabaseMaintainService extends BaseService
 
     /**
      * 恢复回收站数据（将 delete_time 置为 NULL）
+     *
+     * @param string $table
+     * @param array<array-key, mixed> $ids
+     * @return bool
      */
     public function recoveryRecycleData(string $table, array $ids): bool
     {
@@ -182,6 +205,9 @@ class DatabaseMaintainService extends BaseService
 
     /**
      * 优化表
+     *
+     * @param array<array-key, mixed> $tables
+     * @return array<array-key, mixed>
      */
     public function optimizeTables(array $tables): array
     {
@@ -199,6 +225,9 @@ class DatabaseMaintainService extends BaseService
 
     /**
      * 清理表碎片
+     *
+     * @param array<array-key, mixed> $tables
+     * @return array<array-key, mixed>
      */
     public function cleanTableFragment(array $tables): array
     {

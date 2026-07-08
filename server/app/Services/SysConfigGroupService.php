@@ -6,12 +6,18 @@ namespace App\Services;
 
 use App\Models\SysConfigGroup;
 use App\Models\SysConfig;
+use App\Dao\SysConfigGroupDao;
 use Framework\Basic\BaseService;
 
+/**
+ * @extends BaseService<SysConfigGroupDao>
+ */
 class SysConfigGroupService extends BaseService
 {
     /**
      * 获取配置组列表
+     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $params
      */
     public function getList(array $params): array
     {
@@ -49,6 +55,9 @@ class SysConfigGroupService extends BaseService
     /**
      * 获取配置组详情
      */
+    /**
+     * @return array<array-key, mixed>|null
+     */
     public function getDetail(int $id): ?array
     {
         $group = SysConfigGroup::find($id);
@@ -57,6 +66,12 @@ class SysConfigGroupService extends BaseService
 
     /**
      * 保存配置组
+     */
+    /**
+     * 保存配置组
+     *
+     * @param array<array-key, mixed> $data
+     * @return mixed
      */
     public function save(array $data, int $operator): mixed
     {
@@ -69,6 +84,9 @@ class SysConfigGroupService extends BaseService
 
     /**
      * 更新配置组
+     *
+     * @param array<array-key, mixed> $data
+     * @return bool
      */
     public function update(int $id, array $data, int $operator): bool
     {
@@ -84,6 +102,8 @@ class SysConfigGroupService extends BaseService
 
     /**
      * 删除配置组
+     */
+    /**
      */
     public function delete(int $id): bool
     {
@@ -101,35 +121,31 @@ class SysConfigGroupService extends BaseService
 
     /**
      * 测试邮件配置
+     *
+     * @param array<array-key, mixed> $config
+     * @return array<array-key, mixed>
      */
     public function testEmail(array $config): array
     {
         // 简单的邮件配置测试实现
-        try {
-            $host = $config['smtp_host'] ?? '';
-            $port = $config['smtp_port'] ?? 25;
-            $user = $config['smtp_user'] ?? '';
-            $pass = $config['smtp_pass'] ?? '';
-            $from = $config['smtp_from'] ?? '';
+        $host = $config['smtp_host'] ?? '';
+        $port = $config['smtp_port'] ?? 25;
+        $user = $config['smtp_user'] ?? '';
+        $pass = $config['smtp_pass'] ?? '';
+        $from = $config['smtp_from'] ?? '';
 
-            if (empty($host) || empty($user) || empty($pass)) {
-                return [
-                    'success' => false,
-                    'message' => '邮件配置不完整',
-                ];
-            }
-
-            // 这里可以实际发送测试邮件
-            // 暂时返回成功
-            return [
-                'success' => true,
-                'message' => '邮件配置测试成功',
-            ];
-        } catch (\Exception $e) {
+        if (empty($host) || empty($user) || empty($pass)) {
             return [
                 'success' => false,
-                'message' => '邮件配置测试失败: ' . $e->getMessage(),
+                'message' => '邮件配置不完整',
             ];
         }
+
+        // 这里可以实际发送测试邮件
+        // 暂时返回成功
+        return [
+            'success' => true,
+            'message' => '邮件配置测试成功',
+        ];
     }
 }

@@ -35,6 +35,9 @@ use Framework\Attributes\Permission;
 
 class GenerateController extends BaseController
 {
+    /**
+     * @return mixed
+     */
     protected ToolGenerateService $generateService;
 
     protected function initialize(): void
@@ -243,7 +246,7 @@ class GenerateController extends BaseController
         }
 
         if (!empty($failed) && empty($success)) {
-            return $this->fail('同步失败：' . ($failed[0]['reason'] ?? '未知错误'));
+            return $this->fail('同步失败：' . $failed[0]['reason']);
         }
 
         return $this->success(['success' => $success, 'failed' => $failed], '同步完成');

@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-12
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -45,18 +46,29 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property-read SysUser     $leader    部门负责人
  * @property-read SysTenant   $tenant    所属租户
  * @property-read SysRole[]   $roles     关联的角色（通过 role_dept）
- */
+ 
+ * @property mixed $create_time
+ * @property mixed $update_time
+ * @property mixed $delete_time
+*/
 class SysDept extends BaseLaORMModel
 {
     use SoftDeletes;
 
+    /**
+     * @return mixed
+     */
     protected $table = 'sa_system_dept';
 
+    /**
+     * @return mixed
+     */
     public $incrementing = true;
     
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
 
@@ -67,6 +79,9 @@ class SysDept extends BaseLaORMModel
     const UPDATED_AT = 'update_time';
     const DELETED_AT = 'delete_time';
 
+    /**
+     * @return mixed
+     */
     protected $fillable = [
         'parent_id',
         'name',
@@ -81,6 +96,7 @@ class SysDept extends BaseLaORMModel
         'updated_by',
     ];
 
+    /** @var array<string, string> */
     protected $casts = [
         'id' => 'integer',
         'parent_id' => 'integer',
@@ -105,7 +121,7 @@ class SysDept extends BaseLaORMModel
     /**
      * 父部门
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysDept, $this>
      */
     public function parent(): BelongsTo
     {
@@ -115,7 +131,7 @@ class SysDept extends BaseLaORMModel
     /**
      * 子部门
      *
-     * @return HasMany
+     * @return HasMany<SysDept, $this>
      */
     public function children(): HasMany
     {
@@ -125,7 +141,7 @@ class SysDept extends BaseLaORMModel
     /**
      * 部门下的用户
      *
-     * @return HasMany
+     * @return HasMany<SysUser, $this>
      */
     public function users(): HasMany
     {
@@ -135,7 +151,7 @@ class SysDept extends BaseLaORMModel
     /**
      * 部门负责人
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysUser, $this>
      */
     public function leader(): BelongsTo
     {
@@ -145,7 +161,7 @@ class SysDept extends BaseLaORMModel
     /**
      * 所属租户
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysTenant, $this>
      */
     public function tenant(): BelongsTo
     {
@@ -155,7 +171,7 @@ class SysDept extends BaseLaORMModel
     /**
      * 关联的角色（数据权限自定义部门）
      *
-     * @return BelongsToMany
+     * @return BelongsToMany<SysRole, $this>
      */
     public function roles(): BelongsToMany
     {
@@ -191,7 +207,7 @@ class SysDept extends BaseLaORMModel
      * @param int $parentId 父ID
      * @param int|null $tenantId 租户ID（可选过滤）
      * @param bool $enabledOnly 是否只返回启用的部门
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getDeptTree(int $parentId = 0, ?int $tenantId = null, bool $enabledOnly = true): array
     {
@@ -223,7 +239,7 @@ class SysDept extends BaseLaORMModel
      *
      * @param int $parentId 父ID
      * @param int|null $tenantId 租户ID（可选过滤）
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getSelectTree(int $parentId = 0, ?int $tenantId = null): array
     {
@@ -257,8 +273,8 @@ class SysDept extends BaseLaORMModel
     /**
      * 获取所有子部门ID (包含自己)
      *
-     * @param int $deptId 部门ID
-     * @return array
+     * @param int|string $deptId 部门ID
+     * @return array<array-key, mixed>
      */
     public static function getAllChildIds(int|string $deptId): array
     {
@@ -275,7 +291,7 @@ class SysDept extends BaseLaORMModel
     /**
      * 获取部门层级路径
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getPath(): array
     {

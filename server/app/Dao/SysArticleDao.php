@@ -38,7 +38,7 @@ class SysArticleDao extends BaseDao
      * @param int $categoryId 分类ID
      * @param int $page       页码
      * @param int $limit      每页数量
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getListByCategoryId(int $categoryId, int $page = 1, int $limit = 10): array
     {
@@ -55,7 +55,7 @@ class SysArticleDao extends BaseDao
      * 获取热门文章列表
      *
      * @param int $limit 数量限制
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getHotArticles(int $limit = 10): array
     {
@@ -99,7 +99,7 @@ class SysArticleDao extends BaseDao
     /**
      * 获取文章总数
      *
-     * @param array $where 条件
+     * @param array<array-key, mixed> $where 条件
      * @return int
      */
     public function getArticleCount(array $where = []): int

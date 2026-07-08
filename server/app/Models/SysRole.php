@@ -8,7 +8,8 @@ declare(strict_types=1);
  * @package App\Models
  * @author  Genie
  * @date    2026-03-12
- */
+ 
+*/
 
 namespace App\Models;
 
@@ -43,7 +44,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read SysMenu[]   $menus  角色拥有的菜单
  * @property-read SysRole     $parent 父角色
  * @property-read SysRole[]   $children 子角色
- */
+ 
+ * @property string $create_time
+ * @property string $update_time
+ * @property string $delete_time
+*/
 class SysRole extends BaseLaORMModel
 {
     use SoftDeletes;
@@ -51,12 +56,14 @@ class SysRole extends BaseLaORMModel
     /**
      * 表名
      * @var string
+     * @return mixed
      */
     protected $table = 'sa_system_role';
 
     /**
      * 主键
      * @var string
+     * @return mixed
      */
     protected $primaryKey = 'id';
     /**
@@ -68,7 +75,8 @@ class SysRole extends BaseLaORMModel
 
     /**
      * 可填充字段
-     * @var array
+     * @var array<int, string>
+     * @return mixed
      */
     protected $fillable = [
         'name',
@@ -86,7 +94,8 @@ class SysRole extends BaseLaORMModel
 
     /**
      * 类型转换
-     * @var array
+     * @var array<array-key, mixed>
+     * @return mixed
      */
     protected $casts = [
         'id' => 'integer',
@@ -136,7 +145,7 @@ class SysRole extends BaseLaORMModel
     /**
      * 拥有此角色的用户 (多对多)
      *
-     * @return BelongsToMany
+     * @return BelongsToMany<SysUser, $this>
      */
     public function users(): BelongsToMany
     {
@@ -151,7 +160,7 @@ class SysRole extends BaseLaORMModel
     /**
      * 角色拥有的菜单 (多对多)
      *
-     * @return BelongsToMany
+     * @return BelongsToMany<SysMenu, $this>
      */
     public function menus(): BelongsToMany
     {
@@ -166,7 +175,7 @@ class SysRole extends BaseLaORMModel
     /**
      * 父角色
      *
-     * @return BelongsTo
+     * @return BelongsTo<SysRole, $this>
      */
     public function parent(): BelongsTo
     {
@@ -176,7 +185,7 @@ class SysRole extends BaseLaORMModel
     /**
      * 子角色
      *
-     * @return HasMany
+     * @return HasMany<SysRole, $this>
      */
     public function children(): HasMany
     {
@@ -186,7 +195,7 @@ class SysRole extends BaseLaORMModel
     /**
      * 自定义数据权限部门
      *
-     * @return BelongsToMany
+     * @return BelongsToMany<SysDept, $this>
      */
     public function dataScopeDepts(): BelongsToMany
     {
@@ -223,7 +232,7 @@ class SysRole extends BaseLaORMModel
     /**
      * 获取角色的菜单ID列表
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getMenuIds(): array
     {
@@ -233,7 +242,7 @@ class SysRole extends BaseLaORMModel
     /**
      * 同步角色菜单
      *
-     * @param array $menuIds 菜单ID数组
+     * @param array<array-key, mixed> $menuIds 菜单ID数组
      * @return void
      */
     public function syncMenus(array $menuIds): void
@@ -245,7 +254,7 @@ class SysRole extends BaseLaORMModel
      * 获取角色树 (递归)
      *
      * @param int $parentId 父ID
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getRoleTree(int $parentId = 0): array
     {
@@ -316,6 +325,9 @@ class SysRole extends BaseLaORMModel
      * @param array $deptIds 部门ID数组
      * @return void
      */
+    /**
+     * @param array<array-key, mixed> $deptIds
+     */
     public function syncDataScopeDepts(array $deptIds): void
     {
         $this->dataScopeDepts()->sync($deptIds);
@@ -324,7 +336,7 @@ class SysRole extends BaseLaORMModel
     /**
      * 获取自定义数据权限部门ID列表
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getDataScopeDeptIds(): array
     {
@@ -334,7 +346,7 @@ class SysRole extends BaseLaORMModel
     /**
      * 获取所有数据权限选项（用于前端选择）
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public static function getDataScopeOptions(): array
     {

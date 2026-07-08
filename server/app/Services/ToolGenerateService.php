@@ -18,6 +18,9 @@ use App\Models\ToolGenerateColumn;
 use App\Models\ToolGenerateTable;
 use Framework\Basic\BaseService;
 
+/**
+ * @extends BaseService<ToolGenerateColumnDao>
+ */
 class ToolGenerateService extends BaseService
 {
     protected ToolGenerateTableDao  $tableDao;
@@ -37,8 +40,8 @@ class ToolGenerateService extends BaseService
     /**
      * 分页列表
      *
-     * @param array $params
-     * @return array {items, total}
+     * @param array<array-key, mixed> $params
+     * @return array<array-key, mixed> {items, total}
      */
     public function getPageList(array $params): array
     {
@@ -52,7 +55,7 @@ class ToolGenerateService extends BaseService
      * 读取表详情（含 columns 数组）
      *
      * @param int $id
-     * @return array
+     * @return array<array-key, mixed>
      * @throws \Exception
      */
     public function getDetail(int $id): array
@@ -85,7 +88,7 @@ class ToolGenerateService extends BaseService
      * 更新表配置（含 columns 数组）
      *
      * @param int   $id
-     * @param array $data
+     * @param array<array-key, mixed> $data
      * @param int   $operatorId
      * @return void
      * @throws \Exception
@@ -159,7 +162,7 @@ class ToolGenerateService extends BaseService
     /**
      * 批量删除（级联删除字段）
      *
-     * @param array $ids
+     * @param array<array-key, mixed> $ids
      * @param int   $operatorId
      * @return int
      * @throws \Exception
@@ -185,7 +188,7 @@ class ToolGenerateService extends BaseService
      * 获取字段列表
      *
      * @param int $tableId
-     * @return array
+     * @return array<array-key, mixed>
      * @throws \Exception
      */
     public function getColumns(int $tableId): array
@@ -202,9 +205,9 @@ class ToolGenerateService extends BaseService
      * 装载数据表（从 DB 读取结构写入代码生成配置表）
      *
      * @param string $source
-     * @param array  $names   [{name, comment, sourceName}]
+     * @param array<array-key, mixed>  $names   [{name, comment, sourceName}]
      * @param int    $operatorId
-     * @return array {success, failed}
+     * @return array<array-key, mixed> {success, failed}
      */
     public function loadTable(string $source, array $names, int $operatorId): array
     {
@@ -318,7 +321,7 @@ class ToolGenerateService extends BaseService
      * 预览代码（返回代码数组）
      *
      * @param int $id
-     * @return array [{name, tab_name, code, lang}]
+     * @return array<array-key, mixed>
      * @throws \Exception
      */
     public function previewCode(int $id): array
@@ -330,7 +333,7 @@ class ToolGenerateService extends BaseService
     /**
      * 生成代码压缩包（返回 zip 二进制内容）
      *
-     * @param array $ids
+     * @param array<array-key, mixed> $ids
      * @return string zip 二进制
      * @throws \Exception
      */
@@ -374,9 +377,9 @@ class ToolGenerateService extends BaseService
     /**
      * 生成代码到项目文件
      *
-     * @param array $ids
+     * @param array<int|string> $ids
      * @param int   $operatorId
-     * @return array {success, failed}
+     * @return array<string, mixed>
      * @throws \Exception
      */
     public function generateFile(array $ids, int $operatorId): array
@@ -419,8 +422,8 @@ class ToolGenerateService extends BaseService
     /**
      * 渲染所有代码文件
      *
-     * @param array $detail
-     * @return array
+     * @param array<array-key, mixed> $detail
+     * @return array<array-key, mixed>
      */
     protected function renderAllTemplates(array $detail): array
     {
@@ -513,8 +516,8 @@ class ToolGenerateService extends BaseService
     /**
      * 构建文件路径映射
      *
-     * @param array $detail
-     * @return array {name => relPath}
+     * @param array<array-key, mixed> $detail
+     * @return array<array-key, mixed>
      */
     protected function buildFilePaths(array $detail): array
     {
@@ -545,6 +548,8 @@ class ToolGenerateService extends BaseService
 
     /**
      * 渲染 Controller 代码
+     *
+     * @param array<string, mixed> $ctx
      */
     protected function renderController(array $ctx): string
     {
@@ -567,13 +572,6 @@ class ToolGenerateService extends BaseService
 
 declare(strict_types=1);
 
-/**
- * {$tableComment} 控制器
- *
- * @package {$controllerNS}
- * @author  yl_chen
- * @date    {$date}
- */
 
 namespace {$controllerNS};
 
@@ -661,6 +659,8 @@ class {$className}Controller extends BaseController
      */
     #[Route(path: '{$routeBase}/destroy', methods: ['DELETE'], name: '{$businessName}.destroy')]
     #[Auth(required: true)]
+        /**
+         */
     public function destroy(Request \$request): BaseJsonResponse
     {
         \$data = \$this->inputAll(\$request);
@@ -682,6 +682,8 @@ PHP;
 
     /**
      * 渲染 Service 代码
+     *
+     * @param array<string, mixed> $ctx
      */
     protected function renderService(array $ctx): string
     {
@@ -746,13 +748,6 @@ PHP;
 
 declare(strict_types=1);
 
-/**
- * {$tableComment} Service
- *
- * @package {$serviceNS}
- * @author  yl_chen
- * @date    {$date}
- */
 
 namespace {$serviceNS};
 
@@ -808,6 +803,8 @@ class {$className}Service extends BaseService
     /**
      * 更新
      */
+        /**
+         */
     public function update(int \$id, array \$data, int \$operatorId): void
     {
         \$data['updated_by'] = \$operatorId;
@@ -828,6 +825,8 @@ PHP;
 
     /**
      * 渲染 Dao 代码
+     *
+     * @param array<string, mixed> $ctx
      */
     protected function renderDao(array $ctx): string
     {
@@ -846,13 +845,6 @@ PHP;
 
 declare(strict_types=1);
 
-/**
- * {$tableComment} DAO
- *
- * @package {$daoNS}
- * @author  yl_chen
- * @date    {$date}
- */
 
 namespace {$daoNS};
 
@@ -871,6 +863,8 @@ PHP;
 
     /**
      * 渲染 Model 代码
+     *
+     * @param array<string, mixed> $ctx
      */
     protected function renderModel(array $ctx): string
     {
@@ -1049,13 +1043,6 @@ PHP;
 
 declare(strict_types=1);
 
-/**
- * {$tableComment} Model
- *
- * @package {$modelNS}
- * @author  yl_chen
- * @date    {$date}
- */
 
 namespace {$modelNS};
 {$useStr}
@@ -1065,6 +1052,8 @@ class {$className} extends BaseLaORMModel
 
     public \$incrementing = true;
 
+    /**
+     */
     protected \$keyType = 'int';
 
     protected \$dateFormat = 'Y-m-d H:i:s';
@@ -1084,6 +1073,8 @@ PHP;
 
     /**
      * 渲染 Vue index.vue 代码
+     *
+     * @param array<string, mixed> $ctx
      */
     protected function renderVueIndex(array $ctx): string
     {
@@ -1232,6 +1223,8 @@ VUE;
 
     /**
      * 渲染 Vue form.vue 代码
+     *
+     * @param array<string, mixed> $ctx
      */
     protected function renderVueForm(array $ctx): string
     {
@@ -1422,6 +1415,8 @@ VUE;
 
     /**
      * 渲染 Vue table-search.vue 代码
+     *
+     * @param array<string, mixed> $ctx
      */
     protected function renderVueSearch(array $ctx): string
     {
@@ -1524,6 +1519,8 @@ function handleSearch() {
 }
 
 // 展开/收起
+  /**
+   */
 function handleExpand(expanded: boolean) {
   isExpanded.value = expanded
 }
@@ -1547,6 +1544,8 @@ VUE;
 
     /**
      * 更新字段配置（全量替换）
+     *
+     * @param array<int, array<string, mixed>> $columns
      */
     protected function updateColumns(int $tableId, array $columns, int $operatorId, string $now): void
     {
@@ -1609,6 +1608,9 @@ VUE;
 
     /**
      * 格式化表记录（时间字段处理）
+     *
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
      */
     protected function formatTableRow(array $row): array
     {
@@ -1646,6 +1648,9 @@ VUE;
 
     /**
      * 格式化字段记录（布尔值转换）
+     *
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
      */
     protected function formatColumnRow(array $row): array
     {
@@ -1699,6 +1704,8 @@ VUE;
 
     /**
      * 渲染菜单 SQL 语句
+     *
+     * @param array<string, mixed> $ctx
      */
     protected function renderMenuSql(array $ctx): string
     {

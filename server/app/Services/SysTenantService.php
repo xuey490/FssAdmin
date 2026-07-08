@@ -20,10 +20,19 @@ use App\Models\SysUserTenant;
 use Framework\Basic\BaseService;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * @extends BaseService<SysTenantDao>
+ */
 class SysTenantService extends BaseService
 {
+    /**
+     * @return mixed
+     */
     protected SysTenantDao $tenantDao;
 
+    /**
+     * @return mixed
+     */
     public function __construct()
     {
         parent::__construct();
@@ -32,12 +41,12 @@ class SysTenantService extends BaseService
 
     /**
      * 租户分页列表
-     * , Request $request
+     *
+     * @param array<array-key, mixed> $params
+     * @return array<array-key, mixed>
      */
-    public function getList(array $params ): array
+    public function getList(array $params): array
     {
-        // 获取当前用户和租户信息（从全局 Request 容器）
-
         $request = \Framework\Tenant\TenantContext::getCurrentRequest();
   
         $page = max(1, (int)($params['page'] ?? 1));
@@ -86,6 +95,7 @@ class SysTenantService extends BaseService
 
         $total = $query->count();
 
+        /** @var \Illuminate\Database\Eloquent\Collection<int, SysTenant> $rows */
         $rows = $query->orderBy('id', 'desc')
             ->offset(($page - 1) * $limit)
             ->limit($limit)
@@ -119,10 +129,13 @@ class SysTenantService extends BaseService
 
     /**
      * 租户详情
+     *
+     * @return array<array-key, mixed>|null
      */
     public function getDetail(int $tenantId): ?array
     {
         // 使用 withoutTenancy() 允许超级管理员查看任意租户详情
+        /** @var SysTenant|null $tenant */
         $tenant = SysTenant::withoutTenancy()->find($tenantId);
         if (!$tenant) {
             return null;
@@ -138,9 +151,14 @@ class SysTenantService extends BaseService
 
     /**
      * 创建租户
+     * @param array<array-key, mixed> $data
      */
     public function create(array $data, int $operator = 0): ?SysTenant
     {
+
+/**
+
+ */
         return $this->transaction(function () use ($data, $operator) {
             if ($this->tenantDao->isTenantNameExists($data['tenant_name'])) {
                 throw new \Exception('租户名称已存在');
@@ -159,17 +177,23 @@ class SysTenantService extends BaseService
 
     /**
      * 更新租户
+     *
+     * @param int $tenantId
+     * @param array<array-key, mixed> $data
+     * @param int $operator
+     * @return bool
      */
     public function update(int $tenantId, array $data, int $operator = 0): bool
     {
         return $this->transaction(function () use ($tenantId, $data, $operator) {
+            /** @var SysTenant|null $tenant */
             // 使用 withoutTenancy() 允许超级管理员更新任意租户
-            $tenant = SysTenant::withoutTenancy()->find($tenantId);
-            if (!$tenant) {
-                throw new \Exception('租户不存在');
-            }
+        $tenant = SysTenant::withoutTenancy()->find($tenantId);
+        if (!$tenant) {
+            throw new \Exception('租户不存在');
+        }
 
-            if (isset($data['tenant_name']) && $data['tenant_name'] !== $tenant->tenant_name) {
+        if (isset($data['tenant_name']) && $data['tenant_name'] !== $tenant->tenant_name) {
                 if ($this->tenantDao->isTenantNameExists($data['tenant_name'], $tenantId)) {
                     throw new \Exception('租户名称已存在');
                 }
@@ -224,6 +248,8 @@ class SysTenantService extends BaseService
     /**
      * 更新租户状态
      */
+    /**
+     */
     public function updateStatus(int $tenantId, int $status): bool
     {
         return $this->tenantDao->updateStatus($tenantId, $status);
@@ -231,6 +257,9 @@ class SysTenantService extends BaseService
 
     /**
      * 查询租户关联用户
+     *
+     * @param array<array-key, mixed> $params
+     * @return array<array-key, mixed>
      */
     public function getTenantUsers(int $tenantId, array $params): array
     {
@@ -263,6 +292,7 @@ class SysTenantService extends BaseService
         }
 
         $total = $query->count();
+        /** @var \Illuminate\Database\Eloquent\Collection<int, SysUserTenant> $rows */
         $rows = $query->orderBy('id', 'desc')
             ->offset(($page - 1) * $limit)
             ->limit($limit)
@@ -277,11 +307,11 @@ class SysTenantService extends BaseService
                 'is_default' => (int)$row->is_default,
                 'is_super' => (int)($row->is_super ?? 0),
                 'join_time' => $this->dateToString($row->join_time),
-                'username' => $user?->username ?? '',
-                'realname' => $user?->realname ?? '',
-                'phone' => $user?->phone ?? '',
-                'email' => $user?->email ?? '',
-                'status' => (int)($user?->status ?? 0),
+                'username' => $user->username ?? '',
+                'realname' => $user->realname ?? '',
+                'phone' => $user->phone ?? '',
+                'email' => $user->email ?? '',
+                'status' => (int)($user->status ?? 0),
             ];
         })->toArray();
 
@@ -295,6 +325,9 @@ class SysTenantService extends BaseService
 
     /**
      * 查询可添加到租户的用户（排除已关联用户）
+     *
+     * @param array<array-key, mixed> $params
+     * @return array<array-key, mixed>
      */
     public function getAvailableUsers(int $tenantId, array $params): array
     {
@@ -344,10 +377,13 @@ class SysTenantService extends BaseService
 
     /**
      * 批量添加用户到租户
+     *
+     * @param array<array-key, mixed> $userIds
      */
     public function addUsers(int $tenantId, array $userIds, int $operator = 0): int
     {
         // 使用 withoutTenancy() 允许超级管理员向任意租户添加用户
+        /** @var SysTenant|null $tenant */
         $tenant = SysTenant::withoutTenancy()->find($tenantId);
         if (!$tenant) {
             throw new \Exception('租户不存在');
@@ -423,6 +459,8 @@ class SysTenantService extends BaseService
     /**
      * 设为默认租户
      */
+            /**
+             */
     public function setDefaultTenant(int $tenantId, int $userId, int $isDefault): bool
     {
         // 使用 withoutTenancy() 允许超级管理员操作任意租户
@@ -454,6 +492,10 @@ class SysTenantService extends BaseService
         return $userTenant->update(['is_default' => $isDefault]);
     }
 
+    /**
+     * @param SysTenant|array<string, mixed> $tenant
+     * @return array<array-key, mixed>
+     */
     protected function formatTenant(SysTenant|array $tenant): array
     {
         $data = $tenant instanceof SysTenant ? $tenant->toArray() : $tenant;

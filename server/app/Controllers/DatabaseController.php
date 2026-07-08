@@ -14,8 +14,14 @@ use Framework\Attributes\Permission;
 
 class DatabaseController extends BaseController
 {
+    /**
+     * @return mixed
+     */
     protected DatabaseMaintainService $databaseService;
 
+    /**
+     * @return mixed
+     */
     public function __construct()
     {
         $this->databaseService = new DatabaseMaintainService();
@@ -49,17 +55,6 @@ class DatabaseController extends BaseController
     {
         $tableName = $request->query->get('table');
         return $this->fail('禁止远程访问数据库!');
-        if (empty($tableName)) {
-            return $this->fail('表名不能为空');
-        }
-
-        // 验证表名，防止SQL注入
-        if (!preg_match('/^[a-zA-Z0-9_]+$/', $tableName)) {
-            return $this->fail('表名格式不正确');
-        }
-
-        $columns = $this->databaseService->getTableDetailed($tableName);
-        return $this->success(['columns' => $columns]);
     }
 
     #[Route(path: '/api/core/database/table/createSql', methods: ['GET'], name: 'database.table.createSql')]
@@ -69,17 +64,6 @@ class DatabaseController extends BaseController
     {
         $tableName = $request->query->get('table');
         return $this->fail('禁止远程访问数据库!');
-        if (empty($tableName)) {
-            return $this->fail('表名不能为空');
-        }
-
-        // 验证表名，防止SQL注入
-        if (!preg_match('/^[a-zA-Z0-9_]+$/', $tableName)) {
-            return $this->fail('表名格式不正确');
-        }
-
-        $result = $this->databaseService->getCreateTableSql($tableName);
-        return $this->success($result);
     }
 
     #[Route(path: '/api/core/database/table/optimize', methods: ['POST'], name: 'database.table.optimize')]
@@ -167,6 +151,8 @@ class DatabaseController extends BaseController
     #[Route(path: '/api/core/database/recycle/recovery', methods: ['POST'], name: 'database.recycle.recovery')]
     #[Auth(required: true)]
     #[Permission('core:recycle:edit')]
+    /**
+     */
     public function recoveryRecycle(Request $request): BaseJsonResponse
     {
         $data = $this->parseBody($request);
@@ -190,6 +176,9 @@ class DatabaseController extends BaseController
 
     // ==================== 辅助方法 ====================
 
+    /**
+     * @return array<array-key, mixed>
+     */
     private function parseBody(Request $request): array
     {
         $body = [];

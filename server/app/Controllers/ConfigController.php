@@ -15,7 +15,13 @@ use Framework\Attributes\Permission;
 
 class ConfigController extends BaseController
 {
+    /**
+     * @return mixed
+     */
     protected SysConfigService $configService;
+    /**
+     * @return mixed
+     */
     protected SysConfigGroupService $configGroupService;
 
     protected function initialize(): void
@@ -219,12 +225,19 @@ class ConfigController extends BaseController
 
     // ==================== 辅助方法 ====================
 
+    /**
+     */
     protected function getOperatorId(Request $request): int
     {
         $user = $request->attributes->get('user');
         return $user['id'] ?? 0;
     }
 
+    /**
+     */
+        /**
+     * @return array<array-key, mixed>
+         */
     private function parseBody(Request $request): array
     {
         $body = [];
@@ -238,6 +251,9 @@ class ConfigController extends BaseController
         return array_merge($request->request->all(), $body);
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     private function parseIds(Request $request): array
     {
         $body = $this->parseBody($request);

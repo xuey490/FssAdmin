@@ -5,13 +5,19 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\SysLoginLog;
+use App\Dao\SysLoginLogDao;
 use Framework\Basic\BaseService;
 
+/**
+ * @extends BaseService<SysLoginLogDao>
+ */
 class LoginLogService extends BaseService
 {
     /**
      * 分页查询登录日志
      * 前端参数：username, ip, status, login_time(数组[start,end]), orderField, orderType, page, pageSize
+     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $params
      */
     public function getPageList(array $params): array
     {
@@ -28,7 +34,7 @@ class LoginLogService extends BaseService
         }
         // 兼容 status 和 login_status 两种参数名
         $statusVal = $params['status'] ?? $params['login_status'] ?? null;
-        if (isset($statusVal) && $statusVal !== '' && $statusVal !== null) {
+        if (isset($statusVal) && $statusVal !== '') {
             $query->where('status', (int)$statusVal);
         }
         // 兼容 login_time 数组 和 start_time/end_time 两种传参方式
@@ -74,6 +80,9 @@ class LoginLogService extends BaseService
     /**
      * 批量删除
      */
+    /**
+     * @param array<array-key, mixed> $ids
+     */
     public function delete(array $ids): int
     {
         return SysLoginLog::whereIn('id', $ids)->delete();
@@ -81,6 +90,7 @@ class LoginLogService extends BaseService
 
     /**
      * 记录登录日志
+     * @param array<array-key, mixed> $data
      */
     public function record(array $data): SysLoginLog
     {

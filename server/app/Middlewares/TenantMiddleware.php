@@ -34,6 +34,8 @@ class TenantMiddleware implements MiddlewareInterface
 {
     /**
      * JWT 配置
+     * @return mixed
+     * @var array<array-key, mixed>
      */
     private array $config;
 
@@ -41,6 +43,7 @@ class TenantMiddleware implements MiddlewareInterface
      * 构造函数
      *
      * 从 config/jwt.php 读取配置
+     * @return mixed
      */
     public function __construct()
     {
