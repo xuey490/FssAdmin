@@ -7,3 +7,8 @@ declare(strict_types=1);
 if (!defined('BASE_PATH')) {
     define('BASE_PATH', 'C:/Users/Administrator/Desktop/project-root/NovaPHP0.0.9/project');
 }
+
+// 框架入口常量——public/index.php 中定义，此处为静态分析提供符号声明
+if (!defined('APP_DEBUG')) {
+    define('APP_DEBUG', false);
+}
