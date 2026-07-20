@@ -115,39 +115,81 @@
     </div>
 
     <ElDialog
-      v-if="homeDebugEnabled"
+      v-if="loginWindowEnabled"
       v-model="welcomeDialogVisible"
       title="FssAdmin"
-      width="520px"
+      width="750px"
+	  height="450px"
       align-center
       :close-on-click-modal="false"
     >
-      <div class="welcome-dialog">
-        <p class="welcome-dialog__intro">
-          FssAdmin 努力成为 PHP 届后台管理系统的 RuoYi，一个后台适配多个多个前端系统
-        </p>
-        <ul class="welcome-dialog__list">
-          <li>
-            适配 Art Design Pro：
-            <a href="https://v3.phpframe.org" target="_blank" rel="noopener noreferrer">https://v3.phpframe.org</a>
-            <span class="welcome-dialog__tag">（本演示，已开源）</span>
-          </li>
-          <li>
-            适配 SoyBeanAdmin：
-            <a href="https://v4.phpframe.org" target="_blank" rel="noopener noreferrer">https://v4.phpframe.org</a>
-            <span class="welcome-dialog__tag">（已开源）</span>
-          </li>
-          <li>
-            适配 Vben5-Ele：
-            <a href="https://v5.phpframe.org" target="_blank" rel="noopener noreferrer">https://v5.phpframe.org</a>
-          </li>
-        </ul>
-        <p class="welcome-dialog__footer">目前基础底座已开源，欢迎 Star：</p>
-        <div class="welcome-dialog__links">
-          <a href="https://gitee.com/fsscms/FssAdmin" target="_blank" rel="noopener noreferrer">Gitee</a>
-          <a href="https://github.com/xuey490/FssAdmin" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </div>
-      </div>
+      <ElTabs v-model="activeTab" type="card">
+        <ElTabPane label="PHP版本" name="php">
+          <div class="welcome-dialog">
+            <p class="welcome-dialog__intro">
+              FssAdmin PHP 版本，基于自研 Fssphp 框架，一个后台适配多个前端系统。
+            </p>
+            <ul class="welcome-dialog__list">
+              <li>
+                适配 Art Design Pro：
+                <a href="https://v3.phpframe.org" target="_blank" rel="noopener noreferrer">https://v3.phpframe.org</a>
+                <span class="welcome-dialog__tag">（本演示，已开源）</span>
+              </li>
+              <li>
+                适配 SoyBeanAdmin：
+                <a href="https://v4.phpframe.org" target="_blank" rel="noopener noreferrer">https://v4.phpframe.org</a>
+                <span class="welcome-dialog__tag">（已开源）</span>
+              </li>
+              <li>
+                适配 Vben5-Ele：
+                <a href="https://v5.phpframe.org" target="_blank" rel="noopener noreferrer">https://v5.phpframe.org</a>
+              </li>
+            </ul>
+            <p class="welcome-dialog__footer">目前基础底座已开源，欢迎 Star：</p>
+            <div class="welcome-dialog__links">
+              <a href="https://gitee.com/fsscms/FssAdmin" target="_blank" rel="noopener noreferrer">Gitee</a>
+              <a href="https://github.com/xuey490/FssAdmin" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </div>
+          </div>
+        </ElTabPane>
+        <ElTabPane label="NestJs版本" name="nestjs">
+          <div class="welcome-dialog">
+            <p class="welcome-dialog__intro">
+              FssAdmin(NestJs)是一款基于NestJS + TypeScript6 + TypeORM1.0等 技术栈的全功能企业级后端管理系统。
+            </p>
+            <ul class="welcome-dialog__list">
+              <li>
+                适配 Art Design Pro：
+                <a href="https://nest.phpframe.org" target="_blank" rel="noopener noreferrer">https://nest.phpframe.org</a>
+              </li>
+			  经测试可以几乎可以无损适配php版本的SoyBeanAdmin，Vben5-Ele的前端
+            </ul>
+            <p class="welcome-dialog__footer">NestJs 版本已开源，欢迎关注：</p>
+            <div class="welcome-dialog__links">
+              <a href="https://gitee.com/FssPHP_Team/fss-admin_nest" target="_blank" rel="noopener noreferrer">Gitee</a>
+              <a href="https://github.com/xuey490/FssAdmin_NestJs" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </div>
+          </div>
+        </ElTabPane>
+        <ElTabPane label="Python版本" name="python">
+          <div class="welcome-dialog">
+            <p class="welcome-dialog__intro">
+              FssAdmin Python 版本，基于 FastAPI + SQLAlchemy 异步架构，高性能 Python 全栈后台解决方案。
+            </p>
+            <ul class="welcome-dialog__list">
+              <li>
+                适配 Art Design Pro：
+                <a href="https://fast.phpframe.org" target="_blank" rel="noopener noreferrer">https://fast.phpframe.org</a>
+              </li>
+
+            </ul>
+            <p class="welcome-dialog__footer">Python 版本规划中，欢迎关注：</p>
+            <div class="welcome-dialog__links">
+				测试地址暂不可用，期待...
+            </div>
+          </div>
+        </ElTabPane>
+      </ElTabs>
       <template #footer>
         <ElButton type="primary" @click="welcomeDialogVisible = false">知道了</ElButton>
       </template>
@@ -212,8 +254,9 @@
   }))
 
   const loading = ref(false)
-  const homeDebugEnabled = import.meta.env.VITE_HOME_DEGBUG === 'true'
+  const loginWindowEnabled = ref(false)
   const welcomeDialogVisible = ref(false)
+  const activeTab = ref('php')
   let welcomeDialogTimer: ReturnType<typeof setTimeout> | undefined
 
   const loadSystemName = async () => {
@@ -228,14 +271,29 @@
     }
   }
 
+  const loadLoginWindowConfig = async () => {
+    try {
+      const res = await fetchPublicConfigValue('login_window')
+      loginWindowEnabled.value = res?.value === '1'
+    } catch (error) {
+      console.error('[Login] 加载登录弹窗配置失败:', error)
+      loginWindowEnabled.value = false
+    }
+  }
+
   onMounted(() => {
     loadSystemName()
+    loadLoginWindowConfig()
     refreshCaptcha()
     // 如果有默认用户名，自动加载租户列表
     if (formData.username) {
       loadTenantList()
     }
-    if (homeDebugEnabled) {
+  })
+
+  // 登录弹窗延迟显示
+  watch(loginWindowEnabled, (enabled) => {
+    if (enabled) {
       welcomeDialogTimer = setTimeout(() => {
         welcomeDialogVisible.value = true
       }, 2000)
