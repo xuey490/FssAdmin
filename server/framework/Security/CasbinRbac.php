@@ -48,6 +48,13 @@ class CasbinRbac
     protected bool $groupUseTenant = false;
 
     /**
+     * 缓存配置
+     *
+     * @var array{cache: array{enabled: bool, driver?: string, prefix?: string, ttl?: int}}
+     */
+    protected array $cacheConfig;
+
+    /**
      * 构造函数，初始化 Casbin RBAC 服务.
      *
      * 根据配置初始化 Casbin 模型、MySQL 适配器和缓存机制。
@@ -57,14 +64,13 @@ class CasbinRbac
      *                      - model.config_text: RBAC 模型规则文本
      *                      - adapter.table_name: 策略存储表名
      *                      - adapter.connection: 数据库连接名（可选）
-     *                      - cache.enable: 是否启用缓存
-     *                      - cache.key_prefix: 缓存键前缀
+     *                      - cache.enabled: 是否启用缓存
+     *                      - cache.prefix: 缓存键前缀
      *                      - cache.ttl: 缓存过期时间（秒）
      */
     public function __construct(array $config)
     {
         // 1. 加载 RBAC 模型规则
-        //dump($config);
         $model = new Model();
         // 从文件加载模型配置
         if (!empty($config['model']['path']) && file_exists($config['model']['path'])) {
@@ -84,6 +90,10 @@ class CasbinRbac
         // 3. 创建 Casbin 执行器
         $this->enforcer = new Enforcer($model, $adapter);
         $this->initModelArity($config);
+
+        // 4. 保存缓存配置
+        /** @var array{cache: array{enabled: bool, driver?: string, prefix?: string, ttl?: int}} $config */
+        $this->cacheConfig = $config;
     }
 
     /**
@@ -161,10 +171,10 @@ class CasbinRbac
     }
 
     /**
-     * 权限校验核心方法.
+     * 权限校验核心方法（带缓存支持）.
      *
      * 检查指定用户是否有权限对特定资源执行指定操作。
-     * 基于 Casbin 的 RBAC 模型进行权限判断。
+     * 基于 Casbin 的 RBAC 模型进行权限判断，结果会缓存以提升性能。
      *
      * @param string|int $userId   用户ID
      * @param string     $resource 资源路径
@@ -180,13 +190,28 @@ class CasbinRbac
         $act = (string) $action;
         $tenant = (string) $tenantId;
 
-        #dump('checkPermission:'.$user.' '.$obj.' '.$act.' '.$tenant);
-
-        if ($this->requestUseTenant) {
-            return $this->enforcer->enforce($user, $obj, $act, $tenant);
+        // 检查缓存
+        if ($this->isCacheEnabled()) {
+            $cacheKey = $this->getCacheKey('permission', $user, $obj, $act, (string) $tenant);
+            /** @var mixed $cached */
+            $cached = app('cache')->get($cacheKey);
+            if ($cached !== null) {
+                return (bool) $cached;
+            }
         }
 
-        return $this->enforcer->enforce($user, $obj, $act);
+        // 执行权限检查
+        $result = $this->requestUseTenant
+            ? $this->enforcer->enforce($user, $obj, $act, $tenant)
+            : $this->enforcer->enforce($user, $obj, $act);
+
+        // 缓存结果
+        if ($this->isCacheEnabled()) {
+            $cacheKey = $this->getCacheKey('permission', $user, $obj, $act, (string) $tenant);
+            app('cache')->set($cacheKey, $result, $this->getCacheTtl());
+        }
+
+        return $result;
     }
 
     /**
@@ -233,10 +258,125 @@ class CasbinRbac
         return $this->enforcer->getFilteredPolicy(0, $role);
     }
 
+    // ==================== 缓存管理 ====================
+
+    /**
+     * 缓存是否启用
+     *
+     * @return bool
+     */
+    protected function isCacheEnabled(): bool
+    {
+        return $this->cacheConfig['cache']['enabled'] ?? false;
+    }
+
+    /**
+     * 获取缓存前缀
+     *
+     * @return string
+     */
+    protected function getCachePrefix(): string
+    {
+        return $this->cacheConfig['cache']['prefix'] ?? 'casbin:';
+    }
+
+    /**
+     * 获取缓存过期时间（秒）
+     *
+     * @return int
+     */
+    protected function getCacheTtl(): int
+    {
+        return $this->cacheConfig['cache']['ttl'] ?? 3600;
+    }
+
+    /**
+     * 生成缓存键
+     *
+     * @param string ...$parts 键的各部分
+     * @return string
+     */
+    protected function getCacheKey(string ...$parts): string
+    {
+        return $this->getCachePrefix() . implode(':', $parts);
+    }
+
+    /**
+     * 清除用户权限缓存（使用 SCAN 游标避免 KEYS O(N) 阻塞）
+     *
+     * @param int $userId 用户ID
+     * @return void
+     */
+    public function clearUserCache(int $userId): void
+    {
+        if (!$this->isCacheEnabled()) {
+            return;
+        }
+
+        $prefix = $this->getCachePrefix();
+        $pattern = "{$prefix}permission:{$userId}:*";
+
+        $redis = app('redis');
+        $this->deleteKeysByPattern($redis, $pattern);
+    }
+
+    /**
+     * 清除所有权限缓存
+     *
+     * @return void
+     */
+    public function clearAllCache(): void
+    {
+        if (!$this->isCacheEnabled()) {
+            return;
+        }
+
+        $prefix = $this->getCachePrefix();
+
+        $redis = app('redis');
+        $this->deleteKeysByPattern($redis, "{$prefix}*");
+    }
+
+    /**
+     * 使用 SCAN 游标删除匹配的 Redis 键（兼容原生 phpredis 和 Predis）
+     *
+     * @param \Redis|\Predis\Client $redis Redis 客户端
+     * @param string $pattern 匹配模式
+     * @return void
+     */
+    private function deleteKeysByPattern($redis, string $pattern): void
+    {
+        // 检测 Redis 客户端类型：原生 phpredis 扩展 vs Predis
+        $isNativeRedis = $redis instanceof \Redis;
+
+        $cursor = 0;
+        do {
+            if ($isNativeRedis) {
+                // 原生 phpredis 扩展：scan(&$iterator, ?string $pattern, int $count)
+                $keys = $redis->scan($cursor, $pattern, 100);
+                if ($keys === false || $keys === []) {
+                    break;
+                }
+            } else {
+                // Predis：scan(int $cursor, array $options) → [cursor, [keys]]
+                $result = $redis->scan($cursor, ['MATCH' => $pattern, 'COUNT' => 100]);
+                if (!is_array($result)) {
+                    break;
+                }
+                $cursor = (int) ($result[0] ?? 0);
+                $keys = $result[1] ?? [];
+            }
+
+            if ($keys !== []) {
+                $redis->del($keys);
+            }
+        } while ($cursor !== 0);
+    }
+
     /**
      * 初始化模型参数维度（自动适配是否启用租户域）.
      * @param array<mixed> $config
- */
+     */
     protected function initModelArity(array $config): void
     {
         $modelText = $this->resolveModelText($config);
@@ -252,7 +392,7 @@ class CasbinRbac
     /**
      * 解析模型文本（支持 file/content）。
      * @param array<mixed> $config
- */
+     */
     protected function resolveModelText(array $config): string
     {
         if (!empty($config['model']['content']) && is_string($config['model']['content'])) {

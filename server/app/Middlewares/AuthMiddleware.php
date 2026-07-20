@@ -40,8 +40,6 @@ class AuthMiddleware
             $this->debugLog('[AuthMiddleware] 401 - 无access_token', [
                 'path' => $request->getPathInfo(),
                 'method' => $request->getMethod(),
-                'auth_header' => $request->headers->get('Authorization'),
-                'cookie_access_token' => $request->cookies->has('access_token') ? 'exists' : 'missing',
             ]);
             return BaseJsonResponse::unauthorized('请先登录');
         }
@@ -147,7 +145,6 @@ class AuthMiddleware
             $this->debugLog('[AuthMiddleware] 401 - parseForAccess 异常', [
                 'path' => $request->getPathInfo(),
                 'error' => get_class($e) . ': ' . $e->getMessage(),
-                'token_prefix' => substr($accessToken, 0, 30) . '...',
                 'file' => $e->getFile() . ':' . $e->getLine(),
             ]);
             // 开发环境返回详细错误信息，生产环境返回通用提示
@@ -303,18 +300,34 @@ class AuthMiddleware
     }
 
     /**
-     * 临时诊断日志（排查401后可删除）
+     * 调试日志（仅在 APP_DEBUG=true 时写入，生产环境静默）
+     * 敏感字段（auth_header、token_prefix 等）自动过滤，不会写入日志文件。
      * @param array<array-key, mixed> $context
      */
     protected function debugLog(string $message, array $context = []): void
     {
+        // 生产环境不写入调试日志
+        if (!(bool) env('APP_DEBUG', false)) {
+            return;
+        }
+
+        // 敏感字段黑名单——这些字段永不被记录到文件
+        /** @var array<string> $sensitiveKeys */
+        $sensitiveKeys = ['auth_header', 'token_prefix', 'cookie_access_token', 'access_token', 'refresh_token'];
+        $safeContext = [];
+        foreach ($context as $key => $value) {
+            if (!in_array((string) $key, $sensitiveKeys, true)) {
+                $safeContext[$key] = $value;
+            }
+        }
+
         $logFile = BASE_PATH . '/runtime/logs/auth_debug.log';
         $dir = dirname($logFile);
         if (!is_dir($dir)) {
             @mkdir($dir, 0755, true);
         }
         $time = date('Y-m-d H:i:s');
-        $line = "[{$time}] {$message}" . ($context ? ' | ' . json_encode($context, JSON_UNESCAPED_UNICODE) : '') . PHP_EOL;
+        $line = "[{$time}] {$message}" . ($safeContext !== [] ? ' | ' . json_encode($safeContext, JSON_UNESCAPED_UNICODE) : '') . PHP_EOL;
         @file_put_contents($logFile, $line, FILE_APPEND);
     }
 }

@@ -251,24 +251,64 @@ class SysRole extends BaseLaORMModel
     }
 
     /**
-     * 获取角色树 (递归)
+     * 获取角色树 (单次查询 + PHP 构建)
      *
-     * @param int $parentId 父ID
+     * 一次性加载所有启用角色，在内存中按 parent_id 组织树结构，
+     * 避免递归 SQL 造成的 N+1 查询问题。
+     *
+     * @param int $parentId 根父ID，默认 0
      * @return array<array-key, mixed>
      */
     public static function getRoleTree(int $parentId = 0): array
     {
-        $roles = self::where('parent_id', $parentId)
-            ->where('status', self::STATUS_ENABLED)
+        $allRoles = self::where('status', self::STATUS_ENABLED)
             ->orderBy('sort')
             ->get()
             ->toArray();
 
-        foreach ($roles as &$role) {
-            $role['children'] = self::getRoleTree($role['id']);
+        return self::buildRoleTreeFromList($allRoles, $parentId);
+    }
+
+    /**
+     * 从平坦列表中构建角色树 (PHP 内存操作，零额外 SQL)
+     *
+     * @param array<array-key, mixed> $items 扁平角色数组
+     * @param int $parentId 根父ID
+     * @return array<array-key, mixed>
+     */
+    private static function buildRoleTreeFromList(array $items, int $parentId = 0): array
+    {
+        $childrenMap = [];
+        foreach ($items as $item) {
+            $pid = (int) ($item['parent_id'] ?? 0);
+            $childrenMap[$pid][] = $item;
         }
 
-        return $roles;
+        $tree = [];
+        $stack = [[$parentId, &$tree]];
+        while ($stack !== []) {
+            /** @var array{0: int, 1: array<array-key, mixed>} $frame */
+            $frame = array_pop($stack);
+            $currentPid = $frame[0];
+            /** @var array<array-key, mixed> $branch */
+            $branch = &$frame[1];
+
+            if (!isset($childrenMap[$currentPid])) {
+                continue;
+            }
+
+            foreach ($childrenMap[$currentPid] as $item) {
+                $itemId = (int) ($item['id'] ?? 0);
+                $children = [];
+                if (isset($childrenMap[$itemId])) {
+                    $stack[] = [$itemId, &$children];
+                }
+                $item['children'] = $children;
+                $branch[] = $item;
+            }
+        }
+
+        return $tree;
     }
 
     /**

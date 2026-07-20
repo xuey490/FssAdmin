@@ -75,13 +75,8 @@ class AttributeRouteLoader
 	private array $scan_whitelist = []; // 只扫描含 Controller 的文件 'Controller.php'
 	/** @var array<mixed> */
 	private array $scan_blacklist = ['BaseController.php']; // 排除基础控制器
-	/** @var array<mixed> */
-	/** @var array<mixed> */
-	/** @var array<mixed> */
-	/** @var array<mixed>  */
-	/** @var array<mixed>  */
-	private ?array /** @var array<mixed>  */
-$scanned_files_cache = null;
+	/** @var array<mixed>|null */
+	private ?array $scanned_files_cache = null;
 
     /**
      * 构造函数

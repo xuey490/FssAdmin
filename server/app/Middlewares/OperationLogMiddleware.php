@@ -13,6 +13,7 @@ namespace App\Middlewares;
 
 use App\Models\SysOperationLog;
 use App\Services\IpLocationService;
+use Framework\Tenant\JwtTenantContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -78,6 +79,13 @@ class OperationLogMiddleware
     {
         try {
             $user      = $request->attributes->get('user', []);
+            
+            // 当 AuthMiddleware 尚未运行时（例如无 #[Auth] 注解的接口），user 属性为空，
+            // 此时从 JWT Token 中提取用户信息作为兜底
+            if (empty($user['username']) && empty($user['name'])) {
+                $user = $this->resolveUserFromToken($request);
+            }
+            
             $userAgent = $request->headers->get('User-Agent', '');
             $ip        = $request->headers->get('CF-Connecting-IP') ?? $request->getClientIp();
 			$location  = $this->ipLocationService->getLocation($ip);
@@ -125,5 +133,47 @@ class OperationLogMiddleware
                 error_log('[OperationLogMiddleware] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
             }
         }
+    }
+
+    /**
+     * 从 JWT Token 中解析用户信息（当 AuthMiddleware 尚未注入 user 属性时兜底使用）
+     *
+     * @param Request $request
+     * @return array{username: string, id: int}
+     */
+    protected function resolveUserFromToken(Request $request): array
+    {
+        $token = $this->extractAccessToken($request);
+        if ($token === null || $token === '') {
+            return ['username' => '', 'id' => 0];
+        }
+
+        try {
+            $parsed = app('jwt')->parseForAccess($token);
+            $claims = $parsed->claims();
+            return [
+                'username' => $claims->get('name') ?? '',
+                'id'       => (int) ($claims->get('uid') ?? 0),
+            ];
+        } catch (\Throwable) {
+            return ['username' => '', 'id' => 0];
+        }
+    }
+
+    /**
+     * 从请求中提取 access_token（优先 Authorization 头，其次 Cookie）
+     *
+     * @param Request $request
+     * @return string|null
+     */
+    protected function extractAccessToken(Request $request): ?string
+    {
+        $header = $request->headers->get('Authorization');
+        if ($header !== null && $header !== '' && str_starts_with($header, 'Bearer ')) {
+            return substr($header, 7);
+        }
+
+        $cookieToken = $request->cookies->get('access_token');
+        return is_string($cookieToken) && $cookieToken !== '' ? $cookieToken : null;
     }
 }

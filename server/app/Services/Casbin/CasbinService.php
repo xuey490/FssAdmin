@@ -596,13 +596,10 @@ EOT;
         $prefix = $this->getCachePrefix();
         $pattern = "{$prefix}permission:{$userId}:*";
 
-        // 清除 Redis 缓存
+        // 清除 Redis 缓存（使用 SCAN 替代 KEYS，避免 O(N) 阻塞）
         if ($this->config['cache']['driver'] === 'redis') {
             $redis = app('redis');
-            $keys = $redis->keys($pattern);
-            foreach ($keys as $key) {
-                $redis->del($key);
-            }
+            $this->deleteKeysByPattern($redis, $pattern);
         }
     }
 
@@ -621,11 +618,45 @@ EOT;
 
         if ($this->config['cache']['driver'] === 'redis') {
             $redis = app('redis');
-            $keys = $redis->keys("{$prefix}*");
-            foreach ($keys as $key) {
-                $redis->del($key);
-            }
+            $this->deleteKeysByPattern($redis, "{$prefix}*");
         }
+    }
+
+    /**
+     * 使用 SCAN 模式匹配并删除 Redis 键，避免 KEYS 的 O(N) 阻塞问题
+     *
+     * @param \Predis\Client|\Redis $redis Redis 客户端实例
+     * @param string $pattern 匹配模式
+     * @return void
+     */
+    private function deleteKeysByPattern($redis, string $pattern): void
+    {
+        // 检测 Redis 客户端类型：原生 phpredis 扩展 vs Predis
+        $isNativeRedis = $redis instanceof \Redis;
+
+        $cursor = 0;
+        do {
+            if ($isNativeRedis) {
+                // 原生 phpredis 扩展：scan(&$iterator, ?string $pattern, int $count)
+                // $cursor 通过引用修改，返回 key 数组或 false
+                $keys = $redis->scan($cursor, $pattern, 100);
+                if ($keys === false || $keys === []) {
+                    break;
+                }
+            } else {
+                // Predis：scan(int $cursor, array $options) → [cursor, [keys]]
+                $result = $redis->scan($cursor, ['MATCH' => $pattern, 'COUNT' => 100]);
+                if (!is_array($result)) {
+                    break;
+                }
+                $cursor = (int) ($result[0] ?? 0);
+                $keys = $result[1] ?? [];
+            }
+
+            if ($keys !== []) {
+                $redis->del($keys);
+            }
+        } while ($cursor !== 0);
     }
 
     /**

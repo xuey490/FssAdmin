@@ -134,6 +134,29 @@ class LaravelORMFactory
     }
 
     /**
+     * 校验字段名仅包含安全字符（字母、数字、下划线、点、星号、逗号、空格）
+     * 用于 selectRaw/orderByRaw 的参数过滤，防止 SQL 注入
+     *
+     * @param string $field 待校验字段名
+     * @return bool 是否安全
+     */
+    private static function isFieldNameSafe(string $field): bool
+    {
+        return preg_match('/^[a-zA-Z0-9_\*. ,`\-\s]+$/', $field) === 1;
+    }
+
+    /**
+     * 校验排序表达式安全性（允许格式：`column ASC` 或 `column DESC`）
+     *
+     * @param string $order 排序表达式
+     * @return bool 是否安全
+     */
+    private static function isOrderExpressionSafe(string $order): bool
+    {
+        return preg_match('/^[a-zA-Z0-9_`\s,]+( ASC| DESC)?$/i', $order) === 1;
+    }
+
+    /**
     * @param \Illuminate\Database\Eloquent\Builder<BaseLaORMModel> $query
     * @param  array<mixed>|string  $field
     */
@@ -144,10 +167,12 @@ class LaravelORMFactory
             return;
         }
         if (is_array($field)) {
-            $field = array_filter($field, function ($f) { return !empty($f); });
+            $field = array_filter($field, static function ($f): bool {
+                return is_string($f) && $f !== '' && self::isFieldNameSafe($f);
+            });
             $field = implode(',', $field);
         }
-        if (!empty($field)) {
+        if ($field !== '' && self::isFieldNameSafe($field)) {
             $query->selectRaw($field);
         }
     }
@@ -231,7 +256,7 @@ class LaravelORMFactory
 
         // 应用字段选择
         $this->applyFields($query, $field);
-        if ($order !== '') {
+        if ($order !== '' && self::isOrderExpressionSafe($order)) {
             $query->orderByRaw($order);
         }
         if (!empty($with)) {
@@ -316,7 +341,7 @@ class LaravelORMFactory
             $query->with($with);
         }
         // 添加排序条件
-        if ($order !== '') {
+        if ($order !== '' && self::isOrderExpressionSafe($order)) {
             $query->orderByRaw($order);
         }
         /** @var \Illuminate\Database\Eloquent\Model|null $result */

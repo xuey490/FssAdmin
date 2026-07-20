@@ -81,11 +81,6 @@ final class JwtTenantContext
      */
     public static function generateToken(array $userData, ?int $ttl = null): array
     {
-        // 确保 tenant_id 在 claims 中
-        if (!isset($userData['tenant_id']) && isset($userData['tenant_id'])) {
-            $userData['tenant_id'] = $userData['tenant_id'];
-        }
-
         return self::getJwtFactory()->issue($userData, $ttl);
     }
 

@@ -47,7 +47,6 @@ class CasbinRbacMiddleware
         // 从自研框架容器获取 Casbin 服务实例
         $this->casbinRbac = new CasbinRbac(config('casbin'));
         $this->casbinService = app(CasbinService::class);
-        #dump($this->casbinService);
     }
 
     /**

@@ -81,12 +81,12 @@ class CorsMiddleware implements MiddlewareInterface
     protected array $exposeHeaders = [];
 
     /**
-     * @param array<mixed>|string $allowOrigin      允许的来源：显式白名单数组（推荐），或 '*'。
+     * @param array<mixed>|string $allowOrigin      允许的来源：显式白名单数组（推荐），默认空数组（同源部署）。
      *                                        开启凭证时禁止 '*'（见 addCorsHeaders 的安全保护）。
      * @param bool         $allowCredentials 是否允许携带凭证（Cookie）。
      */
     public function __construct(
-        array|string $allowOrigin = '*',
+        array|string $allowOrigin = [],
         bool $allowCredentials = true
     ) {
         $this->allowOrigin      = $allowOrigin;

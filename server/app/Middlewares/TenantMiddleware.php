@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Middlewares;
 
+use App\Models\SysUserTenant;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Framework\Tenant\TenantContext;
@@ -79,9 +80,19 @@ class TenantMiddleware implements MiddlewareInterface
      */
     public function handle(Request $request, callable $next): Response
     {
-        // 解析租户ID
-        $tenantId = $this->resolveTenantId($request);
+        // 解析租户ID（含来源追踪）和用户ID
+        $tenantResult = $this->resolveTenantId($request);
+        $tenantId = $tenantResult['tenant_id'];
+        $tenantSource = $tenantResult['source'];
         $userId = $this->resolveUserId($request);
+
+        // 从 Header/Query 参数获取的租户ID需要进行用户归属校验
+        if ($tenantId !== null && in_array($tenantSource, ['header', 'query'], true) && $userId !== null) {
+            if (!SysUserTenant::isUserInTenant($userId, $tenantId)) {
+                // 用户不属于该租户，拒绝使用该租户ID
+                $tenantId = null;
+            }
+        }
 
         // 设置租户上下文
         if ($tenantId !== null) {
@@ -95,55 +106,54 @@ class TenantMiddleware implements MiddlewareInterface
         // 执行后续中间件
         $response = $next($request);
 
-        // 清理租户上下文（可选）
-        // TenantContext::clear();
-
         return $response;
     }
 
     /**
      * 解析租户ID
      *
+     * 返回值包含 tenant_id（int|null）和 source（'jwt'|'session'|'header'|'query'|null）
+     *
      * @param Request $request
-     * @return int|null
+     * @return array{tenant_id: int|null, source: string|null}
      */
-    protected function resolveTenantId(Request $request): ?int
+    protected function resolveTenantId(Request $request): array
     {
         $authMode = $this->getAuthMode();
 
-        // 方式1：从 JWT Token 解析（jwt 或 auto 模式）
+        // 方式1：从 JWT Token 解析（jwt 或 auto 模式）— 已签名可信
         if (in_array($authMode, ['jwt', 'auto'])) {
             $tenantId = $this->resolveTenantIdFromJwt($request);
             if ($tenantId !== null) {
-                return $tenantId;
+                return ['tenant_id' => $tenantId, 'source' => 'jwt'];
             }
         }
 
-        // 方式2：从 Session 获取（session 或 auto 模式）
+        // 方式2：从 Session 获取（session 或 auto 模式）— 服务端可信
         if (in_array($authMode, ['session', 'auto'])) {
             $tenantId = $this->resolveTenantIdFromSession($request);
             if ($tenantId !== null) {
-                return $tenantId;
+                return ['tenant_id' => $tenantId, 'source' => 'session'];
             }
         }
 
-        // 方式3：从自定义 Header 获取
+        // 方式3：从自定义 Header 获取 — 不可信，需校验用户归属
         $headerName = $this->config['tenant_header'] ?? 'X-Tenant-ID';
         $tenantHeader = $request->headers->get($headerName);
-        if ($tenantHeader && is_numeric($tenantHeader)) {
-            return (int) $tenantHeader;
+        if ($tenantHeader !== null && $tenantHeader !== '' && is_numeric($tenantHeader)) {
+            return ['tenant_id' => (int) $tenantHeader, 'source' => 'header'];
         }
 
-        // 方式4：从 Query 参数获取（仅用于开发调试）
+        // 方式4：从 Query 参数获取（仅用于开发调试）— 不可信，需校验用户归属
         if ($this->isDebugMode()) {
             $paramName = $this->config['tenant_query_param'] ?? 'tenant_id';
             $tenantParam = $request->query->get($paramName);
-            if ($tenantParam && is_numeric($tenantParam)) {
-                return (int) $tenantParam;
+            if ($tenantParam !== null && $tenantParam !== '' && is_numeric($tenantParam)) {
+                return ['tenant_id' => (int) $tenantParam, 'source' => 'query'];
             }
         }
 
-        return null;
+        return ['tenant_id' => null, 'source' => null];
     }
 
     /**

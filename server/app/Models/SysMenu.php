@@ -288,58 +288,126 @@ class SysMenu extends BaseLaORMModel
     }
 
     /**
-     * 获取菜单树 (递归)
+     * 获取菜单树 (单次查询 + PHP 构建)
      *
-     * @param int $parentId 父ID
+     * 一次性加载所有启用菜单，在内存中按 parent_id 组织树结构，
+     * 避免递归 SQL 造成的 N+1 查询问题。
+     *
+     * @param int $parentId 根父ID，默认 0
      * @return array<array-key, mixed>
      */
     public static function getMenuTree(int $parentId = 0): array
     {
-        $menus = self::where('parent_id', $parentId)
-            ->where('status', self::STATUS_ENABLED)
+        $allMenus = self::where('status', self::STATUS_ENABLED)
             ->orderBy('sort')
             ->get()
             ->toArray();
 
-        foreach ($menus as &$menu) {
-            $menu['children'] = self::getMenuTree($menu['id']);
-        }
-
-        return $menus;
+        return self::buildTreeFromList($allMenus, $parentId);
     }
 
     /**
-     * 获取所有子菜单ID (包含自己)
+     * 从平坦列表中构建树结构 (PHP 内存操作，零额外 SQL)
+     *
+     * @param array<array-key, mixed> $items 扁平菜单数组
+     * @param int $parentId 根父ID
+     * @return array<array-key, mixed>
+     */
+    private static function buildTreeFromList(array $items, int $parentId = 0): array
+    {
+        $childrenMap = [];
+        foreach ($items as $item) {
+            $pid = (int) ($item['parent_id'] ?? 0);
+            $childrenMap[$pid][] = $item;
+        }
+
+        $tree = [];
+        $stack = [[$parentId, &$tree]];
+        while ($stack !== []) {
+            /** @var array{0: int, 1: array<array-key, mixed>} $frame */
+            $frame = array_pop($stack);
+            $currentPid = $frame[0];
+            /** @var array<array-key, mixed> $branch */
+            $branch = &$frame[1];
+
+            if (!isset($childrenMap[$currentPid])) {
+                continue;
+            }
+
+            foreach ($childrenMap[$currentPid] as $item) {
+                $itemId = (int) ($item['id'] ?? 0);
+                $children = [];
+                if (isset($childrenMap[$itemId])) {
+                    $stack[] = [$itemId, &$children];
+                }
+                $item['children'] = $children;
+                $branch[] = $item;
+            }
+        }
+
+        return $tree;
+    }
+
+    /**
+     * 获取所有子菜单ID（包含自己）— 单次查询，避免 N+1
      *
      * @param int $menuId 菜单ID
-     * @return array<array-key, mixed>
+     * @return array<int, int>
      */
     public static function getAllChildIds(int $menuId): array
     {
-        $ids = [$menuId];
-        $children = self::where('parent_id', $menuId)->pluck('id')->toArray();
+        // 一次性加载所有菜单的 id/parent_id 映射
+        $allPairs = self::select(['id', 'parent_id'])
+            ->get()
+            ->keyBy('id')
+            ->toArray();
 
-        foreach ($children as $childId) {
-            $ids = array_merge($ids, self::getAllChildIds($childId));
+        $childrenMap = [];
+        foreach ($allPairs as $id => $item) {
+            $pid = (int) ($item['parent_id'] ?? 0);
+            $childrenMap[$pid][] = $id;
+        }
+
+        $ids = [$menuId];
+        $stack = [$menuId];
+        while ($stack !== []) {
+            $currentId = array_pop($stack);
+            if (isset($childrenMap[$currentId])) {
+                foreach ($childrenMap[$currentId] as $childId) {
+                    $ids[] = $childId;
+                    $stack[] = $childId;
+                }
+            }
         }
 
         return $ids;
     }
 
     /**
-     * 获取指定菜单ID的所有祖先菜单ID（不含自己）
+     * 获取指定菜单ID的所有祖先菜单ID（不含自己）— 单次查询，避免 N+1
      *
      * @param int $menuId 菜单ID
-     * @return array<array-key, mixed>
+     * @return array<int, int>
      */
     public static function getAllParentIds(int $menuId): array
     {
+        // 一次性加载所有菜单的 id/parent_id 映射
+        $allPairs = self::select(['id', 'parent_id'])
+            ->get()
+            ->keyBy('id')
+            ->toArray();
+
         $ids = [];
-        $current = self::find($menuId);
-        while ($current && $current->parent_id > 0) {
-            $ids[] = (int)$current->parent_id;
-            $current = self::find($current->parent_id);
+        $currentId = $menuId;
+        while (isset($allPairs[$currentId])) {
+            $pid = (int) ($allPairs[$currentId]['parent_id'] ?? 0);
+            if ($pid <= 0) {
+                break;
+            }
+            $ids[] = $pid;
+            $currentId = $pid;
         }
+
         return $ids;
     }
 
