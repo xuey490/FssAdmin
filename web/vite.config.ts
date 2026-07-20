@@ -9,6 +9,10 @@ import AutoImport from 'unplugin-auto-import/vite'
 import ElementPlus from 'unplugin-element-plus/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import tailwindcss from '@tailwindcss/vite'
+import IconifyOffline from 'vite-plugin-iconify-offline'
+import { resolve } from 'path'
+
+
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -93,12 +97,12 @@ export default ({ mode }: { mode: string }) => {
         }
       },
       outDir: 'dist',
-      chunkSizeWarningLimit: 2000,
-      minify: 'esbuild'
+      chunkSizeWarningLimit: 2000
     },
     plugins: [
       vue(),
       tailwindcss(),
+      IconifyOffline({ package: '@iconify/vue' }),
       AutoImport({
         imports: ['vue', 'vue-router', 'pinia', '@vueuse/core'],
         dts: 'src/types/import/auto-imports.d.ts',
@@ -138,9 +142,8 @@ export default ({ mode }: { mode: string }) => {
         'crypto-js',
         'file-saver',
         'vue-img-cutter',
-        'element-plus/es',
-        'element-plus/es/components/*/style/css',
-        'element-plus/es/components/*/style/index'
+        '@wangeditor/editor',
+        '@wangeditor/editor-for-vue',
       ]
     },
     css: {
